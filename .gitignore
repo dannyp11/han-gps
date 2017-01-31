@@ -2,5 +2,13 @@
 *.o
 *.elf
 *~
+*.swp
 build/
 bin/
+.dep/
+*.lst
+*.lss
+*.map
+*.sym
+*.bin
+.keep
