@@ -42,14 +42,30 @@
 # MCU name
 MCU = atmega328p
 
+# Chosen board. Either BOARD_USE_UNO or BOARD_USE_CUSTOM
+#BOARD_CHOSEN = BOARD_USE_CUSTOM
+BOARD_CHOSEN = BOARD_USE_UNO
+
 # Processor frequency.
-F_CPU = 7372800
+ifeq ($(BOARD_CHOSEN), BOARD_USE_CUSTOM)
+$(info [Info] Using config for custom board)
+F_CPU=7372800
+TGT=cstm
+else ifeq ($(BOARD_CHOSEN), BOARD_USE_UNO)
+$(info [Info] Using config for Uno)
+F_CPU=16000000
+TGT=uno
+else
+$(warning [Warning] Using unknown config)
+F_CPU=
+TGT=unkn
+endif
 
 # Output format. (can be srec, ihex, binary)
 FORMAT = ihex
 
 # Target file name (without extension).
-TARGET = nil
+TARGET = han-$(TGT)
 
 # Object files directory
 #     To put object files in current directory, use a dot (.), do NOT make
@@ -116,7 +132,7 @@ EXTRAINCDIRS = $(PORTINC) $(KERNINC) $(TESTINC) \
 CSTANDARD = -std=gnu11
 
 # Place -D or -U options here for C sources
-CDEFS = -DF_CPU=$(F_CPU)UL
+CDEFS = -DF_CPU=$(F_CPU)UL -D$(BOARD_CHOSEN)
 
 # Place -D or -U options here for ASM sources
 ADEFS = -DF_CPU=$(F_CPU)
