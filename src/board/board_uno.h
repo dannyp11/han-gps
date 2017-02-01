@@ -2,8 +2,8 @@
 #define _BOARD_UNO_H_
 
 /* All inputs with pull-ups, except PB5 which has an LED.*/
-#define VAL_DDRB  0x10
-#define VAL_PORTB 0xEF
+#define VAL_DDRB  0x20
+#define VAL_PORTB 0xDF
 
 /* All inputs with pull-ups.*/
 #define VAL_DDRC  0x00

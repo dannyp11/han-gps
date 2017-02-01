@@ -1,6 +1,6 @@
 # Hey Emacs, this is a -*- makefile -*-
 #----------------------------------------------------------------------------
-# WinAVR Makefile Template written by Eric B. Weddington, Jörg Wunsch, et al.
+# WinAVR Makefile Template written by Eric B. Weddington, Jï¿½rg Wunsch, et al.
 #
 # Released to the Public Domain
 #
@@ -271,10 +271,18 @@ LDFLAGS += $(PRINTF_LIB) $(SCANF_LIB) $(MATH_LIB)
 # Type: avrdude -c ?
 # to get a full listing.
 #
+ifeq ($(BOARD_CHOSEN), BOARD_USE_CUSTOM)
 AVRDUDE_PROGRAMMER = usbtiny
-
+AVRDUDE_PORT_OPTION=
+else ifeq ($(BOARD_CHOSEN), BOARD_USE_UNO)
+AVRDUDE_PROGRAMMER = arduino
 # com1 = serial port. Use lpt1 to connect to parallel port.
-AVRDUDE_PORT = /dev/tty.usbmodem00034091  # programmer connected to serial device
+AVRDUDE_PORT_OPTION = -P /dev/ttyACM0  # programmer connected to serial device
+else
+AVRDUDE_PROGRAMMER =
+AVRDUDE_PORT_OPTION=
+endif
+
 
 AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
 #AVRDUDE_WRITE_EEPROM = -U eeprom:w:$(TARGET).eep
@@ -294,7 +302,7 @@ AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
 #AVRDUDE_VERBOSE = -v -v
 
 AVRDUDE_FLAGS = -p $(MCU)
-#AVRDUDE_FLAGS += -P $(AVRDUDE_PORT)
+AVRDUDE_FLAGS += $(AVRDUDE_PORT_OPTION)
 #AVRDUDE_FLAGS += -b 57600
 AVRDUDE_FLAGS += -c $(AVRDUDE_PROGRAMMER)
 AVRDUDE_FLAGS += $(AVRDUDE_NO_VERIFY)
