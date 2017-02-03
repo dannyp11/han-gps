@@ -11,4 +11,6 @@ bin/
 *.map
 *.sym
 *.bin
+*.hex
+*.eep
 .keep
