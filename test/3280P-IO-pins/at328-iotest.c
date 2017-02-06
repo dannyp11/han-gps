@@ -81,6 +81,8 @@ int main(void) {
 		PORTB &= ~(1 << 4);
 		PORTB |= (1 << 5);
 		PORTB &= ~(1 << 5);
+		PORTB |= (1 << 7);
+		PORTB &= ~(1 << 7);
 
 		PORTC |= (1 << 0);
 		PORTC &= ~(1 << 0);
