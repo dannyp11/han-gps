@@ -41,6 +41,7 @@ int main(void) {
 		TOGGLE_PIN(DDRB, i, 1);
 		TOGGLE_PIN(DDRC, i, 1);
 	}
+	TOGGLE_PIN(DDRB, 7, 1);
 
 	//Set all pins to 0
 	for (i = 0; i < 8; ++i) {
