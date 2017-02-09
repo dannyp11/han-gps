@@ -32,16 +32,16 @@
  */
 #define STM32_LSECLK            0
 
-#if defined(NUCLEO_EXTERNAL_OSCILLATOR)
-#define STM32_HSECLK            8000000
-#define STM32_HSE_BYPASS
+/* #if defined(NUCLEO_EXTERNAL_OSCILLATOR) */
+/* #define STM32_HSECLK            8000000 */
+/* #define STM32_HSE_BYPASS */
 
-#elif defined(NUCLEO_HSE_CRYSTAL)
+/* #elif defined(NUCLEO_HSE_CRYSTAL) */
 #define STM32_HSECLK            8000000
 
-#else
-#define STM32_HSECLK            0
-#endif
+/* #else */
+/* #define STM32_HSECLK            0 */
+/* #endif */
 
 /*
  * MCU type, supported types are defined in ./os/hal/platforms/hal_lld.h.
@@ -138,13 +138,12 @@
  * Everything input with pull-up except:
  * PA2  - Alternate output          (GPIOA_USART_TX).
  * PA3  - Normal input              (GPIOA_USART_RX).
- * PA5  - Push Pull output          (GPIOA_LED_GREEN).
  * PA13 - Pull-up input             (GPIOA_SWDIO).
  * PA14 - Pull-down input           (GPIOA_SWCLK).
  */
-#define VAL_GPIOACRL            0x88384B88      /*  PA7...PA0 */
+#define VAL_GPIOACRL            0x88884B88      /*  PA7...PA0 */
 #define VAL_GPIOACRH            0x88888888      /* PA15...PA8 */
-#define VAL_GPIOAODR            0xFFFFBFDF
+#define VAL_GPIOAODR            0xFFFFBFFF
 
 /*
  * Port B setup.
@@ -158,11 +157,11 @@
 /*
  * Port C setup.
  * Everything input with pull-up except:
- * PC13 - Normal input              (GPIOC_BUTTON).
+ * PC13 - Push Pull output
  */
 #define VAL_GPIOCCRL            0x88888888      /*  PC7...PC0 */
-#define VAL_GPIOCCRH            0x88488888      /* PC15...PC8 */
-#define VAL_GPIOCODR            0xFFFFFFFF
+#define VAL_GPIOCCRH            0x88388888      /* PC15...PC8 */
+#define VAL_GPIOCODR            0xFFFFDFFF
 
 /*
  * Port D setup.
