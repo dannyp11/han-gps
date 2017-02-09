@@ -18,6 +18,8 @@
 #include "hal.h"
 #include "test.h"
 
+#include "usbcfg.h"
+
 /*
  * Red LED blinker thread, times are in milliseconds.
  */
@@ -53,6 +55,8 @@ int main(void) {
    * Activates the serial driver 2 using the driver default configuration.
    */
   /* sdStart(&SD2, NULL); */
+  sduObjectInit(&SDU1);
+  sduStart(&SDU1, &serusbcfg);
 
   /*
    * Creates the blinker thread.
@@ -65,7 +69,7 @@ int main(void) {
    */
   while (true) {
     /* if (!palReadPad(GPIOC, GPIOC_BUTTON)) */
-    /*   TestThread(&SD2); */
+    TestThread(&SDU1);
     chThdSleepMilliseconds(500);
   }
 }
