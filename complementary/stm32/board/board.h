@@ -25,7 +25,7 @@
  * Board identifier.
  */
 #define BOARD_OLIMEX_STM32_P103
-#define BOARD_NAME              "Olimex STM32-P103"
+#define BOARD_NAME              "Fake IO Board"
 
 /*
  * Board frequencies.
@@ -41,7 +41,7 @@
 /*
  * IO pins assignments.
  */
-#define GPIOA_BUTTON            0
+//#define GPIOA_BUTTON            0
 #define GPIOA_SPI1NSS           4
 
 #define GPIOB_SPI2NSS           12
@@ -51,7 +51,7 @@
 #define GPIOC_MMCCP             7
 #define GPIOC_CAN_CNTL          10
 #define GPIOC_USB_DISC          11
-#define GPIOC_LED               12
+#define GPIOC_LED               13
 
 /*
  * I/O ports initial setup, this configuration is established soon after reset
@@ -80,13 +80,12 @@
 /*
  * Port A setup.
  * Everything input with pull-up except:
- * PA0  - Normal input      (BUTTON).
  * PA2  - Alternate output  (USART2 TX).
  * PA3  - Normal input      (USART2 RX).
  * PA11 - Normal input      (USB DM).
  * PA12 - Normal input      (USB DP).
  */
-#define VAL_GPIOACRL            0x88884B84      /*  PA7...PA0 */
+#define VAL_GPIOACRL            0x88884B88      /*  PA7...PA0 */
 #define VAL_GPIOACRH            0x88844888      /* PA15...PA8 */
 #define VAL_GPIOAODR            0xFFFFFFFF
 
@@ -109,10 +108,10 @@
  * PC7  - Normal input because there is an external resistor.
  * PC10 - Push Pull output (CAN CNTRL).
  * PC11 - Push Pull output (USB DISC).
- * PC12 - Push Pull output (LED).
+ * PC13 - Push Pull output (LED).
  */
 #define VAL_GPIOCCRL            0x44848888      /*  PC7...PC0 */
-#define VAL_GPIOCCRH            0x88833388      /* PC15...PC8 */
+#define VAL_GPIOCCRH            0x88383388      /* PC15...PC8 */
 #define VAL_GPIOCODR            0xFFFFFFFF
 
 /*

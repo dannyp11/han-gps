@@ -35,7 +35,6 @@ THD_FUNCTION(Thread1, arg) {
 /*
  * Thread 2.
  */
-#if 0
 THD_WORKING_AREA(waThread2, 128);
 THD_FUNCTION(Thread2, arg) {
 
@@ -52,7 +51,6 @@ THD_FUNCTION(Thread2, arg) {
     chThdSleepMilliseconds(2000);
   }
 }
-#endif
 
 /*
  * Threads static table, one entry per thread. The number of entries must
@@ -60,7 +58,7 @@ THD_FUNCTION(Thread2, arg) {
  */
 THD_TABLE_BEGIN
   THD_TABLE_ENTRY(waThread1, "blinker", Thread1, NULL)
-  /*THD_TABLE_ENTRY(waThread2, "hello", Thread2, NULL)*/
+  THD_TABLE_ENTRY(waThread2, "hello", Thread2, NULL)
 THD_TABLE_END
 
 /*
