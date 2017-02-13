@@ -92,6 +92,7 @@ include $(CHIBIOS)/os/common/ports/ARMCMx/compilers/GCC/mk/startup_stm32f1xx.mk
 # HAL-OSAL files (optional).
 include $(CHIBIOS)/os/hal/hal.mk
 include $(CHIBIOS)/os/hal/ports/STM32/STM32F1xx/platform.mk
+#include $(CHIBIOS)/os/hal/boards/OLIMEX_STM32_P103/board.mk
 include board/board.mk
 include $(CHIBIOS)/os/hal/osal/rt/osal.mk
 # RTOS files (optional).
@@ -113,8 +114,10 @@ CSRC = $(STARTUPSRC) \
        $(PLATFORMSRC) \
        $(BOARDSRC) \
        $(TESTSRC) \
-       usbcfg.c \
-       main.c
+       $(CHIBIOS)/os/various/shell.c \
+       $(CHIBIOS)/os/hal/lib/streams/memstreams.c \
+       $(CHIBIOS)/os/hal/lib/streams/chprintf.c \
+       usbcfg.c main.c
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
@@ -145,7 +148,7 @@ ASMSRC = $(STARTUPASM) $(PORTASM) $(OSALASM)
 
 INCDIR = $(STARTUPINC) $(KERNINC) $(PORTINC) $(OSALINC) \
          $(HALINC) $(PLATFORMINC) $(BOARDINC) $(TESTINC) \
-         $(CHIBIOS)/os/various
+         $(CHIBIOS)/os/hal/lib/streams $(CHIBIOS)/os/various
 
 #
 # Project, sources and paths

@@ -2,4 +2,4 @@
 BOARDSRC = board/board.c
 
 # Required include directories
-BOARDINC = board/ 
+BOARDINC = board

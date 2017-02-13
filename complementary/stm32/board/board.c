@@ -42,6 +42,21 @@ void __early_init(void) {
   stm32_clock_init();
 }
 
+#if HAL_USE_MMC_SPI
+/* Board-related functions related to the MMC_SPI driver.*/
+bool mmc_lld_is_card_inserted(MMCDriver *mmcp) {
+
+  (void)mmcp;
+  return palReadPad(GPIOC, GPIOC_MMCCP);
+}
+
+bool mmc_lld_is_write_protected(MMCDriver *mmcp) {
+
+  (void)mmcp;
+  return !palReadPad(GPIOC, GPIOC_MMCWP);
+}
+#endif
+
 /*
  * Board-specific initialization code.
  */
