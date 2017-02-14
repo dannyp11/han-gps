@@ -15,6 +15,7 @@
 */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "ch.h"
@@ -84,51 +85,98 @@ static void cmd_test(BaseSequentialStream *chp, int argc, char *argv[]) {
   chThdWait(tp);
 }
 
-/* Can be measured using dd if=/dev/xxxx of=/dev/null bs=512 count=10000.*/
-static void cmd_write(BaseSequentialStream *chp, int argc, char *argv[]) {
-  static uint8_t buf[] =
-      "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-      "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-      "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-      "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-      "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-      "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-      "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-      "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-      "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-      "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-      "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-      "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-      "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-      "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-      "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-      "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+/* /\* Can be measured using dd if=/dev/xxxx of=/dev/null bs=512 count=10000.*\/ */
+/* static void cmd_write(BaseSequentialStream *chp, int argc, char *argv[]) { */
+/*   static uint8_t buf[] = */
+/*       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" */
+/*       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" */
+/*       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" */
+/*       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" */
+/*       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" */
+/*       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" */
+/*       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" */
+/*       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" */
+/*       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" */
+/*       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" */
+/*       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" */
+/*       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" */
+/*       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" */
+/*       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" */
+/*       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" */
+/*       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"; */
 
-  (void)argv;
-  if (argc > 0) {
-    chprintf(chp, "Usage: write\r\n");
+/*   (void)argv; */
+/*   if (argc > 0) { */
+/*     chprintf(chp, "Usage: write\r\n"); */
+/*     return; */
+/*   } */
+
+/*   while (chnGetTimeout((BaseChannel *)chp, TIME_IMMEDIATE) == Q_TIMEOUT) { */
+/* #if 1 */
+/*     /\* Writing in channel mode.*\/ */
+/*     chnWrite(&SDU1, buf, sizeof buf - 1); */
+/* #else */
+/*     /\* Writing in buffer mode.*\/ */
+/*     (void) obqGetEmptyBufferTimeout(&SDU1.obqueue, TIME_INFINITE); */
+/*     memcpy(SDU1.obqueue.ptr, buf, SERIAL_USB_BUFFERS_SIZE); */
+/*     obqPostFullBuffer(&SDU1.obqueue, SERIAL_USB_BUFFERS_SIZE); */
+/* #endif */
+/*   } */
+/*   chprintf(chp, "\r\n\nstopped\r\n"); */
+/* } */
+
+#define debug(...) chprintf(chp, __VA_ARGS__)
+
+/*
+ * Command to monitor I2C
+ */
+static uint8_t rx_data[16];
+static i2cflags_t errors = 0;
+static void cmd_i2c_monitor(BaseSequentialStream *chp, int argc, char *argv[]) {
+  msg_t status = MSG_OK;
+  systime_t tmo = MS2ST(4);
+  uint8_t i;
+  uint8_t count;
+
+  count = argc > 4 ? 4 : argc;
+  if (argc == 0) {
+    chprintf(chp, "Usage: i2c_monitor [addr1] [addr2] [addr3] [addr4]\r\n");
     return;
   }
 
-  while (chnGetTimeout((BaseChannel *)chp, TIME_IMMEDIATE) == Q_TIMEOUT) {
-#if 1
-    /* Writing in channel mode.*/
-    chnWrite(&SDU1, buf, sizeof buf - 1);
-#else
-    /* Writing in buffer mode.*/
-    (void) obqGetEmptyBufferTimeout(&SDU1.obqueue, TIME_INFINITE);
-    memcpy(SDU1.obqueue.ptr, buf, SERIAL_USB_BUFFERS_SIZE);
-    obqPostFullBuffer(&SDU1.obqueue, SERIAL_USB_BUFFERS_SIZE);
-#endif
+  for (i = 0; i < 16; ++i) {
+    rx_data[i] = 0;
   }
-  chprintf(chp, "\r\n\nstopped\r\n");
+
+  
+  for (i = 0; i < count; ++i) {
+    int i2c_addr;
+
+    i2c_addr = atoi((const char*) argv[i]);
+    i2cAcquireBus(&I2CD1);
+    status = i2cMasterReceiveTimeout(&I2CD1, i2c_addr, rx_data, 16, tmo);
+    i2cReleaseBus(&I2CD1);
+    
+    if (status == MSG_RESET){
+      errors = i2cGetErrors(&I2CD1);
+      chprintf(chp, "Error %d\r\n", errors);
+      osalDbgCheck(I2C_ACK_FAILURE == errors);
+    }
+    else {
+      for (i = 0; i < 16; ++i) {
+      	chprintf(chp, "0x%02X", rx_data[i]);
+      }
+      chprintf(chp, "\r\n");
+    }
+  }
 }
 
 static const ShellCommand commands[] = {
   {"mem", cmd_mem},
   {"threads", cmd_threads},
   {"test", cmd_test},
-  {"write", cmd_write},
+  /* {"write", cmd_write}, */
+  {"i2c_monitor", cmd_i2c_monitor},
   {NULL, NULL}
 };
 
@@ -160,6 +208,16 @@ static THD_FUNCTION(Thread1, arg) {
 }
 
 /*
+ * I2C1 config.
+ */
+static const I2CConfig i2cfg1 = {
+    OPMODE_I2C,
+    400000,
+    FAST_DUTY_CYCLE_2,
+};
+
+
+/*
  * Application entry point.
  */
 int main(void) {
@@ -174,6 +232,8 @@ int main(void) {
    */
   halInit();
   chSysInit();
+
+  i2cStart(&I2CD1, &i2cfg1);
 
   /*
    * Initializes a serial-over-USB CDC driver.
