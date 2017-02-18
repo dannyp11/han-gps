@@ -76,7 +76,7 @@
  * @brief   Enables the I2C subsystem.
  */
 #if !defined(HAL_USE_I2C) || defined(__DOXYGEN__)
-#define HAL_USE_I2C                 TRUE
+#define HAL_USE_I2C                 FALSE
 #endif
 
 /**
@@ -132,7 +132,7 @@
  * @brief   Enables the SERIAL subsystem.
  */
 #if !defined(HAL_USE_SERIAL) || defined(__DOXYGEN__)
-#define HAL_USE_SERIAL              FALSE
+#define HAL_USE_SERIAL              TRUE
 #endif
 
 /**
@@ -287,7 +287,7 @@
  *          default configuration.
  */
 #if !defined(SERIAL_DEFAULT_BITRATE) || defined(__DOXYGEN__)
-#define SERIAL_DEFAULT_BITRATE      115200
+#define SERIAL_DEFAULT_BITRATE      38400
 #endif
 
 /**

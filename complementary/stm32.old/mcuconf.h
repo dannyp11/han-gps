@@ -45,14 +45,14 @@
 #define STM32_PLLSRC                        STM32_PLLSRC_HSE
 #define STM32_PLLXTPRE                      STM32_PLLXTPRE_DIV1
 #define STM32_PLLMUL_VALUE                  9
-#define STM32_HPRE                          STM32_HPRE_DIV1
+#define STM32_HPRE                          STM32_HPRE_DIV2
 #define STM32_PPRE1                         STM32_PPRE1_DIV2
 #define STM32_PPRE2                         STM32_PPRE2_DIV2
 #define STM32_ADCPRE                        STM32_ADCPRE_DIV4
 #define STM32_USB_CLOCK_REQUIRED            TRUE
 #define STM32_USBPRE                        STM32_USBPRE_DIV1P5
 #define STM32_MCOSEL                        STM32_MCOSEL_NOCLOCK
-#define STM32_RTCSEL                        STM32_RTCSEL_HSEDIV
+#define STM32_RTCSEL                        STM32_RTCSEL_NOCLOCK
 #define STM32_PVD_ENABLE                    FALSE
 #define STM32_PLS                           STM32_PLS_LEV0
 
@@ -103,7 +103,7 @@
 /*
  * I2C driver system settings.
  */
-#define STM32_I2C_USE_I2C1                  TRUE
+#define STM32_I2C_USE_I2C1                  FALSE
 #define STM32_I2C_USE_I2C2                  FALSE
 #define STM32_I2C_BUSY_TIMEOUT              50
 #define STM32_I2C_I2C1_IRQ_PRIORITY         5
@@ -153,8 +153,8 @@
 /*
  * SERIAL driver system settings.
  */
-#define STM32_SERIAL_USE_USART1             FALSE
-#define STM32_SERIAL_USE_USART2             FALSE
+#define STM32_SERIAL_USE_USART1             TRUE
+#define STM32_SERIAL_USE_USART2             TRUE
 #define STM32_SERIAL_USE_USART3             FALSE
 #define STM32_SERIAL_USE_UART4              FALSE
 #define STM32_SERIAL_USE_UART5              FALSE
