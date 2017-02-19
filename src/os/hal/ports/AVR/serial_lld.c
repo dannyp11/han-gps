@@ -15,7 +15,7 @@
 */
 
 /**
- * @file    softserial_lld.c
+ * @file    AVR/serial_lld.c
  * @brief   AVR low level serial driver code.
  *
  * @addtogroup SERIAL
@@ -29,28 +29,6 @@
 /*===========================================================================*/
 /* Driver exported variables.                                                */
 /*===========================================================================*/
-
-#if AVR_SERIAL_USE_USARTS || defined (__DOXYGEN__)
-  #ifndef AVR_GPT_USE_TIM2
-    #error "Software serial requires AVR_GPT_USE_TIM2"
-  #endif
-  /* Uses PCINT0*/
-  #ifdef AVR_SDS_USE_PCINT0
-    #define AVR_SDS_RX_PORT IOPORT2
-    #define AVR_SDS_RX_PIN 0
-    #define AVR_SDS_RX_VECT PCINT0_vect
-    #define AVR_SDS_RX_TCCR2B_CLK_MASK 0b00000111
-  #endif
-  /* By default, uses PB1 as TX.*/
-  #ifndef AVR_SDS_TX_PORT
-    #define AVR_SDS_TX_PORT IOPORT2
-  #endif
-  #ifndef AVR_SDS_TX_PIN
-    #define AVR_SDS_TX_PORT 1
-  #endif
-#endif
-
-#if 0
 
 /**
  * @brief   USART0 serial driver identifier.
@@ -89,6 +67,27 @@ SerialDriver SD2;
   #endif
 #endif /* AVR_SERIAL_USE_USART1 */
 
+/**
+ * @brief   Software serial driver identifier
+ */
+#if AVR_SERIAL_USE_USARTS || defined (__DOXYGEN__)
+  #if !defined AVR_GPT_USE_TIM2
+    #error "Software serial requires AVR_GPT_USE_TIM2"
+  #endif
+  /* Uses PCINT0*/
+  #if defined (AVR_SDS_USE_PCINT0)
+    #define AVR_SDS_RX_PORT IOPORT2
+    #define AVR_SDS_RX_PIN 0
+    #define AVR_SDS_RX_VECT PCINT0_vect
+    #define AVR_SDS_RX_TCCR2B_CLK_MASK 0b00000111
+  #endif
+  /* By default, uses PB1 as TX.*/
+  #if !defined (AVR_SDS_TX_PORT)
+    #define AVR_SDS_TX_PORT IOPORT2
+  #endif
+  #if !defined (AVR_SDS_TX_PIN)
+    #define AVR_SDS_TX_PIN 1
+  #endif
 #endif
 
 /*===========================================================================*/
@@ -96,14 +95,40 @@ SerialDriver SD2;
 /*===========================================================================*/
 
 /**
- * @brief   Driver default configuration. Baud 9600 on 7.3728MHz clock
+ * @brief SDS state machine
+ */
+typedef enum {
+  IDLE,
+  RECEIVE_INIT,
+  RECEIVE,
+  TRANSMIT_INIT,
+  TRANSMIT
+} sds_state_t;
+
+/**
+ * @brief   Driver default configuration.
  */
 static const SerialConfig default_config = {
+  UBRR(SERIAL_DEFAULT_BITRATE),
+  USART_CHAR_SIZE_8,
   96,
-  /* CLK/8.*/
-  (1 << CA21),
-  8
+  (1 << CS21)
 };
+
+/**
+ * @brief SDS Timer clock control value
+ */
+static uint8_t sds_rx_tccr2b_div;
+
+/**
+ * @brief SDS UART bits per character
+ */
+static uint8_t sds_bits_per_char;
+
+/**
+ * @brief SDS state
+ */
+static volatile sds_state_t sds_state = IDLE;
 
 /*===========================================================================*/
 /* Driver local functions.                                                   */
@@ -115,7 +140,6 @@ static void set_error(uint8_t sra, SerialDriver *sdp) {
   uint8_t upe = 0;
   uint8_t fe = 0;
 
-#if 0
 #if AVR_SERIAL_USE_USART0
   if (&SD1 == sdp) {
     dor = (1 << DOR0);
@@ -131,7 +155,7 @@ static void set_error(uint8_t sra, SerialDriver *sdp) {
     fe = (1 << FE1);
   }
 #endif
-#endif
+
   if (sra & dor)
     sts |= SD_OVERRUN_ERROR;
   if (sra & upe)
@@ -143,75 +167,55 @@ static void set_error(uint8_t sra, SerialDriver *sdp) {
   osalSysUnlockFromISR();
 }
 
+#if AVR_SERIAL_USE_USART0 || defined(__DOXYGEN__)
+static void notify1(io_queue_t *qp) {
 
-#if AVR_SERIAL_USE_USARTS || defined(__DOXYGEN__)
-static void notifyS(io_queue_t *qp) {
-  // TODO
   (void)qp;
-  //UCSR0B |= (1 << UDRIE0);
+  UCSR0B |= (1 << UDRIE0);
 }
 
 /**
- * @brief   USARTS initialization.
+ * @brief   USART0 initialization.
  *
  * @param[in] config    the architecture-dependent serial driver configuration
  */
-static void usartS_init(const SerialConfig *config) {
-  /* Sets appropriate I/O mode.*/
-  palSetPadMode(AVR_SDS_RX_PORT, AVR_SDS_RX_PIN, PAL_MODE_INPUT);
-  palSetPadMode(AVR_SDS_TX_PORT, AVR_SDS_TX_PIN, PAL_MODE_OUTPUT_PUSHPULL);
-  #ifdef AVR_SDS_USE_PCINT0
-    /* Falling edge of INT0 triggers interrupt.*/
-    EICRA |= (1 << ISC01);
-    EICRA &= ~(1 << ISC00);
-    /* Timer 2 CTC mode.*/
-    TCCR2A |= 1 << WGM21;
-    TCCR2A &= ~((1 << WGM22) | (1 << WGM20));
-    /* Save the timer clock input.*/
-    sds_rx_tccr2b_div = config->sc_tccr2b_div;
-    /* Timer 2 Top.*/
-    OCR2A = config->sc_ocr2a;
-    /* Timer 2 output compare A interrupt.*/
-    TIMSK2 |= 1 << OCIEA;
-  #else
-    #error "One of AVR_SDS_USE_PCINTx must be chosen"
-  #endif
-  // UBRR0L = config->sc_brr;
-  // UBRR0H = config->sc_brr >> 8;
-  // UCSR0A = 0;
-  // UCSR0B = (1 << RXEN0) | (1 << TXEN0) | (1 << RXCIE0);
-  // switch (config->sc_bits_per_char) {
-  // case USART_CHAR_SIZE_5:
-  //   UCSR0C = 0;
-  //   break;
-  // case USART_CHAR_SIZE_6:
-  //   UCSR0C = (1 << UCSZ00);
-  //   break;
-  // case USART_CHAR_SIZE_7:
-  //   UCSR0C = (1 << UCSZ01);
-  //   break;
-  // case USART_CHAR_SIZE_9:
-  //   UCSR0B |= (1 << UCSZ02);
-  //   UCSR0C = (1 << UCSZ00) | (1 << UCSZ01);
-  //   break;
-  // case USART_CHAR_SIZE_8:
-  // default:
-  //   UCSR0C = (1 << UCSZ00) | (1 << UCSZ01);
-  // }
+static void usart0_init(const SerialConfig *config) {
+
+  UBRR0L = config->sc_brr;
+  UBRR0H = config->sc_brr >> 8;
+  UCSR0A = 0;
+  UCSR0B = (1 << RXEN0) | (1 << TXEN0) | (1 << RXCIE0);
+  switch (config->sc_bits_per_char) {
+  case USART_CHAR_SIZE_5:
+    UCSR0C = 0;
+    break;
+  case USART_CHAR_SIZE_6:
+    UCSR0C = (1 << UCSZ00);
+    break;
+  case USART_CHAR_SIZE_7:
+    UCSR0C = (1 << UCSZ01);
+    break;
+  case USART_CHAR_SIZE_9:
+    UCSR0B |= (1 << UCSZ02);
+    UCSR0C = (1 << UCSZ00) | (1 << UCSZ01);
+    break;
+  case USART_CHAR_SIZE_8:
+  default:
+    UCSR0C = (1 << UCSZ00) | (1 << UCSZ01);
+  }
 }
 
 /**
  * @brief   USART0 de-initialization.
  */
-static void usartS_deinit(void) {
+static void usart0_deinit(void) {
 
-  // UCSR0A = 0;
-  // UCSR0B = 0;
-  // UCSR0C = 0;
+  UCSR0A = 0;
+  UCSR0B = 0;
+  UCSR0C = 0;
 }
 #endif
 
-#if 0
 #if AVR_SERIAL_USE_USART1 || defined(__DOXYGEN__)
 static void notify2(io_queue_t *qp) {
 
@@ -260,22 +264,51 @@ static void usart1_deinit(void) {
   UCSR1C = 0;
 }
 #endif
-#endif
 
-/*===========================================================================*/
-/* Driver interrupt handlers.                                                */
-/*===========================================================================*/
 #if AVR_SERIAL_USE_USARTS || defined(__DOXYGEN__)
-enum {
-  IDLE,
-  RECEIVE
-} sds_rx_state_t;
 
-static uint8_t sds_rx_tccr2b_div;
+/**
+ * @brief   USARTS initialization.
+ *
+ * @param[in] config    the architecture-dependent serial driver configuration
+ */
+static void usartS_init(const SerialConfig *config) {
+  /* Sets appropriate I/O mode.*/
+  palSetPadMode(AVR_SDS_RX_PORT, AVR_SDS_RX_PIN, PAL_MODE_INPUT);
+  palSetPadMode(AVR_SDS_TX_PORT, AVR_SDS_TX_PIN, PAL_MODE_OUTPUT_PUSHPULL);
+  #if defined AVR_SDS_USE_PCINT0
+    /* Falling edge of INT0 triggers interrupt.*/
+    EICRA |= (1 << ISC01);
+    EICRA &= ~(1 << ISC00);
+    /* Timer 2 CTC mode.*/
+    TCCR2A |= 1 << WGM21;
+    TCCR2A &= ~((1 << WGM22) | (1 << WGM20));
+    /* Save the timer clock input.*/
+    sds_rx_tccr2b_div = config->sc_tccr2b_div;
+    /* Default to be 8 bit.*/
+    switch (config->sc_bits_per_char) {
+      default:
+        sds_bits_per_char = 8;
+    }
+    /* Timer 2 Top.*/
+    OCR2A = config->sc_ocr2a;
+    /* Timer 2 output compare A interrupt.*/
+    TIMSK2 |= 1 << OCIEA;
+  #else
+    #error "One of AVR_SDS_USE_PCINTx must be chosen"
+  #endif
+}
 
-static volatile sds_rx_state_t sds_rx_state = IDLE;
+/**
+ * @brief   USART0 de-initialization.
+ */
+static void usartS_deinit(void) {
+  usartS_stop_timer();
+  usartS_disable_rx();
+  TIMSK2 &= ~(1 << OCIEA);
+}
 
-inline void usartS_start_timer(void) {
+void usartS_start_timer(void) {
   /* Reset counter.*/
   TCNT2 = 0;
   /* Start timer.*/
@@ -283,51 +316,29 @@ inline void usartS_start_timer(void) {
   TCCR2B |= sdx_rx_tccr2b_div; /* Set CLK setting.*/
 }
 
-inline void usartS_stop_timer(void) {
+void usartS_stop_timer(void) {
   TCCR2B &= ~AVR_SDS_RX_TCCR2B_CLK_MASK;
 }
 
-inline void usartS_reset_timer(void) {
+void usartS_reset_timer(void) {
   usartS_stop_timer();
   usartS_start_timer();
 }
 
-/**
- * @brief PCINT interrupt handler
- *
- * This handler changes state by sensing the START bit. Otherwise do nothing
- */
-CH_FAST_IRQ_HANDLER(AVR_SDS_RX_VECT) {
-  switch (sds_rx_state) {
-    case IDLE:
-      state = RECEIVE;
-      usartS_start_timer();
-    break;
-    case RECEIVE:
-      /* Do nothing.*/
-    break;
-  }
+void usartS_enable_rx(void) {
+  EIMSK |= 1<<0;
 }
 
-/**
- * @brief TIMER2 Comparator A interrupt
- *
- * Receives data if state is in RECEIVE
- */
-CH_FAST_IRQ_HANDLER(TIMER2_COMPA_vect) {
-  switch (sds_rx_state) {
-    case IDLE:
-      /* Do Nothing.*/
-    break;
-    case RECEIVE:
-      /* TODO.*/
-    break;
-  }
+void usartS_disable_rx(void) {
+  EIMSK &= ~(1<<0);
 }
 
 #endif
 
-#if 0
+/*===========================================================================*/
+/* Driver interrupt handlers.                                                */
+/*===========================================================================*/
+
 #if AVR_SERIAL_USE_USART0 || defined(__DOXYGEN__)
 /**
  * @brief   USART0 RX interrupt handler.
@@ -413,7 +424,110 @@ OSAL_IRQ_HANDLER(AVR_SD2_TX_VECT) {
   OSAL_IRQ_EPILOGUE();
 }
 #endif /* AVR_SERIAL_USE_USART1 */
+
+#if AVR_SERIAL_USE_USARTS || defined(__DOXYGEN__)
+
+/**
+ * @brief PCINT interrupt handler
+ *
+ * @details This handler changes state by sensing the START bit. Otherwise do nothing
+ *
+ * @isr
+ */
+OSAL_IRQ_HANDLER(AVR_SDS_RX_VECT) {
+  OSAL_IRQ_PROLOGUE();
+  switch (sds_state) {
+    case IDLE:
+      state = RECEIVE_INIT;
+      usartS_reset_timer();
+    break;
+    case RECEIVE_INIT:
+    case RECEIVE:
+      /* Do nothing.*/
+    break;
+    case TRANSMIT_INIT:
+    case TRANSMIT:
+      /* Do nothing.*/
+    break;
+  }
+  OSAL_IRQ_EPILOGUE();
+}
+
+/**
+ * @brief TIMER2 Comparator A interrupt
+ *
+ * @details Receives data if state is in RECEIVE
+ *
+ * @isr
+ */
+OSAL_IRQ_HANDLER(TIMER2_COMPA_vect) {
+  static uint8_t i;
+  static uint8_t byte;
+  OSAL_IRQ_PROLOGUE();
+  switch (sds_state) {
+    case IDLE:
+      osalSysLockFromISR();
+      byte = sdRequestDataI(&SDS);
+      osalSysUnlockFromISR();
+      if (byte >= Q_OK)
+        state = TRANSMIT_INIT;
+      /* Do Nothing.*/
+    break;
+    case RECEIVE_INIT:
+      i = 0;
+      byte = 0;
+      state = RECEIVE;
+      /* No break or the timing will be wrong.*/
+    case RECEIVE:
+      if (i < sds_bits_per_char) {
+        byte |= palReadPad(AVR_SDS_RX_PORT, AVR_SDS_RX_PIN) << i;
+        ++i;
+      }
+      else {
+        /* If last bit is STOP, then assume info is correct. Otherwise, treat as garbage*/
+        if (palReadPad(AVR_SDS_RX_PORT, AVR_SDS_RX_PIN)) {
+          osalSysLockFromISR();
+          sdIncomingDataI(&SDS, byte);
+          osalSysUnlockFromISR();
+        }
+        state = IDLE;
+        i = 0;
+        byte = 0;
+      }
+    break;
+    case TRANSMIT_INIT:
+      /* Transmit must not be interrupted.*/
+      usartS_disable_rx();
+      state = TRANSMIT;
+      i = -1; /* Overflows, but does not matter.*/
+      /* No break here or timing will be wrong.*/
+    case TRANSMIT:
+      uint8_t b;
+      /* START.*/
+      if (i == -1) {
+        b = 0;
+      }
+      /* STOP.*/
+      else if (i == sds_bits_per_char) {
+        b = 1;
+        state = IDLE;
+        /* Re-enable receive at the end of a transmit.*/
+        usartS_enable_rx();
+      }
+      /* Data.*/
+      else {
+        b = (byte & (1 << i)) != 0;
+      }
+      palWritePad(AVR_SDS_TX_PORT, AVR_SDS_TX_PIN, b);
+      ++i;
+    break;
+  }
+  OSAL_IRQ_EPILOGUE();
+}
+
 #endif
+
+
 /*===========================================================================*/
 /* Driver exported functions.                                                */
 /*===========================================================================*/
@@ -425,8 +539,14 @@ OSAL_IRQ_HANDLER(AVR_SD2_TX_VECT) {
  */
 void sd_lld_init(void) {
 
+#if AVR_SERIAL_USE_USART0
+  sdObjectInit(&SD1, NULL, notify1);
+#endif
+#if AVR_SERIAL_USE_USART1
+  sdObjectInit(&SD2, NULL, notify2);
+#endif
 #if AVR_SERIAL_USE_USARTS
-  sdObjectInit(&SDS, NULL, notifyS);
+  sdObjectInit(&SDS, NULL, NULL);
 #endif
 }
 
@@ -457,6 +577,12 @@ void sd_lld_start(SerialDriver *sdp, const SerialConfig *config) {
     return;
   }
 #endif
+#if AVR_SERIAL_USE_USARTS
+  if (&SDS == sdp) {
+    usartS_init(config);
+    return;
+  }
+#endif
 }
 
 /**
@@ -477,6 +603,11 @@ void sd_lld_stop(SerialDriver *sdp) {
 #if AVR_SERIAL_USE_USART1
   if (&SD2 == sdp)
     usart1_deinit();
+#endif
+#if AVR_SERIAL_USE_USARTS
+  if (&SDS == sdp) {
+    usartS_deinit();
+  }
 #endif
 }
 

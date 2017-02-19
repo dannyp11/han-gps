@@ -15,19 +15,17 @@
 */
 
 /**
- * @file    softserial_lld.h
- * @brief   AVR low level software serial driver header.
+ * @file    serial_lld.h
+ * @brief   PLATFORM serial subsystem low level driver header.
  *
  * @addtogroup SERIAL
  * @{
  */
 
-#ifndef _SOFT_SERIAL_LLD_H_
-#define _SOFT_SERIAL_LLD_H_
+#ifndef _SERIAL_LLD_H_
+#define _SERIAL_LLD_H_
 
-#include "serial_lld.h"
-
-#if HAL_USE_SERIAL || defined(__DOXYGEN__)
+#if (HAL_USE_SERIAL == TRUE) || defined(__DOXYGEN__)
 
 /*===========================================================================*/
 /* Driver constants.                                                         */
@@ -38,14 +36,18 @@
 /*===========================================================================*/
 
 /**
- * @brief   Software Serial driver enable switch.
- * @details If set to @p TRUE the support for Software Serial is included.
+ * @name    PLATFORM configuration options
+ * @{
+ */
+/**
+ * @brief   USART1 driver enable switch.
+ * @details If set to @p TRUE the support for USART1 is included.
  * @note    The default is @p FALSE.
  */
-#if !defined(AVR_SERIAL_USE_USARTS) || defined(__DOXYGEN__)
-  #define AVR_SERIAL_USE_USARTS              FALSE
+#if !defined(PLATFORM_SERIAL_USE_USART1) || defined(__DOXYGEN__)
+#define PLATFORM_SERIAL_USE_USART1             FALSE
 #endif
-
+/** @} */
 
 /*===========================================================================*/
 /* Derived constants and error checks.                                       */
@@ -55,26 +57,20 @@
 /* Driver data structures and types.                                         */
 /*===========================================================================*/
 
-
-/* The configuration is the same */
 /**
- * @brief   AVR Serial Driver configuration structure.
+ * @brief   PLATFORM Serial Driver configuration structure.
  * @details An instance of this structure must be passed to @p sdStart()
  *          in order to configure and start a serial driver operations.
+ * @note    This structure content is architecture dependent, each driver
+ *          implementation defines its own version and the custom static
+ *          initializers.
  */
 typedef struct {
   /**
-   * @brief Top value of OCR2A.
+   * @brief Bit rate.
    */
-  uint8_t                   sc_ocr2a;
-  /**
-   * @brief Bits of TC2 Control Register which selects divider
-   */
-  uint8_t                   sc_tccr2b_div;
-  /**
-   * @brief Number of bits per character (5 to 9)
-   */
-  uint8_t                   sc_bits_per_char;
+  uint32_t                  speed;
+  /* End of the mandatory fields.*/
 } SerialConfig;
 
 /**
@@ -98,52 +94,12 @@ typedef struct {
 /* Driver macros.                                                            */
 /*===========================================================================*/
 
-/**
- * @brief   Macro for baud rate computation.
- * @note    Make sure the final baud rate is within tolerance.
- */
-#define UBRR(b)     (((F_CPU / b) >> 4) - 1)
-
-/**
- * @brief   Macro for baud rate computation when U2Xn == 1.
- * @note    Make sure the final baud rate is within tolerance.
- */
-#define UBRR2x(b)    (((F_CPU / b) >> 3) - 1)
-
-/**
-* @brief   Macro for baud rate computation.
-* @note    Make sure the final baud rate is within tolerance.
-* @note    This version uses floating point math for greater accuracy.
-*/
-#define UBRR_F(b)   ((((double) F_CPU / (double) b) / 16.0) - 0.5)
-
-/**
-* @brief   Macro for baud rate computation when U2Xn == 1.
-* @note    Make sure the final baud rate is within tolerance.
-* @note    This version uses floating point math for greater accuracy.
-*/
-#define UBRR2x_F(b)  ((((double) F_CPU / (double) b) / 8.0) - 0.5)
-
-#define USART_CHAR_SIZE_5      0
-#define USART_CHAR_SIZE_6      1
-#define USART_CHAR_SIZE_7      2
-#define USART_CHAR_SIZE_8      3
-#define USART_CHAR_SIZE_9      4
-
 /*===========================================================================*/
 /* External declarations.                                                    */
 /*===========================================================================*/
 
-#if 0
-#if AVR_SERIAL_USE_USART0 && !defined(__DOXYGEN__)
+#if (PLATFORM_SERIAL_USE_USART1 == TRUE) && !defined(__DOXYGEN__)
 extern SerialDriver SD1;
-#endif
-#if AVR_SERIAL_USE_USART1 && !defined(__DOXYGEN__)
-extern SerialDriver SD2;
-#endif
-#endif
-#if AVR_SERIAL_USE_USARTS && !defined(__DOXYGEN__)
-extern SerialDriver SDS;
 #endif
 
 #ifdef __cplusplus
@@ -156,7 +112,7 @@ extern "C" {
 }
 #endif
 
-#endif /* HAL_USE_SERIAL */
+#endif /* HAL_USE_SERIAL == TRUE */
 
 #endif /* _SERIAL_LLD_H_ */
 
