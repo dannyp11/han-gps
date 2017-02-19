@@ -30,7 +30,7 @@
 /* Driver exported variables.                                                */
 /*===========================================================================*/
 
-#if AVR_SERIAL_USE_SOFT || defined (__DOXYGEN__)
+#if AVR_SERIAL_USE_USARTS || defined (__DOXYGEN__)
   #ifndef AVR_GPT_USE_TIM2
     #error "Software serial requires AVR_GPT_USE_TIM2"
   #endif
@@ -38,6 +38,8 @@
   #ifdef AVR_SDS_USE_PCINT0
     #define AVR_SDS_RX_PORT IOPORT2
     #define AVR_SDS_RX_PIN 0
+    #define AVR_SDS_RX_VECT PCINT0_vect
+    #define AVR_SDS_RX_TCCR2B_CLK_MASK 0b00000111
   #endif
   /* By default, uses PB1 as TX.*/
   #ifndef AVR_SDS_TX_PORT
@@ -94,11 +96,13 @@ SerialDriver SD2;
 /*===========================================================================*/
 
 /**
- * @brief   Driver default configuration.
+ * @brief   Driver default configuration. Baud 9600 on 7.3728MHz clock
  */
 static const SerialConfig default_config = {
-  UBRR(SERIAL_DEFAULT_BITRATE),
-  USART_CHAR_SIZE_8
+  96,
+  /* CLK/8.*/
+  (1 << CA21),
+  8
 };
 
 /*===========================================================================*/
@@ -140,7 +144,7 @@ static void set_error(uint8_t sra, SerialDriver *sdp) {
 }
 
 
-#if AVR_SERIAL_USE_SOFT || defined(__DOXYGEN__)
+#if AVR_SERIAL_USE_USARTS || defined(__DOXYGEN__)
 static void notifyS(io_queue_t *qp) {
   // TODO
   (void)qp;
@@ -157,6 +161,18 @@ static void usartS_init(const SerialConfig *config) {
   palSetPadMode(AVR_SDS_RX_PORT, AVR_SDS_RX_PIN, PAL_MODE_INPUT);
   palSetPadMode(AVR_SDS_TX_PORT, AVR_SDS_TX_PIN, PAL_MODE_OUTPUT_PUSHPULL);
   #ifdef AVR_SDS_USE_PCINT0
+    /* Falling edge of INT0 triggers interrupt.*/
+    EICRA |= (1 << ISC01);
+    EICRA &= ~(1 << ISC00);
+    /* Timer 2 CTC mode.*/
+    TCCR2A |= 1 << WGM21;
+    TCCR2A &= ~((1 << WGM22) | (1 << WGM20));
+    /* Save the timer clock input.*/
+    sds_rx_tccr2b_div = config->sc_tccr2b_div;
+    /* Timer 2 Top.*/
+    OCR2A = config->sc_ocr2a;
+    /* Timer 2 output compare A interrupt.*/
+    TIMSK2 |= 1 << OCIEA;
   #else
     #error "One of AVR_SDS_USE_PCINTx must be chosen"
   #endif
@@ -249,6 +265,68 @@ static void usart1_deinit(void) {
 /*===========================================================================*/
 /* Driver interrupt handlers.                                                */
 /*===========================================================================*/
+#if AVR_SERIAL_USE_USARTS || defined(__DOXYGEN__)
+enum {
+  IDLE,
+  RECEIVE
+} sds_rx_state_t;
+
+static uint8_t sds_rx_tccr2b_div;
+
+static volatile sds_rx_state_t sds_rx_state = IDLE;
+
+inline void usartS_start_timer(void) {
+  /* Reset counter.*/
+  TCNT2 = 0;
+  /* Start timer.*/
+  TCCR2B &= ~AVR_SDS_RX_TCCR2B_CLK_MASK; /* Clear CLK section.*/
+  TCCR2B |= sdx_rx_tccr2b_div; /* Set CLK setting.*/
+}
+
+inline void usartS_stop_timer(void) {
+  TCCR2B &= ~AVR_SDS_RX_TCCR2B_CLK_MASK;
+}
+
+inline void usartS_reset_timer(void) {
+  usartS_stop_timer();
+  usartS_start_timer();
+}
+
+/**
+ * @brief PCINT interrupt handler
+ *
+ * This handler changes state by sensing the START bit. Otherwise do nothing
+ */
+CH_FAST_IRQ_HANDLER(AVR_SDS_RX_VECT) {
+  switch (sds_rx_state) {
+    case IDLE:
+      state = RECEIVE;
+      usartS_start_timer();
+    break;
+    case RECEIVE:
+      /* Do nothing.*/
+    break;
+  }
+}
+
+/**
+ * @brief TIMER2 Comparator A interrupt
+ *
+ * Receives data if state is in RECEIVE
+ */
+CH_FAST_IRQ_HANDLER(TIMER2_COMPA_vect) {
+  switch (sds_rx_state) {
+    case IDLE:
+      /* Do Nothing.*/
+    break;
+    case RECEIVE:
+      /* TODO.*/
+    break;
+  }
+}
+
+#endif
+
 #if 0
 #if AVR_SERIAL_USE_USART0 || defined(__DOXYGEN__)
 /**
@@ -347,7 +425,7 @@ OSAL_IRQ_HANDLER(AVR_SD2_TX_VECT) {
  */
 void sd_lld_init(void) {
 
-#if AVR_SERIAL_USE_SOFT
+#if AVR_SERIAL_USE_USARTS
   sdObjectInit(&SDS, NULL, notifyS);
 #endif
 }

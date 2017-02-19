@@ -42,8 +42,8 @@
  * @details If set to @p TRUE the support for Software Serial is included.
  * @note    The default is @p FALSE.
  */
-#if !defined(AVR_SERIAL_USE_SOFT) || defined(__DOXYGEN__)
-  #define AVR_SERIAL_USE_SOFT              FALSE
+#if !defined(AVR_SERIAL_USE_USARTS) || defined(__DOXYGEN__)
+  #define AVR_SERIAL_USE_USARTS              FALSE
 #endif
 
 
@@ -55,7 +55,7 @@
 /* Driver data structures and types.                                         */
 /*===========================================================================*/
 
-#if 0
+
 /* The configuration is the same */
 /**
  * @brief   AVR Serial Driver configuration structure.
@@ -64,16 +64,19 @@
  */
 typedef struct {
   /**
-   * @brief Initialization value for the BRR register.
+   * @brief Top value of OCR2A.
    */
-  uint16_t                  sc_brr;
+  uint8_t                   sc_ocr2a;
   /**
-   * @brief Number of bits per character (USART_CHAR_SIZE_5 to USART_CHAR_SIZE_9).
+   * @brief Bits of TC2 Control Register which selects divider
+   */
+  uint8_t                   sc_tccr2b_div;
+  /**
+   * @brief Number of bits per character (5 to 9)
    */
   uint8_t                   sc_bits_per_char;
 } SerialConfig;
 
-#endif
 /**
  * @brief   @p SerialDriver specific data.
  */
@@ -139,7 +142,7 @@ extern SerialDriver SD1;
 extern SerialDriver SD2;
 #endif
 #endif
-#if AVR_SERIAL_USE_SOFT && !defined(__DOXYGEN__)
+#if AVR_SERIAL_USE_USARTS && !defined(__DOXYGEN__)
 extern SerialDriver SDS;
 #endif
 
