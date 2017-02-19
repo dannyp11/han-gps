@@ -91,6 +91,7 @@ SRC = $(KERNSRC) \
       $(PLATFORMSRC) \
       $(BOARDSRC) \
       $(TESTSRC) \
+			softwerial_lld.c \
       main.c
 
 # List C++ source files here. (C dependencies are automatically generated.)

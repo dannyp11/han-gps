@@ -154,7 +154,7 @@
 #define NIL_CFG_IDLE_ENTER_HOOK() {                                         \
 }
 
-/**
+/**/
  * @brief   Idle thread leave hook.
  * @note    This hook is invoked within a critical zone, no OS functions
  *          should be invoked from here.
