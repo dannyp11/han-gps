@@ -71,6 +71,7 @@ SerialDriver SD2;
  * @brief   Software serial driver identifier
  */
 #if AVR_SERIAL_USE_USARTS || defined (__DOXYGEN__)
+SerialDriver SDS;
   #if !defined AVR_GPT_USE_TIM2
     #error "Software serial requires AVR_GPT_USE_TIM2"
   #endif
@@ -293,27 +294,19 @@ static void usartS_init(const SerialConfig *config) {
     /* Timer 2 Top.*/
     OCR2A = config->sc_ocr2a;
     /* Timer 2 output compare A interrupt.*/
-    TIMSK2 |= 1 << OCIEA;
+    TIMSK2 |= 1 << OCIE2A;
   #else
     #error "One of AVR_SDS_USE_PCINTx must be chosen"
   #endif
 }
 
-/**
- * @brief   USART0 de-initialization.
- */
-static void usartS_deinit(void) {
-  usartS_stop_timer();
-  usartS_disable_rx();
-  TIMSK2 &= ~(1 << OCIEA);
-}
 
 void usartS_start_timer(void) {
   /* Reset counter.*/
   TCNT2 = 0;
   /* Start timer.*/
   TCCR2B &= ~AVR_SDS_RX_TCCR2B_CLK_MASK; /* Clear CLK section.*/
-  TCCR2B |= sdx_rx_tccr2b_div; /* Set CLK setting.*/
+  TCCR2B |= sds_rx_tccr2b_div; /* Set CLK setting.*/
 }
 
 void usartS_stop_timer(void) {
@@ -331,6 +324,15 @@ void usartS_enable_rx(void) {
 
 void usartS_disable_rx(void) {
   EIMSK &= ~(1<<0);
+}
+
+/**
+* @brief   USART0 de-initialization.
+*/
+static void usartS_deinit(void) {
+  usartS_stop_timer();
+  usartS_disable_rx();
+  TIMSK2 &= ~(1 << OCIE2A);
 }
 
 #endif
@@ -438,7 +440,7 @@ OSAL_IRQ_HANDLER(AVR_SDS_RX_VECT) {
   OSAL_IRQ_PROLOGUE();
   switch (sds_state) {
     case IDLE:
-      state = RECEIVE_INIT;
+      sds_state = RECEIVE_INIT;
       usartS_reset_timer();
     break;
     case RECEIVE_INIT:
@@ -462,7 +464,10 @@ OSAL_IRQ_HANDLER(AVR_SDS_RX_VECT) {
  */
 OSAL_IRQ_HANDLER(TIMER2_COMPA_vect) {
   static uint8_t i;
+  /* Data byte.*/
   static uint8_t byte;
+  /* Outgoing bit.*/
+  uint8_t bit;
   OSAL_IRQ_PROLOGUE();
   switch (sds_state) {
     case IDLE:
@@ -470,13 +475,13 @@ OSAL_IRQ_HANDLER(TIMER2_COMPA_vect) {
       byte = sdRequestDataI(&SDS);
       osalSysUnlockFromISR();
       if (byte >= Q_OK)
-        state = TRANSMIT_INIT;
+        sds_state = TRANSMIT_INIT;
       /* Do Nothing.*/
     break;
     case RECEIVE_INIT:
       i = 0;
       byte = 0;
-      state = RECEIVE;
+      sds_state = RECEIVE;
       /* No break or the timing will be wrong.*/
     case RECEIVE:
       if (i < sds_bits_per_char) {
@@ -490,7 +495,7 @@ OSAL_IRQ_HANDLER(TIMER2_COMPA_vect) {
           sdIncomingDataI(&SDS, byte);
           osalSysUnlockFromISR();
         }
-        state = IDLE;
+        sds_state = IDLE;
         i = 0;
         byte = 0;
       }
@@ -498,27 +503,26 @@ OSAL_IRQ_HANDLER(TIMER2_COMPA_vect) {
     case TRANSMIT_INIT:
       /* Transmit must not be interrupted.*/
       usartS_disable_rx();
-      state = TRANSMIT;
+      sds_state = TRANSMIT;
       i = -1; /* Overflows, but does not matter.*/
       /* No break here or timing will be wrong.*/
     case TRANSMIT:
-      uint8_t b;
       /* START.*/
       if (i == -1) {
-        b = 0;
+        bit = 0;
       }
       /* STOP.*/
       else if (i == sds_bits_per_char) {
-        b = 1;
-        state = IDLE;
+        bit = 1;
+        sds_state = IDLE;
         /* Re-enable receive at the end of a transmit.*/
         usartS_enable_rx();
       }
       /* Data.*/
       else {
-        b = (byte & (1 << i)) != 0;
+        bit = (byte & (1 << i)) != 0;
       }
-      palWritePad(AVR_SDS_TX_PORT, AVR_SDS_TX_PIN, b);
+      palWritePad(AVR_SDS_TX_PORT, AVR_SDS_TX_PIN, bit);
       ++i;
     break;
   }

@@ -158,6 +158,9 @@ extern SerialDriver SD1;
 #if AVR_SERIAL_USE_USART1 && !defined(__DOXYGEN__)
 extern SerialDriver SD2;
 #endif
+#if AVR_SERIAL_USE_USARTS && !defined(__DOXYGEN__)
+extern SerialDriver SDS;
+#endif
 
 #ifdef __cplusplus
 extern "C" {
