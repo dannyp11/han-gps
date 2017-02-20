@@ -16,6 +16,8 @@
 
 #include "hal.h"
 #include "nil.h"
+#include "chprintf.h"
+#include "softserialcfg.h"
 
 /*
  * Thread 1.
@@ -46,8 +48,11 @@ THD_FUNCTION(Thread2, arg) {
    */
   sdStart(&SD1, NULL);
 
+  sdStart(&SDS, &softserial_config);
+
   while (true) {
-    chnWrite(&SD1, (const uint8_t *)"Hello World!\r\n", 14);
+    chprintf((BaseSequentialStream *)&SD1, "Hello World SD1!\r\n");
+    chprintf((BaseSequentialStream *)&SDS, "Hello World SDS!\r\n");
     chThdSleepMilliseconds(2000);
   }
 }

@@ -70,7 +70,7 @@
 #define AVR_SERIAL_USE_USART0              TRUE
 #define AVR_SERIAL_USE_USART1              FALSE
 #define AVR_SERIAL_USE_USARTS              TRUE
-#define AVR_SDS_USE_PCINT0
+#define AVR_SDS_USE_INT0                   TRUE
 
 /*
  * I2C driver system settings.

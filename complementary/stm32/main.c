@@ -85,46 +85,6 @@ static void cmd_test(BaseSequentialStream *chp, int argc, char *argv[]) {
   chThdWait(tp);
 }
 
-/* /\* Can be measured using dd if=/dev/xxxx of=/dev/null bs=512 count=10000.*\/ */
-/* static void cmd_write(BaseSequentialStream *chp, int argc, char *argv[]) { */
-/*   static uint8_t buf[] = */
-/*       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" */
-/*       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" */
-/*       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" */
-/*       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" */
-/*       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" */
-/*       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" */
-/*       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" */
-/*       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" */
-/*       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" */
-/*       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" */
-/*       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" */
-/*       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" */
-/*       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" */
-/*       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" */
-/*       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" */
-/*       "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"; */
-
-/*   (void)argv; */
-/*   if (argc > 0) { */
-/*     chprintf(chp, "Usage: write\r\n"); */
-/*     return; */
-/*   } */
-
-/*   while (chnGetTimeout((BaseChannel *)chp, TIME_IMMEDIATE) == Q_TIMEOUT) { */
-/* #if 1 */
-/*     /\* Writing in channel mode.*\/ */
-/*     chnWrite(&SDU1, buf, sizeof buf - 1); */
-/* #else */
-/*     /\* Writing in buffer mode.*\/ */
-/*     (void) obqGetEmptyBufferTimeout(&SDU1.obqueue, TIME_INFINITE); */
-/*     memcpy(SDU1.obqueue.ptr, buf, SERIAL_USB_BUFFERS_SIZE); */
-/*     obqPostFullBuffer(&SDU1.obqueue, SERIAL_USB_BUFFERS_SIZE); */
-/* #endif */
-/*   } */
-/*   chprintf(chp, "\r\n\nstopped\r\n"); */
-/* } */
-
 #define debug(...) chprintf(chp, __VA_ARGS__)
 
 /*
@@ -148,7 +108,7 @@ static void cmd_i2c_monitor(BaseSequentialStream *chp, int argc, char *argv[]) {
     rx_data[i] = 0;
   }
 
-  
+
   for (i = 0; i < count; ++i) {
     int i2c_addr;
 
@@ -156,7 +116,7 @@ static void cmd_i2c_monitor(BaseSequentialStream *chp, int argc, char *argv[]) {
     i2cAcquireBus(&I2CD1);
     status = i2cMasterReceiveTimeout(&I2CD1, i2c_addr, rx_data, 16, tmo);
     i2cReleaseBus(&I2CD1);
-    
+
     if (status == MSG_RESET){
       errors = i2cGetErrors(&I2CD1);
       chprintf(chp, "Error %d\r\n", errors);
@@ -171,12 +131,47 @@ static void cmd_i2c_monitor(BaseSequentialStream *chp, int argc, char *argv[]) {
   }
 }
 
+static void pipeByte(BaseSequentialStream *chp1, BaseSequentialStream *chp2) {
+  uint8_t b;
+  b = chSequentialStreamGet(chp1);
+  if (b != Q_RESET) {
+    chSequentialStreamPut(chp2, b);
+  }
+}
+
+/**
+ * @brief This function makes the board act as a TTL-USB dongle
+ *
+ * @details Invoke with `serial [BAUD]`
+ */
+static void cmd_serial_console(BaseSequentialStream *chp, int argc, char *argv[]) {
+  int baud;
+  SerialConfig sd1cfg;
+  BaseSequentialStream *chp2 = (BaseSequentialStream *) &SD1;
+
+  if (argc == 0) {
+    baud = 9600;
+  }
+  else if (argc == 1) {
+    baud = atoi(argv[0]);
+  }
+  else {
+    chprintf(chp, "Usage: serial [BAUD]\r\n");
+    chprintf(chp, "    PA9 is TX, PA10 is RX.\r\n");
+  }
+  sd1cfg = { baud, 0, 0, 0 };
+  sdStart(&SD1, &sd1cfg);
+  while (1) {
+    pipeByte(chp, chp1);
+  }
+}
+
 static const ShellCommand commands[] = {
   {"mem", cmd_mem},
   {"threads", cmd_threads},
   {"test", cmd_test},
-  /* {"write", cmd_write}, */
   {"i2c_monitor", cmd_i2c_monitor},
+  {"serial", cmd_serial_console},
   {NULL, NULL}
 };
 
@@ -240,6 +235,11 @@ int main(void) {
    */
   sduObjectInit(&SDU1);
   sduStart(&SDU1, &serusbcfg);
+
+  /*
+   * Initializes USART1
+   */
+  sduObjectInit(&SD1);
 
   /*
    * Activates the USB driver and then the USB bus pull-up on D+.

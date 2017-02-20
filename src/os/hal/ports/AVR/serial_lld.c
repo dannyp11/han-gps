@@ -75,19 +75,19 @@ SerialDriver SDS;
   #if !defined AVR_GPT_USE_TIM2
     #error "Software serial requires AVR_GPT_USE_TIM2"
   #endif
-  /* Uses PCINT0*/
-  #if defined (AVR_SDS_USE_PCINT0)
-    #define AVR_SDS_RX_PORT IOPORT2
-    #define AVR_SDS_RX_PIN 0
+  /* Uses INT0*/
+  #if AVR_SDS_USE_INT0
+    #define AVR_SDS_RX_PORT IOPORT4
+    #define AVR_SDS_RX_PIN 2
     #define AVR_SDS_RX_VECT PCINT0_vect
     #define AVR_SDS_RX_TCCR2B_CLK_MASK 0b00000111
   #endif
   /* By default, uses PB1 as TX.*/
   #if !defined (AVR_SDS_TX_PORT)
-    #define AVR_SDS_TX_PORT IOPORT2
+    #define AVR_SDS_TX_PORT IOPORT4
   #endif
   #if !defined (AVR_SDS_TX_PIN)
-    #define AVR_SDS_TX_PIN 1
+    #define AVR_SDS_TX_PIN 3
   #endif
 #endif
 
@@ -277,7 +277,7 @@ static void usartS_init(const SerialConfig *config) {
   /* Sets appropriate I/O mode.*/
   palSetPadMode(AVR_SDS_RX_PORT, AVR_SDS_RX_PIN, PAL_MODE_INPUT);
   palSetPadMode(AVR_SDS_TX_PORT, AVR_SDS_TX_PIN, PAL_MODE_OUTPUT_PUSHPULL);
-  #if defined AVR_SDS_USE_PCINT0
+  #if defined AVR_SDS_USE_INT0
     /* Falling edge of INT0 triggers interrupt.*/
     EICRA |= (1 << ISC01);
     EICRA &= ~(1 << ISC00);
@@ -295,8 +295,6 @@ static void usartS_init(const SerialConfig *config) {
     OCR2A = config->sc_ocr2a;
     /* Timer 2 output compare A interrupt.*/
     TIMSK2 |= 1 << OCIE2A;
-  #else
-    #error "One of AVR_SDS_USE_PCINTx must be chosen"
   #endif
 }
 
@@ -466,8 +464,7 @@ OSAL_IRQ_HANDLER(TIMER2_COMPA_vect) {
   static uint8_t i;
   /* Data byte.*/
   static uint8_t byte;
-  /* Outgoing bit.*/
-  uint8_t bit;
+
   OSAL_IRQ_PROLOGUE();
   switch (sds_state) {
     case IDLE:
@@ -506,7 +503,8 @@ OSAL_IRQ_HANDLER(TIMER2_COMPA_vect) {
       sds_state = TRANSMIT;
       i = -1; /* Overflows, but does not matter.*/
       /* No break here or timing will be wrong.*/
-    case TRANSMIT:
+    case TRANSMIT: {
+      uint8_t bit;
       /* START.*/
       if (i == -1) {
         bit = 0;
@@ -525,6 +523,7 @@ OSAL_IRQ_HANDLER(TIMER2_COMPA_vect) {
       palWritePad(AVR_SDS_TX_PORT, AVR_SDS_TX_PIN, bit);
       ++i;
     break;
+    }
   }
   OSAL_IRQ_EPILOGUE();
 }

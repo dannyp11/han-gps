@@ -60,6 +60,9 @@
  */
 #if !defined(AVR_SERIAL_USE_USARTS) || defined(__DOXYGEN__)
   #define AVR_SERIAL_USE_USARTS              FALSE
+  #if !defined(AVR_SDS_USE_INT0) || defined(__DOXYGEN__)
+    #define AVR_SDS_USE_INT0 TRUE
+  #endif
 #endif
 
 /*===========================================================================*/
