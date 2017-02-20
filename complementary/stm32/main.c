@@ -131,12 +131,17 @@ static void cmd_i2c_monitor(BaseSequentialStream *chp, int argc, char *argv[]) {
   }
 }
 
-static void pipeByte(BaseSequentialStream *chp1, BaseSequentialStream *chp2) {
-  uint8_t b;
+static uint8_t pipeByte(BaseSequentialStream *chp1, BaseSequentialStream *chp2) {
+  int8_t b;
   b = chSequentialStreamGet(chp1);
   if (b != Q_RESET) {
     chSequentialStreamPut(chp2, b);
   }
+  /* ETX.*/
+  if ((b ^ 0x03) == 0) {
+    return 1;
+  }
+  return 0;
 }
 
 /**
@@ -144,10 +149,10 @@ static void pipeByte(BaseSequentialStream *chp1, BaseSequentialStream *chp2) {
  *
  * @details Invoke with `serial [BAUD]`
  */
-static void cmd_serial_console(BaseSequentialStream *chp, int argc, char *argv[]) {
+static void cmd_serial_console(BaseSequentialStream *chpu, int argc, char *argv[]) {
   int baud;
-  SerialConfig sd1cfg;
-  BaseSequentialStream *chp2 = (BaseSequentialStream *) &SD1;
+  SerialConfig sd1cfg = {9600,0,0,0};
+  BaseSequentialStream *chp1 = (BaseSequentialStream *) &SD1;
 
   if (argc == 0) {
     baud = 9600;
@@ -156,13 +161,16 @@ static void cmd_serial_console(BaseSequentialStream *chp, int argc, char *argv[]
     baud = atoi(argv[0]);
   }
   else {
-    chprintf(chp, "Usage: serial [BAUD]\r\n");
-    chprintf(chp, "    PA9 is TX, PA10 is RX.\r\n");
+    chprintf(chpu, "Usage: serial [BAUD]\r\n");
+    chprintf(chpu, "    PA9 is TX, PA10 is RX.\r\n");
   }
-  sd1cfg = { baud, 0, 0, 0 };
+  sd1cfg.speed = baud;
   sdStart(&SD1, &sd1cfg);
   while (1) {
-    pipeByte(chp, chp1);
+    /* Computer to device. Exit if ^C pressed.*/
+    if (pipeByte(chpu, chp1)) break;
+    /* Device to computer. Device cannot break communication.*/
+    pipeByte(chp1, chpu);
   }
 }
 
@@ -239,7 +247,7 @@ int main(void) {
   /*
    * Initializes USART1
    */
-  sduObjectInit(&SD1);
+  sdObjectInit(&SD1, NULL, NULL);
 
   /*
    * Activates the USB driver and then the USB bus pull-up on D+.
