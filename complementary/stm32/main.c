@@ -131,28 +131,32 @@ static void cmd_i2c_monitor(BaseSequentialStream *chp, int argc, char *argv[]) {
   }
 }
 
-static uint8_t pipeByte(BaseSequentialStream *chp1, BaseSequentialStream *chp2) {
+static uint8_t pipeByte(BaseChannel *chp1, BaseChannel *chp2) {
   int8_t b;
-  b = chSequentialStreamGet(chp1);
-  if (b != Q_RESET) {
-    chSequentialStreamPut(chp2, b);
+  b = chnGetTimeout(chp1, TIME_IMMEDIATE);
+  if (b != STM_RESET && b != STM_TIMEOUT) {
+    chnPutTimeout(chp2, b, TIME_IMMEDIATE);
   }
   /* ETX.*/
-  if ((b ^ 0x03) == 0) {
+  if (b == 0x03) {
     return 1;
   }
   return 0;
 }
 
+static void tdSD1toSDU1(void *arg);
 /**
  * @brief This function makes the board act as a TTL-USB dongle
  *
  * @details Invoke with `serial [BAUD]`
  */
-static void cmd_serial_console(BaseSequentialStream *chpu, int argc, char *argv[]) {
+static void cmd_serial_console(BaseSequentialStream *chp, int argc, char *argv[]) {
   int baud;
   SerialConfig sd1cfg = {9600,0,0,0};
-  BaseSequentialStream *chp1 = (BaseSequentialStream *) &SD1;
+  BaseChannel *chp1 = (BaseChannel *)&SD1;
+  BaseChannel *chpu = (BaseChannel *)&SDU1;
+
+  /*thread_t *pRead;*/
 
   if (argc == 0) {
     baud = 9600;
@@ -161,16 +165,21 @@ static void cmd_serial_console(BaseSequentialStream *chpu, int argc, char *argv[
     baud = atoi(argv[0]);
   }
   else {
-    chprintf(chpu, "Usage: serial [BAUD]\r\n");
-    chprintf(chpu, "    PA9 is TX, PA10 is RX.\r\n");
+    chprintf(chp, "Usage: serial [BAUD]\r\n");
+    chprintf(chp, "    PA9 is TX, PA10 is RX.\r\n");
   }
+
+  chprintf(chp, "[Serial Console] BAUD set to %d\r\n", baud);
   sd1cfg.speed = baud;
   sdStart(&SD1, &sd1cfg);
+
+  /*pRead = chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(128), NORMALPRIO, tdSD1toSDU1, NULL);*/
   while (1) {
     /* Computer to device. Exit if ^C pressed.*/
     if (pipeByte(chpu, chp1)) break;
     /* Device to computer. Device cannot break communication.*/
     pipeByte(chp1, chpu);
+
   }
 }
 
@@ -191,6 +200,32 @@ static const ShellConfig shell_cfg1 = {
 /*===========================================================================*/
 /* Generic code.                                                             */
 /*===========================================================================*/
+
+static void tdSD1toSDU1(void * args) {
+  event_listener_t elSD1;
+  eventmask_t flags;
+
+  static int8_t charbuf;
+
+  (void) args;
+  chEvtRegister(/*(event_source_t *)*/chnGetEventSource(&SD1), &elSD1, 1);
+  chprintf((BaseSequentialStream *)&SDU1, "[Serial Console] Spawned SD1 -> SDU1 thread\r\n");
+  while (true) {
+    chEvtWaitOne(EVENT_MASK(1));
+    chSysLock();
+    flags = chEvtGetAndClearFlags(&elSD1);
+    chSysUnlock();
+
+    if (flags & CHN_INPUT_AVAILABLE) {
+      do {
+        charbuf = chnGetTimeout(&SD1, TIME_IMMEDIATE);
+        if (charbuf != Q_TIMEOUT) {
+          chnPutTimeout(&SDU1, charbuf, TIME_IMMEDIATE);
+        }
+      } while(charbuf != Q_TIMEOUT);
+    }
+  }
+}
 
 /*
  * Red LED blinker thread, times are in milliseconds.
