@@ -295,6 +295,7 @@ static void usartS_init(const SerialConfig *config) {
     OCR2A = config->sc_ocr2a;
     /* Timer 2 output compare A interrupt.*/
     TIMSK2 |= 1 << OCIE2A;
+    usartS_start_timer();
   #endif
 }
 
@@ -369,7 +370,6 @@ OSAL_IRQ_HANDLER(AVR_SD1_TX_VECT) {
   msg_t b;
 
   OSAL_IRQ_PROLOGUE();
-
   osalSysLockFromISR();
   b = sdRequestDataI(&SD1);
   osalSysUnlockFromISR();
@@ -461,9 +461,9 @@ OSAL_IRQ_HANDLER(AVR_SDS_RX_VECT) {
  * @isr
  */
 OSAL_IRQ_HANDLER(TIMER2_COMPA_vect) {
-  static uint8_t i;
+  static int8_t i;
   /* Data byte.*/
-  static uint8_t byte;
+  static int8_t byte;
 
   OSAL_IRQ_PROLOGUE();
   switch (sds_state) {
@@ -501,7 +501,7 @@ OSAL_IRQ_HANDLER(TIMER2_COMPA_vect) {
       /* Transmit must not be interrupted.*/
       usartS_disable_rx();
       sds_state = TRANSMIT;
-      i = -1; /* Overflows, but does not matter.*/
+      i = -1;
       /* No break here or timing will be wrong.*/
     case TRANSMIT: {
       uint8_t bit;
