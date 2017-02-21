@@ -40,7 +40,7 @@
  * @note    This number is not inclusive of the idle thread which is
  *          Implicitly handled.
  */
-#define NIL_CFG_NUM_THREADS                 1
+#define NIL_CFG_NUM_THREADS                 2
 
 /** @} */
 
@@ -154,7 +154,7 @@
 #define NIL_CFG_IDLE_ENTER_HOOK() {                                         \
 }
 
-/**
+/*
  * @brief   Idle thread leave hook.
  * @note    This hook is invoked within a critical zone, no OS functions
  *          should be invoked from here.

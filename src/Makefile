@@ -73,7 +73,7 @@ TARGET = han-$(TGT)
 OBJDIR = .
 
 # Imported source files
-CHIBIOS = ../ChibiOS-src
+CHIBIOS = .
 include $(CHIBIOS)/os/hal/hal.mk
 #include $(CHIBIOS)/os/hal/boards/ARDUINO_UNO/board.mk
 include board/board.mk
@@ -91,6 +91,8 @@ SRC = $(KERNSRC) \
       $(PLATFORMSRC) \
       $(BOARDSRC) \
       $(TESTSRC) \
+			$(CHIBIOS)/os/hal/lib/streams/chprintf.c \
+			softserialcfg.c \
       main.c
 
 # List C++ source files here. (C dependencies are automatically generated.)
@@ -122,7 +124,7 @@ DEBUG = dwarf-2
 #     For a directory that has spaces, enclose it in quotes.
 EXTRAINCDIRS = $(PORTINC) $(KERNINC) $(TESTINC) \
                $(HALINC) $(OSALINC) $(PLATFORMINC) \
-               $(BOARDINC) $(CHIBIOS)/os/various
+               $(BOARDINC) $(CHIBIOS)/os/hal/lib/streams
 
 # Compiler flag to set the C Standard level.
 #     c89   = "ANSI" C
