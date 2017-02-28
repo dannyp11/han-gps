@@ -13,7 +13,6 @@
 #include "LCD.h"
 
 // Find divisors for the UART0 and I2C baud rates
-#define FOSC 7372800            // Clock frequency = Oscillator freq.
 #define BDIV (FOSC / 100000 - 16) / 2 + 1    // Puts I2C rate just below 100kHz
 
 /* Address of the LCD on the I2C bus */
