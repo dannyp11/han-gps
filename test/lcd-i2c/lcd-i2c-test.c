@@ -9,9 +9,6 @@
 
 #include "LCD.h"
 
-/* Test strings to store in the LCD */
-char *strs = "Hello world";
-
 #define BUFF_LEN LCD_LINE_LEN + 1
 
 int main(void)
@@ -23,7 +20,7 @@ int main(void)
 	LCDSendCommand(SHOWFIRMWARE);
 
 	LCDSetCursor(2, 0);
-	LCDPrint("LCD Demo by Dat");
+	LCDPrint("LCD Demo by Dat Pham");
 	LCDSetCursor(3, 0);
 	snprintf(buffer, BUFF_LEN, "Version: %s", __DATE__);
 	LCDPrint(buffer);
@@ -69,7 +66,13 @@ int main(void)
 	/*
 	 * Turn on and off
 	 */
-	LCDPrint("   Blinking screen");
+	LCDPrint("  Blinking screen");
+	LCDSetCursor(2, 0);
+	LCDPrint("  Blinking screen");
+	LCDSetCursor(3, 0);
+	LCDPrint("  Blinking screen");
+	LCDSetCursor(4, 0);
+	LCDPrint("  Blinking screen");
 	for (i = 1; i <= 5; ++i)
 	{
 		LCDSendCommand(LCDOFF);
