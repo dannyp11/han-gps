@@ -299,6 +299,16 @@ static void usartS_init(const SerialConfig *config) {
   #endif
 }
 
+/**
+ * @brief Generates a single half period. Used in receiving
+ */
+void usartS_start_timer_half(void) {
+  /* Resets counter to half length.*/
+  TCNT2 = OCR2A / 2;
+  /* Start timer.*/
+  TCCR2B &= ~AVR_SDS_RX_TCCR2B_CLK_MASK; /* Clear CLK section.*/
+  TCCR2B |= sds_rx_tccr2b_div; /* Set CLK setting.*/
+}
 
 void usartS_start_timer(void) {
   /* Reset counter.*/
@@ -439,7 +449,8 @@ OSAL_IRQ_HANDLER(AVR_SDS_RX_VECT) {
   switch (sds_state) {
     case IDLE:
       sds_state = RECEIVE_INIT;
-      usartS_reset_timer();
+      usartS_stop_timer();
+      usartS_start_timer_half();
     break;
     case RECEIVE_INIT:
     case RECEIVE:
@@ -479,7 +490,7 @@ OSAL_IRQ_HANDLER(TIMER2_COMPA_vect) {
       i = 0;
       byte = 0;
       sds_state = RECEIVE;
-      /* No break or the timing will be wrong.*/
+      break; /* Break for the initial half period.*/
     case RECEIVE:
       if (i < sds_bits_per_char) {
         byte |= palReadPad(AVR_SDS_RX_PORT, AVR_SDS_RX_PIN) << i;
