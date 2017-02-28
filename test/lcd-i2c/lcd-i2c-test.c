@@ -66,19 +66,38 @@ int main(void)
 	/*
 	 * Turn on and off
 	 */
-	LCDPrint("  Blinking screen");
+	char* blinking_msg = "..Blinking Srceen...";
+	LCDPrint(blinking_msg);
 	LCDSetCursor(2, 0);
-	LCDPrint("  Blinking screen");
+	LCDPrint(blinking_msg);
 	LCDSetCursor(3, 0);
-	LCDPrint("  Blinking screen");
+	LCDPrint(blinking_msg);
 	LCDSetCursor(4, 0);
-	LCDPrint("  Blinking screen");
+	LCDPrint(blinking_msg);
 	for (i = 1; i <= 5; ++i)
 	{
 		LCDSendCommand(LCDOFF);
 		_delay_ms(500);
 		LCDSendCommand(LCDON);
 		_delay_ms(500);
+	}
+	LCDInit();
+
+	/*
+	 * Move cursor
+	 */
+	LCDPrint("Moving Cursor");
+	_delay_ms(2000);
+	LCDSendCommand(CLEARSCREEN);
+	LCDSendCommand(CURSORON);
+	char j;
+	for (i = 1; i<=4; ++i)
+	{
+		for (j = 0; j < 20; ++j)
+		{
+			LCDSetCursor(i, j);
+			_delay_ms(100);
+		}
 	}
 	LCDInit();
 
