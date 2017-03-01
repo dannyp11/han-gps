@@ -50,10 +50,19 @@ THD_FUNCTION(Thread2, arg) {
 
   sdStart(&SDS, &softserial_config);
 
+  unsigned char c;
+  int8_t n = 0;
+
   while (true) {
-    chprintf((BaseSequentialStream *)&SD1, "Hello World SD1!\r\n");
-    chprintf((BaseSequentialStream *)&SDS, "Hello World SDS!\r\n");
+    chprintf((BaseSequentialStream *)&SD1, "Hello World USART1!\r\n");
+    chprintf((BaseSequentialStream *)&SDS, "Hello World Software Serial! Now type something within the next 2 seconds: ");
+    n = sdAsynchronousRead(&SDS, &c, 1);
+    /* If there is something read, echo.*/
+    if (n == 1) {
+      sdAsynchronousWrite(&SDS, &c, 1);
+    }
     chThdSleepMilliseconds(2000);
+    chprintf((BaseSequentialStream *)&SDS, "\r\n");
   }
 }
 
