@@ -48,21 +48,9 @@ THD_FUNCTION(Thread2, arg) {
    */
   sdStart(&SD1, NULL);
 
-  sdStart(&SDS, &softserial_config);
-
-  unsigned char c;
-  int8_t n = 0;
-
   while (true) {
     chprintf((BaseSequentialStream *)&SD1, "Hello World USART1!\r\n");
-    chprintf((BaseSequentialStream *)&SDS, "Hello World Software Serial! Now type something within the next 2 seconds: ");
-    n = sdAsynchronousRead(&SDS, &c, 1);
-    /* If there is something read, echo.*/
-    if (n == 1) {
-      sdAsynchronousWrite(&SDS, &c, 1);
-    }
     chThdSleepMilliseconds(2000);
-    chprintf((BaseSequentialStream *)&SDS, "\r\n");
   }
 }
 
@@ -73,6 +61,7 @@ THD_FUNCTION(Thread2, arg) {
 THD_TABLE_BEGIN
   THD_TABLE_ENTRY(waThread1, "blinker", Thread1, NULL)
   THD_TABLE_ENTRY(waThread2, "hello", Thread2, NULL)
+  THD_TABLE_ENTRY(waTdGPS, "GPS", td_gps, NULL)
 THD_TABLE_END
 
 /*
