@@ -1,16 +1,6 @@
 #include "gps.h"
 
-static thread_t *tp_GPS;
-/**
- * @brief Callback function of SDS which notifies GPS thread 
- */
-static void gpsNotify(io_queue_t *qp) {
-  (void) qp;
-  chEvtSignal(tp_GPS, EVENT_MASK(1));
-}
-
 static void gps_init(void) {
-  sdObjectInit(&SDS, gpsNotify, NULL);
   sdStart(&SDS, &softserial_config);
 }
 
@@ -30,19 +20,22 @@ THD_FUNCTION(tdGPS, arg) {
   BaseSequentialStream *chs = (BaseSequentialStream *) &SDS;
   unsigned char c;
 
-  /* Get the thread pointer.*/
-  tp_GPS = chThdGetSelfX();
+  event_listener_t elGPSData;
 
   /* Initializes GPS.*/
   gps_init();
 
+  chEvtRegisterMaskWithFlags((event_source_t *)chnGetEventSource(&SDS), &elGPSData, EVENT_MASK(1), CHN_INPUT_AVAILABLE);
+
   chprintf(chs, "Testing Serial: Echos: \r\n >");
 
   while (true) {
-    if (chEvtWaitAnyTimeout(EVENT_MASK(1), TIME_IMMEDIATE)) {
-      while (chnRead((BaseChannel *)&SDS, &c, 1)) {
-        chnWrite((BaseChannel *)&SDS, &c, 1);
+    if (chEvtWaitOne(EVENT_MASK(1))) {
+      chEvtGetAndClearFlags(&elGPSData);
+        do {
+          c = chnGetTimeout((BaseChannel *)&SDS, TIME_IMMEDIATE);
+          chnPutTimeout((BaseChannel *)&SDS, c, TIME_INFINITE);
+        } while (c != Q_TIMEOUT);
       }
-    }
   }
 }
