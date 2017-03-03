@@ -15,7 +15,7 @@
 */
 
 #include "hal.h"
-#include "nil.h"
+#include "ch.h"
 #include "chprintf.h"
 #include "softserialcfg.h"
 #include "gps.h"
@@ -24,9 +24,9 @@
  * Threads static table, one entry per thread. The number of entries must
  * match NIL_CFG_NUM_THREADS.
  */
-THD_TABLE_BEGIN
+/*THD_TABLE_BEGIN
   THD_TABLE_ENTRY(waTdGPS, "GPS", tdGPS, NULL)
-THD_TABLE_END
+THD_TABLE_END*/
 
 /*
  * Application entry point.
@@ -42,6 +42,8 @@ int main(void) {
    */
   halInit();
   chSysInit();
+
+  chThdCreateStatic(waTdGPS, sizeof(waTdGPS), NORMALPRIO, tdGPS, NULL);
 
   /* This is now the idle thread loop, you may perform here a low priority
      task but you must never try to sleep or wait in this loop. Note that
