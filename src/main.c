@@ -18,50 +18,14 @@
 #include "nil.h"
 #include "chprintf.h"
 #include "softserialcfg.h"
-
-/*
- * Thread 1.
- */
-THD_WORKING_AREA(waThread1, 128);
-THD_FUNCTION(Thread1, arg) {
-
-  (void)arg;
-
-  while (true) {
-    palTogglePad(TEST_LED_PORT, TEST_LED_PIN);
-    //palTogglePad(IOPORT3, 0);
-    chThdSleepMilliseconds(500);
-  }
-}
-
-/*
- * Thread 2.
- */
-THD_WORKING_AREA(waThread2, 128);
-THD_FUNCTION(Thread2, arg) {
-
-  (void)arg;
-
-  /*
-   * Activates the serial driver 1 using the driver default configuration.
-   * PA9 and PA10 are routed to USART1.
-   */
-  sdStart(&SD1, NULL);
-
-  while (true) {
-    chprintf((BaseSequentialStream *)&SD1, "Hello World USART1!\r\n");
-    chThdSleepMilliseconds(2000);
-  }
-}
+#include "gps.h"
 
 /*
  * Threads static table, one entry per thread. The number of entries must
  * match NIL_CFG_NUM_THREADS.
  */
 THD_TABLE_BEGIN
-  THD_TABLE_ENTRY(waThread1, "blinker", Thread1, NULL)
-  THD_TABLE_ENTRY(waThread2, "hello", Thread2, NULL)
-  THD_TABLE_ENTRY(waTdGPS, "GPS", td_gps, NULL)
+  THD_TABLE_ENTRY(waTdGPS, "GPS", tdGPS, NULL)
 THD_TABLE_END
 
 /*

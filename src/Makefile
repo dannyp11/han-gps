@@ -91,8 +91,9 @@ SRC = $(KERNSRC) \
       $(PLATFORMSRC) \
       $(BOARDSRC) \
       $(TESTSRC) \
-			$(CHIBIOS)/os/hal/lib/streams/chprintf.c \
-			softserialcfg.c \
+	  $(CHIBIOS)/os/hal/lib/streams/chprintf.c \
+	  softserialcfg.c \
+	  gps.c \
       main.c
 
 # List C++ source files here. (C dependencies are automatically generated.)
@@ -159,7 +160,7 @@ CFLAGS += -funsigned-bitfields
 CFLAGS += -fpack-struct
 CFLAGS += -fshort-enums
 #CFLAGS += -fno-strict-aliasing
-CFLAGS += -Wall
+CFLAGS += -Werror=all
 CFLAGS += -Wstrict-prototypes
 #CFLAGS += -mshort-calls
 #CFLAGS += -fno-unit-at-a-time

@@ -4,16 +4,17 @@
 #include "nil.h"
 #include "hal.h"
 #include "softserialcfg.h"
+#include "chprintf.h"
 
 extern THD_WORKING_AREA(waTdGPS, 128);
-THD_FUNCTION(td_gps, arg);
+THD_FUNCTION(tdGPS, arg);
 
-uint16_t getGPSLongitudeDeg();
-uint16_t getGPSLongitudeMin();
-uint16_t getGPSLatitudeDeg();
-uint16_t getGPSLatitudeMin();
-uint16_t getGPSSpeed();
-uint16_t getGPSHeading();
+uint16_t getGPSLongitudeDeg(void);
+uint16_t getGPSLongitudeMin(void);
+uint16_t getGPSLatitudeDeg(void);
+uint16_t getGPSLatitudeMin(void);
+uint16_t getGPSSpeed(void);
+uint16_t getGPSHeading(void);
 
 #endif
 

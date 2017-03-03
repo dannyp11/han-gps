@@ -269,6 +269,34 @@ static void usart1_deinit(void) {
 #if AVR_SERIAL_USE_USARTS || defined(__DOXYGEN__)
 
 /**
+ * @brief Generates a single half period. Used in receiving
+ */
+void usartS_start_timer_half(void) {
+  /* Resets counter to half length.*/
+  TCNT2 = OCR2A / 2;
+  /* Start timer.*/
+  TCCR2B &= ~AVR_SDS_RX_TCCR2B_CLK_MASK; /* Clear CLK section.*/
+  TCCR2B |= sds_rx_tccr2b_div; /* Set CLK setting.*/
+}
+
+void usartS_start_timer(void) {
+  /* Reset counter.*/
+  TCNT2 = 0;
+  /* Start timer.*/
+  TCCR2B &= ~AVR_SDS_RX_TCCR2B_CLK_MASK; /* Clear CLK section.*/
+  TCCR2B |= sds_rx_tccr2b_div; /* Set CLK setting.*/
+}
+
+void usartS_stop_timer(void) {
+  TCCR2B &= ~AVR_SDS_RX_TCCR2B_CLK_MASK;
+}
+
+void usartS_reset_timer(void) {
+  usartS_stop_timer();
+  usartS_start_timer();
+}
+
+/**
  * @brief   USARTS initialization.
  *
  * @param[in] config    the architecture-dependent serial driver configuration
@@ -297,34 +325,6 @@ static void usartS_init(const SerialConfig *config) {
     TIMSK2 |= 1 << OCIE2A;
     usartS_start_timer();
   #endif
-}
-
-/**
- * @brief Generates a single half period. Used in receiving
- */
-void usartS_start_timer_half(void) {
-  /* Resets counter to half length.*/
-  TCNT2 = OCR2A / 2;
-  /* Start timer.*/
-  TCCR2B &= ~AVR_SDS_RX_TCCR2B_CLK_MASK; /* Clear CLK section.*/
-  TCCR2B |= sds_rx_tccr2b_div; /* Set CLK setting.*/
-}
-
-void usartS_start_timer(void) {
-  /* Reset counter.*/
-  TCNT2 = 0;
-  /* Start timer.*/
-  TCCR2B &= ~AVR_SDS_RX_TCCR2B_CLK_MASK; /* Clear CLK section.*/
-  TCCR2B |= sds_rx_tccr2b_div; /* Set CLK setting.*/
-}
-
-void usartS_stop_timer(void) {
-  TCCR2B &= ~AVR_SDS_RX_TCCR2B_CLK_MASK;
-}
-
-void usartS_reset_timer(void) {
-  usartS_stop_timer();
-  usartS_start_timer();
 }
 
 void usartS_enable_rx(void) {
