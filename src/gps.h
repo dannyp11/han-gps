@@ -1,7 +1,7 @@
 #ifndef __GPS_H__
 #define __GPS_H__
 
-#include "nil.h"
+#include "ch.h"
 #include "hal.h"
 #include "softserialcfg.h"
 #include "chprintf.h"
