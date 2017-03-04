@@ -4,6 +4,7 @@ static void gps_init(void) {
   sdStart(&SDS, &softserial_config);
 }
 
+
 /*
  * Longitude/Latitude are in dddmm.mmmm format. Therefore, the minutes
  * need to divide by 10000
@@ -17,7 +18,7 @@ THD_WORKING_AREA(waTdGPS, 128);
 THD_FUNCTION(tdGPS, arg) {
   (void)arg;
 
-  BaseSequentialStream *chs = (BaseSequentialStream *) &SDS;
+  BaseSequentialStream *chs = (BaseSequentialStream *)&SDS;
   unsigned char c;
 
   event_listener_t elGPSData;
@@ -30,12 +31,19 @@ THD_FUNCTION(tdGPS, arg) {
   chprintf(chs, "Testing Serial: Echos: \r\n >");
 
   while (true) {
+    // (void) c;
+    // chprintf(chs, "TEST TEST\r\n");
+    // chThdSleepSeconds(1);
     if (chEvtWaitOne(EVENT_MASK(1))) {
       chEvtGetAndClearFlags(&elGPSData);
-        do {
-          c = chnGetTimeout((BaseChannel *)&SDS, TIME_IMMEDIATE);
-          chnPutTimeout((BaseChannel *)&SDS, c, TIME_INFINITE);
-        } while (c != Q_TIMEOUT);
-      }
+
+      (void) c;
+      chprintf(chs, "Some Event\r\n");
+
+      // do {
+      //   c = chnGetTimeout((BaseChannel *)&SDS, TIME_IMMEDIATE);
+      //   chnPutTimeout((BaseChannel *)&SDS, c, TIME_INFINITE);
+      // } while (c != Q_TIMEOUT);
+    }
   }
 }

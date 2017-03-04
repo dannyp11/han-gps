@@ -7,7 +7,7 @@
 #include "chprintf.h"
 
 extern THD_WORKING_AREA(waTdGPS, 128);
-THD_FUNCTION(tdGPS, arg);
+extern THD_FUNCTION(tdGPS, arg);
 
 uint16_t getGPSLongitudeDeg(void);
 uint16_t getGPSLongitudeMin(void);

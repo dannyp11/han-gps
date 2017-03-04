@@ -43,7 +43,10 @@ int main(void) {
   halInit();
   chSysInit();
 
+
   chThdCreateStatic(waTdGPS, sizeof(waTdGPS), NORMALPRIO, tdGPS, NULL);
+  //chprintf((BaseSequentialStream *) &SDS, "IDLE Thread\r\n");
+  chThdSetPriority(IDLEPRIO);
 
   /* This is now the idle thread loop, you may perform here a low priority
      task but you must never try to sleep or wait in this loop. Note that
