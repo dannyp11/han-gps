@@ -20,9 +20,7 @@ PARSE_FUNC(uint16) {
  */
 void stepParser(msg_t c,
                 size_t parserSize,
-                const match_func_t *matchFuncTable,
-                const parse_func_t *parseFuncTable,
-                const writeback_t *writebackTable,
+                const parser_t *parserTable,
                 void (*cleanup)(void)) {
   /* Which parser is being used.*/
   static uint8_t parserState = 0;
@@ -30,15 +28,17 @@ void stepParser(msg_t c,
   static uint8_t i = 0;
   /* Stores partial match result.*/
   static msg_t buf[16];
-  /* The current matcher.*/
-  match_func_t match = matchFuncTable[parserState];
   /* The current parser.*/
-  parse_func_t parse = parseFuncTable[parserState];
+  parser_t p = parserTable[parserState];
+  /* The current matcher.*/
+  match_func_t match = p.matcher;
+  /* The current parser.*/
+  parse_func_t parse = p.parser;
   /* The current writeback.*/
-  writeback_t wb = writebackTable[parserState];
+  writeback_t wb = p.writeback;
   /* Parse result.*/
   match_result_t match_result = match(c, i);
-  debug("|%d,%d,%d.", parserState,i,match_result);
+  debug("|%d,%d:%c,%d.", parserState, i, c, match_result);
   /* Save the byte.*/
   buf[i] = c;
   switch (match_result) {

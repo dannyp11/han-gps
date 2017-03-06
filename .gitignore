@@ -18,3 +18,8 @@ bin/
 .\#*
 tags
 TAGS
+Debug/
+*.obj
+*.pdb
+*.idb
+*.tlog

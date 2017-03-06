@@ -1,195 +1,114 @@
-#include "parser.h"
 #include "gpsParser.h"
+#include "parser.h"
 
 #include <ctype.h>
+#include <stdlib.h>
+
 /*
  * Longitude/Latitude are in dddmm.mmmm format. Therefore, the minutes
  * need to divide by 10000
  */
-static uint16_t longitudeDeg = INVALID_GPS_DATA;
-static uint16_t longitudeMin = INVALID_GPS_DATA;
-static uint16_t latitudeDeg = INVALID_GPS_DATA;
-static uint16_t latitudeMin = INVALID_GPS_DATA;
+typedef struct {
+  uint16_t degree;
+  uint16_t minute;
+} deg_min_t;
 
-#define GPS_PARSER_SIZE 18
+static deg_min_t longitude = {INVALID_GPS_DATA, INVALID_GPS_DATA};
+static deg_min_t latitude = {INVALID_GPS_DATA, INVALID_GPS_DATA};
 
 MATCH_FUNC(GGA) {
   if (i < 2 && c == 'G') {
     return MATCH_PARTIAL;
   } else if (i == 2 && c == 'A') {
     return MATCH_SUCCESS;
-  } 
+  }
   return MATCH_FAILED;
 }
 
-
 /**
  * @brief Matches ID. Currently ignored.
- */ 
+ */
 MATCH_ANY(ID, 2);
 
 /**
  * @brief Matches UTC time. Currently ignored.
  */
-MATCH_ANY(Time, 9);
+MATCH_UNTIL(Time, ',');
 
 /**
- * @brief Matcher for Degrees
+ * @brief Matcher for deg_min. Multiple decimals are not handled.
  */
-MATCH_FUNC(Deg) {
-  if (i < 4 && isdigit(c)) {
-    return i == 4 ? MATCH_SUCCESS : MATCH_PARTIAL;
+MATCH_FUNC(DegMin) {
+  if (isdigit(c) || c == '.' || c == ',') {
+    return c == ',' ? MATCH_SUCCESS : MATCH_PARTIAL;
   }
   return MATCH_FAILED;
 }
 
 /**
- * @brief Matcher for Minutes
+ * @brief Matches all the way up tp CRLF. Split into two parts to avoid buffer overflow
  */
-MATCH_FUNC(Min) {
-  if (i <= 1 && isdigit(c))
-    return MATCH_PARTIAL;
-  else if (i == 2 && c == '.')
-    return MATCH_PARTIAL;
-  else if (i <= 6 && isdigit(c))
-    return i == 6 ? MATCH_SUCCESS : MATCH_PARTIAL;
-  return MATCH_FAILED;
+MATCH_ANY(Rest1, 15);
+MATCH_ANY(Rest2, 15);
+
+/**
+ * @brief Parsing degree_minute section 1. Terrible, terrible floating points!
+ */
+PARSE_FUNC(DegMin) {
+  deg_min_t *p = write_back;
+  /* Remove the comma.*/
+  buf[length - 1] = '\0';
+  uint32_t degree = (uint32_t)(atof(buf) * 1000.f);
+  div_t div_result = div(degree, 100000);
+  p->minute = (uint16_t)div_result.rem;
+  p->degree = (uint16_t)div_result.quot;
+  return PARSE_SUCCESS;
 }
 
+const parser_t gpsParserTable[] = {
+    {match_Dollar, NULL, NULL},
+    {match_ID, NULL, NULL},
+    {match_GGA, NULL, NULL},
+    {match_Comma, NULL, NULL},
+    {match_Time, NULL, NULL},
+    {match_DegMin, parse_DegMin, (writeback_t)&latitude},
+    {match_UpperCase, NULL, NULL},
+    {match_Comma, NULL, NULL},
+    {match_DegMin, parse_DegMin, (writeback_t)&longitude},
+    {match_UpperCase, NULL, NULL},
+    {match_Comma, NULL, NULL},
+    {match_Rest1, NULL, NULL},
+    {match_Rest2, NULL, NULL},
+    {match_LF, NULL, NULL}};
 
-/**
- * @brief Matches all the way up tp CRLF.
- */
- MATCH_ANY(Rest, 30);
-
-/**
- * @brief Parsing degree is just uint16
- */
-#define parse_Deg parse_uint16
-
-/**
- * @brief Parse minute
- */
-PARSE_FUNC(Min) {
-  msg_t *p = buf;
-  uint8_t i;
-  for (i = 0; i < length; ++i) {
-    if (buf[i] != '.')  {
-      *p++ = buf[i];
-    }
-  }
-  *p = '\0';
-  return parse_uint16(buf, 0, write_back);
-}
-
-/**
- * @brief Declares the parser match rules.
- */
-/*match_result_t (*const gpsMatchFuncTable[GPS_PARSER_SIZE])(msg_t, uint8_t) = {*/
-const match_func_t gpsMatchFuncTable[GPS_PARSER_SIZE] = {
-    /* Begin: $.*/
-    match_Dollar,
-    /* ID: aa.*/
-    match_ID,
-    /* Fix Data: GGA.*/
-    match_GGA,
-    match_Comma,
-    /* Time: hhmmss.ss.*/
-    match_Time,
-    match_Comma,
-    /* Latitude: dddmm.mmmm.*/
-    match_Deg,
-    match_Min,
-    match_Comma,
-    match_UpperCase,
-    match_Comma,
-    /* Longitude: dddmm.mmmm.*/
-    match_Deg,
-    match_Min,
-    match_Comma,
-    match_UpperCase,
-    /* Everything else.*/
-    match_Rest,
-    match_CR,
-    match_LF
-    };
-
-/**
- * @brief Parser function table
- */
- const parse_func_t gpsParseFuncTable[GPS_PARSER_SIZE] = {
-   NULL,
-   NULL,
-   NULL,
-   NULL,
-   NULL,
-   NULL,
-   parse_Deg,
-   parse_Min,
-   NULL,
-   NULL,
-   NULL,
-   parse_Deg,
-   parse_Min,
-   NULL,
-   NULL,
-   NULL,
-   NULL,
-   NULL
- };
-
- /**
-  * @brief Writeback variables
-  */
-const writeback_t gpsWritebackTable[GPS_PARSER_SIZE] = {
-  NULL,
-  NULL,
-  NULL,
-  NULL,
-  NULL,
-  NULL,
-  (writeback_t) &latitudeDeg,
-  (writeback_t) &latitudeMin,
-  NULL,
-  NULL,
-  NULL,
-  (writeback_t) &longitudeDeg,
-  (writeback_t) &longitudeMin,
-  NULL,
-  NULL,
-  NULL,
-  NULL,
-  NULL
-};
+const size_t GPS_PARSER_SIZE = sizeof(gpsParserTable) / sizeof(gpsParserTable[0]);
 
 void gpsParseCleanup(void) {
-  longitudeDeg = INVALID_GPS_DATA;
-  longitudeMin = INVALID_GPS_DATA;
-  latitudeDeg = INVALID_GPS_DATA;
-  latitudeMin = INVALID_GPS_DATA;
+  longitude.degree = INVALID_GPS_DATA;
+  longitude.minute = INVALID_GPS_DATA;
+  latitude.degree = INVALID_GPS_DATA;
+  latitude.minute = INVALID_GPS_DATA;
 }
 
 void gpsStepParser(msg_t c) {
-  stepParser(c, GPS_PARSER_SIZE, gpsMatchFuncTable, gpsParseFuncTable, gpsWritebackTable, gpsParseCleanup);
+  stepParser(c, GPS_PARSER_SIZE, gpsParserTable, gpsParseCleanup);
 }
-
-
 
 void gpsStreamParser(msg_t token) {
 }
 
 uint16_t getGPSLongitudeDeg() {
-  return longitudeDeg;
+  return longitude.degree;
 }
 
 uint16_t getGPSLongitudeMin() {
-  return longitudeMin;
+  return longitude.minute;
 }
 
 uint16_t getGPSLatitudeDeg() {
-  return latitudeDeg;
+  return latitude.degree;
 }
 
 uint16_t getGPSLatitudeMin() {
-  return latitudeMin;
+  return latitude.minute;
 }
