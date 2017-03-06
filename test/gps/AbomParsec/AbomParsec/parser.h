@@ -3,6 +3,11 @@
 
 //#include "ch.h"
 
+#include <ctype.h>
+#include <inttypes.h>
+
+#include "debug.h"
+
 /*
  * Matchers
  */
@@ -18,7 +23,7 @@ typedef int8_t match_result_t;
 /**
  * @brief Type of a matching function
  */
-typedef match_result_t (* match_func_t)(msg_t, uint8_t);
+typedef match_result_t(*match_func_t)(msg_t, uint8_t);
 
 /**
  * @brief A generic, multi-character match function
@@ -27,12 +32,14 @@ typedef match_result_t (* match_func_t)(msg_t, uint8_t);
 
 #define MATCH_CHAR_FUNC(name, c0) \
 MATCH_FUNC(name) { \
-  return c0 == 0; \
+  return c0 == c; \
 } 
 
 #define MATCH_ANY(name, count) \
 MATCH_FUNC(name) { \
-    return MATCH_SUCCESS; \
+	if (++i == count) return MATCH_SUCCESS;\
+	else if (i < count) return MATCH_PARTIAL;\
+	else return MATCH_FAILED;\
 }
 
 extern MATCH_FUNC(Comma);

@@ -61,6 +61,9 @@ F_CPU=
 TGT=unkn
 endif
 
+# Comment this to turn off printf debugs
+USE_DEBUG=-DUSE_DEBUG
+
 # Output format. (can be srec, ihex, binary)
 FORMAT = ihex
 
@@ -157,6 +160,7 @@ CPPDEFS = -DF_CPU=$(F_CPU)UL
 #  -Wa,...:      tell GCC to pass this to the assembler.
 #    -adhlns...: create assembler listing
 CFLAGS = -g$(DEBUG)
+CFLAGS = $(USE_DEBUG)
 CFLAGS += $(CDEFS)
 CFLAGS += -O$(OPT)
 CFLAGS += -funsigned-char
