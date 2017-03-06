@@ -9,6 +9,12 @@
 extern THD_WORKING_AREA(waTdGPS, 128);
 extern THD_FUNCTION(tdGPS, arg);
 
+/* TODO: DEBUG ONLY!*/
+#define pGPS_SD &SD1
+#define pGPSChs (BaseSequentialStream *)pGPS_SD
+#define pGPSChn (BaseChannel *)pGPS_SD
+#define pGPSEvt chnGetEventSource(pGPS_SD)
+
 uint16_t getGPSLongitudeDeg(void);
 uint16_t getGPSLongitudeMin(void);
 uint16_t getGPSLatitudeDeg(void);
