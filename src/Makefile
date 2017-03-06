@@ -97,6 +97,7 @@ SRC = $(KERNSRC) \
 	  $(CHIBIOS)/os/hal/lib/streams/chprintf.c \
 	  softserialcfg.c \
 	  gps.c \
+	  gpsParser.c \
 	  parser.c \
 	  monitor.c \
       main.c
