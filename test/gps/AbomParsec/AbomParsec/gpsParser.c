@@ -31,7 +31,7 @@ MATCH_ANY(ID, 2);
 /**
  * @brief Matches UTC time. Currently ignored.
  */
-MATCH_ANY(Time, 10);
+MATCH_ANY(Time, 9);
 
 /**
  * @brief Matcher for Degrees

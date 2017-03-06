@@ -3,7 +3,7 @@
 
 int main() {
 	while (1) {
-		msg_t c = getch();
+		msg_t c = getchar();
 		gpsStepParser(c);
 	}
 	return 0;
