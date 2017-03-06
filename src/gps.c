@@ -28,6 +28,7 @@ MATCH_FUNC(GGA) {
   return MATCH_FAILED;
 }
 
+
 /**
  * @brief Matches ID. Currently ignored.
  */ 
@@ -206,7 +207,7 @@ static inline void testAction(msg_t c) {
   chnPutTimeout(pGPSChn, c, TIME_IMMEDIATE);
 }
 
-THD_WORKING_AREA(waTdGPS, 128);
+THD_WORKING_AREA(waTdGPS, GPS_WA_SIZE);
 THD_FUNCTION(tdGPS, arg) {
   (void)arg;
 
@@ -221,7 +222,7 @@ THD_FUNCTION(tdGPS, arg) {
     chThdSleepMilliseconds(200);
     if (chEvtWaitOne(EVENT_MASK(1))) {
       chEvtGetAndClearFlags(&elGPSData);
-      iterateChannel(pGPSChn, testAction);
+      iterateChannel(pGPSChn, gpsStepParser);
     }
   }
 }

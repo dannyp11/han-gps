@@ -25,25 +25,24 @@ typedef match_result_t (* match_func_t)(msg_t, uint8_t);
  * @brief A generic, multi-character match function
  */
 #define MATCH_FUNC(name) match_result_t match_##name(msg_t c, uint8_t i)
+
 #define MATCH_CHAR_FUNC(name, c0) \
-inline MATCH_FUNC(name) { \
+MATCH_FUNC(name) { \
   return c0 == 0; \
 } 
 
-
 #define MATCH_ANY(name, count) \
-inline MATCH_FUNC(name) { \
+MATCH_FUNC(name) { \
     return MATCH_SUCCESS; \
 }
 
-MATCH_CHAR_FUNC(Comma, ',');
-MATCH_CHAR_FUNC(Dollar, '$');
-MATCH_CHAR_FUNC(CR, '\r');
-MATCH_CHAR_FUNC(LF, '\n');
+extern MATCH_FUNC(Comma);
+extern MATCH_FUNC(Dollar);
+extern MATCH_FUNC(CR);
+extern MATCH_FUNC(LF);
 
-inline MATCH_FUNC(UpperCase) {
-  return (c >= 'A' && c <= 'Z');
-}
+
+extern MATCH_FUNC(UpperCase);
 
 inline MATCH_FUNC(Digit) {
     return isdigit(c);

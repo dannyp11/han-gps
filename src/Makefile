@@ -95,6 +95,7 @@ SRC = $(KERNSRC) \
 	  softserialcfg.c \
 	  gps.c \
 	  parser.c \
+	  monitor.c \
       main.c
 
 # List C++ source files here. (C dependencies are automatically generated.)

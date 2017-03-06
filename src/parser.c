@@ -69,3 +69,11 @@ failure:
   parserState = 0;
   cleanup();
 }
+
+MATCH_CHAR_FUNC(Comma, ',');
+MATCH_CHAR_FUNC(Dollar, '$');
+MATCH_CHAR_FUNC(CR, '\r');
+MATCH_CHAR_FUNC(LF, '\n');
+MATCH_FUNC(UpperCase) {
+  return (c >= 'A' && c <= 'Z');
+}

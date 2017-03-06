@@ -19,6 +19,7 @@
 #include "chprintf.h"
 #include "softserialcfg.h"
 #include "gps.h"
+#include "monitor.h"
 
 /*
  * Threads static table, one entry per thread. The number of entries must
@@ -45,6 +46,7 @@ int main(void) {
 
 
   chThdCreateStatic(waTdGPS, sizeof(waTdGPS), NORMALPRIO, tdGPS, NULL);
+  chThdCreateStatic(waTdMon, sizeof(waTdMon), HIGHPRIO, tdMon, NULL);
   //chprintf((BaseSequentialStream *) &SDS, "IDLE Thread\r\n");
   chThdSetPriority(IDLEPRIO);
 

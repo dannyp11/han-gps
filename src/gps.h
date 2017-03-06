@@ -6,7 +6,9 @@
 #include "softserialcfg.h"
 #include "chprintf.h"
 
-extern THD_WORKING_AREA(waTdGPS, 128);
+#define GPS_WA_SIZE 128
+
+extern THD_WORKING_AREA(waTdGPS, GPS_WA_SIZE);
 extern THD_FUNCTION(tdGPS, arg);
 
 /* TODO: DEBUG ONLY!*/
@@ -22,8 +24,6 @@ uint16_t getGPSLongitudeDeg(void);
 uint16_t getGPSLongitudeMin(void);
 uint16_t getGPSLatitudeDeg(void);
 uint16_t getGPSLatitudeMin(void);
-uint16_t getGPSSpeed(void);
-uint16_t getGPSHeading(void);
 
 #endif
 
