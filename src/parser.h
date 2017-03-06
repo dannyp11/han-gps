@@ -1,7 +1,6 @@
 #ifndef __PARSER_H__
 #define __PARSER_H__
 
-#include <ctype.h>
 #include "ch.h"
 
 /*
@@ -41,16 +40,10 @@ extern MATCH_FUNC(Dollar);
 extern MATCH_FUNC(CR);
 extern MATCH_FUNC(LF);
 
-
 extern MATCH_FUNC(UpperCase);
+extern MATCH_FUNC(Digit);
+extern MATCH_FUNC(Decimal);
 
-inline MATCH_FUNC(Digit) {
-    return isdigit(c);
-}
-
-inline MATCH_FUNC(Decimal) {
-    return match_Digit(c, i) || c == '.';
-}
 
 /*
  * Parsers

@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <errno.h>
 #include <stdlib.h>
 
@@ -76,4 +77,12 @@ MATCH_CHAR_FUNC(CR, '\r');
 MATCH_CHAR_FUNC(LF, '\n');
 MATCH_FUNC(UpperCase) {
   return (c >= 'A' && c <= 'Z');
+}
+
+MATCH_FUNC(Digit) {
+    return isdigit(c);
+}
+
+MATCH_FUNC(Decimal) {
+    return match_Digit(c, i) || c == '.';
 }

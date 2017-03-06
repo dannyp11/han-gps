@@ -2,6 +2,8 @@
 #include "functional.h"
 #include "parser.h"
 
+#include <ctype.h>
+
 static void gps_init(void) {
   // TODO: DEBUG ONLY
   sdStart(&SD1, NULL);
