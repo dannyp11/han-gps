@@ -137,6 +137,7 @@ static uint8_t pipeByte(BaseChannel *chp1, BaseChannel *chp2) {
   if (b != Q_RESET && b != Q_TIMEOUT) {
     debugU("Received %c\r\n",b);
     chnPutTimeout(chp2, b, TIME_INFINITE);
+    debugU("Transmitted %c\r\n",b);
   }
   /* ETX.*/
   if (b == 0x03) {
