@@ -46,7 +46,7 @@ int main(void) {
 
 
   chThdCreateStatic(waTdGPS, sizeof(waTdGPS), NORMALPRIO, tdGPS, NULL);
-  //chThdCreateStatic(waTdMon, sizeof(waTdMon), HIGHPRIO, tdMon, NULL);
+  chThdCreateStatic(waTdMon, sizeof(waTdMon), HIGHPRIO, tdMon, NULL);
   //chprintf((BaseSequentialStream *) &SDS, "IDLE Thread\r\n");
   chThdSetPriority(IDLEPRIO);
 

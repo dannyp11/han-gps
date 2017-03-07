@@ -56,9 +56,12 @@ MATCH_ANY(Rest2, 15);
  */
 PARSE_FUNC(DegMin) {
   deg_min_t *p = write_back;
+  //debug("\r\n[Parse_DegMin] buf=%s\r\n", buf);
   /* Remove the comma.*/
   buf[length - 1] = '\0';
-  uint32_t degree = (uint32_t)(atof((char *)buf) * 1000.f);
+  float degreeF = atof(buf);
+  uint32_t degree = (uint32_t)(degreeF * 1000.f);
+  //debug("\r\n[Parse_DegMin] buf=%s length=%d, degreeF=%.3f\r\n", buf, length, degreeF);
   p->minute = (uint16_t)(degree % 100000);
   p->degree = (uint16_t)(degree / 100000);
   return PARSE_SUCCESS;
@@ -89,8 +92,11 @@ void gpsParseCleanup(void) {
   latitude.minute = INVALID_GPS_DATA;
 }
 
+static char gpsBuf[16];
+static uint8_t gpsParserState = 0;
+static uint8_t gpsCnt = 0;
 void gpsStepParser(msg_t c) {
-  stepParser(c, GPS_PARSER_SIZE, gpsParserTable, gpsParseCleanup);
+  stepParser(c, GPS_PARSER_SIZE, gpsParserTable, gpsParseCleanup, gpsBuf, 16, &gpsParserState, &gpsCnt);
 }
 
 void gpsStreamParser(msg_t token) {

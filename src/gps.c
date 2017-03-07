@@ -23,7 +23,6 @@ THD_FUNCTION(tdGPS, arg) {
   chEvtRegisterMaskWithFlags(pGPSEvt, &elGPSData, EVENT_MASK(1), CHN_INPUT_AVAILABLE);
 
   while (true) {
-    chThdSleepMilliseconds(200);
     if (chEvtWaitOne(EVENT_MASK(1))) {
       chEvtGetAndClearFlags(&elGPSData);
       iterateChannel(pGPSChn, gpsStepParser);

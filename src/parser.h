@@ -23,12 +23,12 @@ typedef int8_t match_result_t;
 /**
  * @brief Type of a matching function
  */
-typedef match_result_t (*match_func_t)(msg_t, uint8_t);
+typedef match_result_t (*match_func_t)(char, uint8_t);
 
 /**
  * @brief A generic, multi-character match function
  */
-#define MATCH_FUNC(name) match_result_t match_##name(msg_t c, uint8_t i)
+#define MATCH_FUNC(name) match_result_t match_##name(char c, uint8_t i)
 
 #define MATCH_CHAR_FUNC(name, c0) \
   \
@@ -85,9 +85,9 @@ typedef void *writeback_t;
 /**
  * @brief Type of a parser function. The void pointer is the item to be written.
  */
-typedef parse_result_t (*parse_func_t)(msg_t *, uint8_t, writeback_t);
+typedef parse_result_t (*parse_func_t)(char *, uint8_t, writeback_t);
 
-#define PARSE_FUNC(name) parse_result_t parse_##name(msg_t *buf, uint8_t length, void *write_back)
+#define PARSE_FUNC(name) parse_result_t parse_##name(char *buf, uint8_t length, void *write_back)
 
 PARSE_FUNC(uint16);
 
@@ -100,6 +100,10 @@ typedef struct {
 void stepParser(msg_t c,
                 size_t parserSize,
                 const parser_t *parserTable,
-                void (*cleanup)(void));
+                void (*cleanup)(void),
+                char *buf,
+                size_t bufsize,
+                uint8_t *parserState,
+                uint8_t *i);
 
 #endif
