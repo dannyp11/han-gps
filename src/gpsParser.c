@@ -73,23 +73,23 @@ PARSE_FUNC(DegMin) {
   return PARSE_SUCCESS;
 }
 
-const parser_t gpsParserTable[] = {
-    {match_Dollar, NULL, NULL},
-    {match_ID, NULL, NULL},
-    {match_GGA, NULL, NULL},
-    {match_Comma, NULL, NULL},
-    {match_Time, NULL, NULL},
-    {match_DegMin, parse_DegMin, (writeback_t)&latitude},
-    {match_UpperCase, NULL, NULL},
-    {match_Comma, NULL, NULL},
-    {match_DegMin, parse_DegMin, (writeback_t)&longitude},
-    {match_UpperCase, NULL, NULL},
-    {match_Comma, NULL, NULL},
-    {match_Rest1, NULL, NULL},
-    {match_Rest2, NULL, NULL},
-    {match_LF, NULL, NULL}};
+// const parser_t gpsParserTable[] = {
+//     {match_Dollar, NULL, NULL},
+//     {match_ID, NULL, NULL},
+//     {match_GGA, NULL, NULL},
+//     {match_Comma, NULL, NULL},
+//     {match_Time, NULL, NULL},
+//     {match_DegMin, parse_DegMin, (writeback_t)&latitude},
+//     {match_UpperCase, NULL, NULL},
+//     {match_Comma, NULL, NULL},
+//     {match_DegMin, parse_DegMin, (writeback_t)&longitude},
+//     {match_UpperCase, NULL, NULL},
+//     {match_Comma, NULL, NULL},
+//     {match_Rest1, NULL, NULL},
+//     {match_Rest2, NULL, NULL},
+//     {match_LF, NULL, NULL}};
 
-const size_t GPS_PARSER_SIZE = sizeof(gpsParserTable) / sizeof(gpsParserTable[0]);
+//const size_t GPS_PARSER_SIZE = sizeof(gpsParserTable) / sizeof(gpsParserTable[0]);
 
 void gpsParseCleanup(void) {
   longitude.degree = INVALID_GPS_DATA;
@@ -98,14 +98,31 @@ void gpsParseCleanup(void) {
   latitude.minute = INVALID_GPS_DATA;
 }
 
-static char gpsBuf[16];
-static uint8_t gpsParserState = 0;
-static uint8_t gpsCnt = 0;
-void gpsStepParser(msg_t c) {
-  stepParser(c, GPS_PARSER_SIZE, gpsParserTable, gpsParseCleanup, gpsBuf, 16, &gpsParserState, &gpsCnt);
+parser_t gpsParser(parserstate_t parserState) {
+  switch (parserState) {
+    case 0: return new_parser(match_Dollar, NULL, NULL);
+    case 1: return new_parser(match_ID, NULL, NULL);
+    case 2: return new_parser(match_GGA, NULL, NULL);
+    case 3: return new_parser(match_Comma, NULL, NULL);
+    case 4: return new_parser(match_Time, NULL, NULL);
+    case 5: return new_parser(match_DegMin, parse_DegMin, (writeback_t)&latitude);
+    case 6: return new_parser(match_UpperCase, NULL, NULL);
+    case 7: return new_parser(match_Comma, NULL, NULL);
+    case 8: return new_parser(match_DegMin, parse_DegMin, (writeback_t)&longitude);
+    case 9: return new_parser(match_UpperCase, NULL, NULL);
+    case 10: return new_parser(match_Comma, NULL, NULL);
+    case 11: return new_parser(match_Rest1, NULL, NULL);
+    case 12: return new_parser(match_Rest2, NULL, NULL);
+    case 13: return new_parser(match_LF, NULL, NULL);
+    default: return new_parser(NULL, NULL, NULL);
+  }
 }
 
-void gpsStreamParser(msg_t token) {
+static char gpsBuf[16];
+static parserstate_t gpsParserState = 0;
+static parserstate_t gpsCnt = 0;
+void gpsStepParser(msg_t c) {
+  stepParser(c, gpsParser, gpsParseCleanup, gpsBuf, 16, &gpsParserState, &gpsCnt);
 }
 
 int32_t getGPSLongitudeDeg() {
