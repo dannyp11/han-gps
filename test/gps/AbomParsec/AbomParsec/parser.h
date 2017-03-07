@@ -23,12 +23,12 @@ typedef int8_t match_result_t;
 /**
  * @brief Type of a matching function
  */
-typedef match_result_t (*match_func_t)(msg_t, uint8_t);
+typedef match_result_t (*match_func_t)(char, uint8_t);
 
 /**
  * @brief A generic, multi-character match function
  */
-#define MATCH_FUNC(name) match_result_t match_##name(msg_t c, uint8_t i)
+#define MATCH_FUNC(name) match_result_t match_##name(char c, uint8_t i)
 
 #define MATCH_CHAR_FUNC(name, c0) \
   \
@@ -49,10 +49,10 @@ MATCH_FUNC(name) {             \
   \
 }
 
-#define MATCH_UNTIL(name, c0)                       \
+#define MATCH_UNTIL(name, c0, maxcnt)                       \
   \
 MATCH_FUNC(name) {                                  \
-    return c == c0 ? MATCH_SUCCESS : MATCH_PARTIAL; \
+    return (i < maxcnt && c == c0) ? MATCH_SUCCESS : MATCH_PARTIAL; \
   \
 }
 
@@ -82,12 +82,14 @@ typedef int8_t parse_result_t;
  */
 typedef void *writeback_t;
 
+typedef uint8_t parserstate_t;
+
 /**
  * @brief Type of a parser function. The void pointer is the item to be written.
  */
-typedef parse_result_t (*parse_func_t)(msg_t *, uint8_t, writeback_t);
+typedef parse_result_t (*parse_func_t)(char *, parserstate_t, writeback_t);
 
-#define PARSE_FUNC(name) parse_result_t parse_##name(msg_t *buf, uint8_t length, void *write_back)
+#define PARSE_FUNC(name) parse_result_t parse_##name(char *buf, uint8_t length, void *write_back)
 
 PARSE_FUNC(uint16);
 
@@ -97,9 +99,19 @@ typedef struct {
   writeback_t writeback;
 } parser_t;
 
+static inline parser_t new_parser(match_func_t m, parse_func_t p, writeback_t w) {
+  parser_t par = {m, p, w};
+  return par;
+}
+
+typedef parser_t (* parser_functable_t)(parserstate_t);
+
 void stepParser(msg_t c,
-                size_t parserSize,
-                const parser_t *parserTable,
-                void (*cleanup)(void));
+                parser_functable_t parserTable,
+                void (*cleanup)(void),
+                char *buf,
+                size_t bufsize,
+                parserstate_t *parserState,
+                parserstate_t *i);
 
 #endif

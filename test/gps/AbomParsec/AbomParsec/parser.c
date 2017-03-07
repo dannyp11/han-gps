@@ -2,6 +2,8 @@
 #include <errno.h>
 #include <stdlib.h>
 
+#include <string.h>
+
 #include "parser.h"
 
 #include "debug.h"
@@ -19,47 +21,63 @@ PARSE_FUNC(uint16) {
  * @brief Actually steps a parser, which is configured by three tables.
  */
 void stepParser(msg_t c,
-                size_t parserSize,
-                const parser_t *parserTable,
-                void (*cleanup)(void)) {
-  /* Which parser is being used.*/
-  static uint8_t parserState = 0;
-  /* Counter for individual parser.*/
-  static uint8_t i = 0;
-  /* Stores partial match result.*/
-  static msg_t buf[16];
+                parser_functable_t parserTable,
+                void (*cleanup)(void),
+                char *buf,
+                size_t bufsize,
+                parserstate_t *parserState,
+                parserstate_t *i) {
+  uint8_t j = 0;
   /* The current parser.*/
-  parser_t p = parserTable[parserState];
+  parser_t p = parserTable(*parserState);
   /* The current matcher.*/
   match_func_t match = p.matcher;
+
   /* The current parser.*/
   parse_func_t parse = p.parser;
   /* The current writeback.*/
   writeback_t wb = p.writeback;
   /* Parse result.*/
-  match_result_t match_result = match(c, i);
-  debug("|%d,%d:%c,%d.", parserState, i, c, match_result);
+  match_result_t match_result = match(c, *i);
+
+  if (*i >= bufsize - 1)
+    goto failure;
   /* Save the byte.*/
-  buf[i] = c;
+  buf[*i] = c;
+  buf[*i + 1] = '\0';
+  // debug("\"");
+  // for (j = 0; j < bufsize; ++j) {
+  //   debug("%c", buf[j]);
+  // }
+  // debug(",");
+  // for (j = 0; j < bufsize; ++j) {
+  //   debug("\\%02x", buf[j]);
+  // }
+  // debug("\"\r\n");
+  debug("|%d,%d:%c,%d,\"%s\".\r\n", *parserState, *i, c, match_result, (char*)buf);
+
+  //debug("|%d,%d:%c,%d.", parserState, i, c, match_result);
   switch (match_result) {
   case MATCH_PARTIAL:
     /* Increment counter current matcher.*/
-    ++i;
+    ++*i;
     break;
   case MATCH_SUCCESS:
     /* Terminate string if necessary.*/
-    if (++i < 16)
-      buf[i] = '\0';
+    if (++*i < bufsize)
+      buf[*i] = '\0';
     /* Perform parsing.*/
     if (parse != NULL) {
-      if (!parse(buf, i, wb))
+      if (!parse(buf, *i, wb))
         goto failure;
     }
     /* Reset counter for next matcher.*/
-    i = 0;
-    /* Move to next matcher. Restart if appropriate.*/
-    if (++parserState >= parserSize)
-      parserState = 0;
+    *i = 0;
+    /* Reset state if entire message is parsed.*/
+    if (parserTable(++*parserState).matcher == NULL) {
+      *parserState = 0;
+      return;
+    }
     break;
   default:
     goto failure;
@@ -68,9 +86,9 @@ void stepParser(msg_t c,
 /* If anything fails, reset.*/
 failure:
   /* Reset counter for next matcher.*/
-  i = 0;
+  *i = 0;
   /* Start over.*/
-  parserState = 0;
+  *parserState = 0;
   cleanup();
 }
 

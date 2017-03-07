@@ -8,6 +8,8 @@ int main() {
   for (i = 0; i < sizeof(test1); ++i) {
     gpsStepParser(test1[i]);
   }
+  printf("Latitude Degree: %d, Latitude Minute x 1000: %d\r\n", getGPSLatitudeDeg(), getGPSLatitudeMin());
+  printf("Longitude Degree: %d, Longitude Minute x 1000: %d\r\n", getGPSLongitudeDeg(), getGPSLongitudeMin());
   getchar();
   return 0;
 }
