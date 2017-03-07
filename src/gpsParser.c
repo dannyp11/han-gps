@@ -73,24 +73,6 @@ PARSE_FUNC(DegMin) {
   return PARSE_SUCCESS;
 }
 
-// const parser_t gpsParserTable[] = {
-//     {match_Dollar, NULL, NULL},
-//     {match_ID, NULL, NULL},
-//     {match_GGA, NULL, NULL},
-//     {match_Comma, NULL, NULL},
-//     {match_Time, NULL, NULL},
-//     {match_DegMin, parse_DegMin, (writeback_t)&latitude},
-//     {match_UpperCase, NULL, NULL},
-//     {match_Comma, NULL, NULL},
-//     {match_DegMin, parse_DegMin, (writeback_t)&longitude},
-//     {match_UpperCase, NULL, NULL},
-//     {match_Comma, NULL, NULL},
-//     {match_Rest1, NULL, NULL},
-//     {match_Rest2, NULL, NULL},
-//     {match_LF, NULL, NULL}};
-
-//const size_t GPS_PARSER_SIZE = sizeof(gpsParserTable) / sizeof(gpsParserTable[0]);
-
 void gpsParseCleanup(void) {
   longitude.degree = INVALID_GPS_DATA;
   longitude.minute = INVALID_GPS_DATA;
