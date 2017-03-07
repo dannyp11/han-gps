@@ -21,13 +21,12 @@ PARSE_FUNC(uint16) {
  * @brief Actually steps a parser, which is configured by three tables.
  */
 void stepParser(msg_t c,
-                size_t parserSize,
-                const parser_t *parserTable,
+                parser_functable_t parserTable,
                 void (*cleanup)(void),
                 char *buf,
                 size_t bufsize,
-                uint8_t *parserState,
-                uint8_t *i) {
+                parserstate_t *parserState,
+                parserstate_t *i) {
   uint8_t j = 0;
   // /* Which parser is being used.*/
   // static uint8_t parserState = 0;
@@ -36,9 +35,11 @@ void stepParser(msg_t c,
   // /* Stores partial match result.*/
   // static msg_t buf[16];
   /* The current parser.*/
-  parser_t p = parserTable[*parserState];
+  parser_t p = parserTable(*parserState);
   /* The current matcher.*/
   match_func_t match = p.matcher;
+  /* When coming to the end, reset parser state.*/
+
   /* The current parser.*/
   parse_func_t parse = p.parser;
   /* The current writeback.*/
@@ -79,10 +80,11 @@ void stepParser(msg_t c,
     }
     /* Reset counter for next matcher.*/
     *i = 0;
-    /* Move to next matcher. Restart if appropriate.*/
-    if (++*parserState >= parserSize)
+    /* Reset state if entire message is parsed.*/
+    if (parserTable(*parserState + 1).matcher == NULL) {
       *parserState = 0;
-    break;
+      return;
+    }
   default:
     goto failure;
   }

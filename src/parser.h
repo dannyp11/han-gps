@@ -82,10 +82,12 @@ typedef int8_t parse_result_t;
  */
 typedef void *writeback_t;
 
+typedef uint8_t parserstate_t;
+
 /**
  * @brief Type of a parser function. The void pointer is the item to be written.
  */
-typedef parse_result_t (*parse_func_t)(char *, uint8_t, writeback_t);
+typedef parse_result_t (*parse_func_t)(char *, parserstate_t, writeback_t);
 
 #define PARSE_FUNC(name) parse_result_t parse_##name(char *buf, uint8_t length, void *write_back)
 
@@ -97,13 +99,18 @@ typedef struct {
   writeback_t writeback;
 } parser_t;
 
+static inline parser_t new_parser(match_func_t m, parse_func_t p, writeback_t w) {
+  parser_t par = {m, p, w};
+}
+
+typedef parser_t (* parser_functable_t)(parserstate_t);
+
 void stepParser(msg_t c,
-                size_t parserSize,
-                const parser_t *parserTable,
+                parser_functable_t parserTable,
                 void (*cleanup)(void),
                 char *buf,
                 size_t bufsize,
-                uint8_t *parserState,
-                uint8_t *i);
+                parserstate_t *parserState,
+                parserstate_t *i);
 
 #endif
