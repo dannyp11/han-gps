@@ -101,6 +101,7 @@ typedef struct {
 
 static inline parser_t new_parser(match_func_t m, parse_func_t p, writeback_t w) {
   parser_t par = {m, p, w};
+  return par;
 }
 
 typedef parser_t (* parser_functable_t)(parserstate_t);

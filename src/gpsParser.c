@@ -114,7 +114,7 @@ parser_t gpsParser(parserstate_t parserState) {
     case 11: return new_parser(match_Rest1, NULL, NULL);
     case 12: return new_parser(match_Rest2, NULL, NULL);
     case 13: return new_parser(match_LF, NULL, NULL);
-    defaulg: return new_parser(NULL, NULL, NULL);
+    default: return new_parser(NULL, NULL, NULL);
   }
 }
 

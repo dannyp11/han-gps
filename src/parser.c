@@ -28,17 +28,10 @@ void stepParser(msg_t c,
                 parserstate_t *parserState,
                 parserstate_t *i) {
   uint8_t j = 0;
-  // /* Which parser is being used.*/
-  // static uint8_t parserState = 0;
-  // /* Counter for individual parser.*/
-  // static uint8_t i = 0;
-  // /* Stores partial match result.*/
-  // static msg_t buf[16];
   /* The current parser.*/
   parser_t p = parserTable(*parserState);
   /* The current matcher.*/
   match_func_t match = p.matcher;
-  /* When coming to the end, reset parser state.*/
 
   /* The current parser.*/
   parse_func_t parse = p.parser;
@@ -61,7 +54,7 @@ void stepParser(msg_t c,
   //   debug("\\%02x", buf[j]);
   // }
   // debug("\"\r\n");
-  // debug("|%d,%d:%c,%d,\"%s\",%d.\r\n", *parserState, *i, c, match_result, (char*)buf, strlen((char*)buf));
+  //debug("|%d,%d:%c,%d,\"%s\".\r\n", *parserState, *i, c, match_result, (char*)buf);
 
   //debug("|%d,%d:%c,%d.", parserState, i, c, match_result);
   switch (match_result) {
@@ -81,10 +74,11 @@ void stepParser(msg_t c,
     /* Reset counter for next matcher.*/
     *i = 0;
     /* Reset state if entire message is parsed.*/
-    if (parserTable(*parserState + 1).matcher == NULL) {
+    if (parserTable(++*parserState).matcher == NULL) {
       *parserState = 0;
       return;
     }
+    break;
   default:
     goto failure;
   }
