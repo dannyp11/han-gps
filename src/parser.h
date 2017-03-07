@@ -49,10 +49,10 @@ MATCH_FUNC(name) {             \
   \
 }
 
-#define MATCH_UNTIL(name, c0)                       \
+#define MATCH_UNTIL(name, c0, maxcnt)                       \
   \
 MATCH_FUNC(name) {                                  \
-    return c == c0 ? MATCH_SUCCESS : MATCH_PARTIAL; \
+    return (i < maxcnt && c == c0) ? MATCH_SUCCESS : MATCH_PARTIAL; \
   \
 }
 

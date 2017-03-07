@@ -34,13 +34,13 @@ MATCH_ANY(ID, 2);
 /**
  * @brief Matches UTC time. Currently ignored.
  */
-MATCH_UNTIL(Time, ',');
+MATCH_UNTIL(Time, ',', 11);
 
 /**
  * @brief Matcher for deg_min. Multiple decimals are not handled.
  */
 MATCH_FUNC(DegMin) {
-  if (isdigit(c) || c == '.' || c == ',') {
+  if (i < 11 && (isdigit(c) || c == '.' || c == ',')) {
     return c == ',' ? MATCH_SUCCESS : MATCH_PARTIAL;
   }
   return MATCH_FAILED;
