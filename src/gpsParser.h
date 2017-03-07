@@ -6,12 +6,12 @@
 #include "debug.h"
 #include "parser.h"
 
-#define INVALID_GPS_DATA (uint16_t)0xFFFF
+#define INVALID_GPS_DATA -1
 
-uint16_t getGPSLongitudeDeg(void);
-uint16_t getGPSLongitudeMin(void);
-uint16_t getGPSLatitudeDeg(void);
-uint16_t getGPSLatitudeMin(void);
+int32_t getGPSLongitudeDeg(void);
+int32_t getGPSLongitudeMin(void);
+int32_t getGPSLatitudeDeg(void);
+int32_t getGPSLatitudeMin(void);
 
 void gpsStepParser(msg_t token);
 

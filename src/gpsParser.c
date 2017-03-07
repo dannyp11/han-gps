@@ -3,14 +3,15 @@
 
 #include <ctype.h>
 #include <stdlib.h>
+#include <math.h>
 
 /*
  * Longitude/Latitude are in dddmm.mmmm format. Therefore, the minutes
  * need to divide by 10000
  */
 typedef struct {
-  uint16_t degree;
-  uint16_t minute;
+  int32_t degree;
+  int32_t minute;
 } deg_min_t;
 
 static deg_min_t longitude = {INVALID_GPS_DATA, INVALID_GPS_DATA};
@@ -56,14 +57,19 @@ MATCH_ANY(Rest2, 15);
  */
 PARSE_FUNC(DegMin) {
   deg_min_t *p = write_back;
-  //debug("\r\n[Parse_DegMin] buf=%s\r\n", buf);
+  float degreeF;
+  int32_t deg;
   /* Remove the comma.*/
   buf[length - 1] = '\0';
-  float degreeF = atof(buf);
-  uint32_t degree = (uint32_t)(degreeF * 1000.f);
-  //debug("\r\n[Parse_DegMin] buf=%s length=%d, degreeF=%.3f\r\n", buf, length, degreeF);
-  p->minute = (uint16_t)(degree % 100000);
-  p->degree = (uint16_t)(degree / 100000);
+
+  //debug("[Parse_DegMin] buf=%s, length=%d, degreeF=%.3f, degree=%d, sizeof(degree)=%d\r\n", buf, length, degreeF, deg, sizeof(deg));
+  //debug("[Parse_DegMin] sizeof(degree)=%d\r\n", sizeof(deg));
+  degreeF = atof(buf) * 10000.f;
+  deg = degreeF;  
+  //debug("[Parse_DegMin] buf=%s, length=%d, degreeF=%.3f, degree=%D\r\n", buf, length, degreeF, deg);
+  //debug("[Parse_DegMin] degree=%D\r\n", deg);
+  p->minute = (deg % 1000000L);
+  p->degree = (deg / 1000000L);
   return PARSE_SUCCESS;
 }
 
@@ -102,18 +108,18 @@ void gpsStepParser(msg_t c) {
 void gpsStreamParser(msg_t token) {
 }
 
-uint16_t getGPSLongitudeDeg() {
+int32_t getGPSLongitudeDeg() {
   return longitude.degree;
 }
 
-uint16_t getGPSLongitudeMin() {
+int32_t getGPSLongitudeMin() {
   return longitude.minute;
 }
 
-uint16_t getGPSLatitudeDeg() {
+int32_t getGPSLatitudeDeg() {
   return latitude.degree;
 }
 
-uint16_t getGPSLatitudeMin() {
+int32_t getGPSLatitudeMin() {
   return latitude.minute;
 }
