@@ -84,10 +84,10 @@ SerialDriver SDS;
   #endif
   /* By default, uses PB1 as TX.*/
   #if !defined (AVR_SDS_TX_PORT)
-    #define AVR_SDS_TX_PORT IOPORT4
+    #define AVR_SDS_TX_PORT IOPORT3
   #endif
   #if !defined (AVR_SDS_TX_PIN)
-    #define AVR_SDS_TX_PIN 3
+    #define AVR_SDS_TX_PIN 0
   #endif
 #endif
 
