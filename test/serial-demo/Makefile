@@ -282,7 +282,7 @@ LDFLAGS += $(PRINTF_LIB) $(SCANF_LIB) $(MATH_LIB)
 #
 ifeq ($(BOARD_CHOSEN), BOARD_USE_CUSTOM)
 AVRDUDE_PROGRAMMER = usbtiny
-AVRDUDE_PORT_OPTION=
+AVRDUDE_PORT_OPTION= -P usb
 else ifeq ($(BOARD_CHOSEN), BOARD_USE_UNO)
 AVRDUDE_PROGRAMMER = arduino
 # com1 = serial port. Use lpt1 to connect to parallel port.
