@@ -9,7 +9,11 @@ int main(void) {
 	ioinit(); //Setup IO pins and defaults
 
 	while (1) {
-			LEDall();
+    LEDall();
+      _delay_ms(300);
+     LEDclear();
+      _delay_ms(300);
+    LEDall();
       _delay_ms(300);
      LEDclear();
       _delay_ms(300);

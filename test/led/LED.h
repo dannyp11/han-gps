@@ -6,9 +6,9 @@
 #define LED_H_
 
 #define SER_PORT    PORTD
-#define SER_PIN     2
+#define SER_PIN     5
 #define RCLK_PORT PORTD
-#define RCLK_PIN  3
+#define RCLK_PIN  6
 #define SRCLK_PORT PORTD
 #define SRCLK_PIN  4
  

@@ -4,8 +4,8 @@
 #include "LED.h"
 
 void ioinit (void) {
-    DDRD  |= 0b00011100; //1 = output, 0 = input
-    PORTD &= 0b11100011;
+    DDRD  |= 0b01110000; //1 = output, 0 = input
+    PORTD &= 0b10001111;
 }
 
 void output_led_state(unsigned int __led_state) {
