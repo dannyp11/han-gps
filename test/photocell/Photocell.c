@@ -61,8 +61,6 @@ uint8_t PhotocellGetAbienceLightLevel()
 	else
 	{
 		retVal = (uint8_t)( (ADCW - CUTOFF_LIGHT_LEVEL) / ((65535 - CUTOFF_LIGHT_LEVEL) / 9) );
-//		retVal = (uint8_t) (ADCW);
-//		retVal = ADCW;
 	}
 
 	return retVal;
