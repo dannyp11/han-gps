@@ -15,16 +15,22 @@
 char msg[21];
 char isCleaned = 0;
 
-void printRotaryVal(uint16_t val)
+void printRotaryVal(char val)
 {
+	static int cur_val = 0;
 	if (!isCleaned)
 	{
 		LCDSendCommand(CLEARSCREEN);
 		isCleaned = 1;
 	}
+	cur_val += (int) val;
 
+	cur_val = (cur_val > 8)? 8 : cur_val;
+	cur_val = (cur_val < 0)? 0 : cur_val;
+
+	LCDSetBrightness((char)cur_val);
 	LCDSendCommand(CURSORHOME);
-	snprintf(msg, 21, "Value: %d", val);
+	snprintf(msg, 21, "Brightness: %4d", cur_val);
 	LCDPrint(msg);
 }
 

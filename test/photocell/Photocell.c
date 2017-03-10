@@ -6,6 +6,7 @@
 
 #define CUTOFF_LIGHT_LEVEL 40000
 PhotocellCallbackFunction mFunction = 0;
+uint8_t _old_val = 10;
 
 void PhotocellInit()
 {
@@ -23,11 +24,11 @@ void PhotocellInit()
 	sei();
 }
 
-uint16_t PhotocellRegisterCallback(PhotocellCallbackFunction function)
+uint8_t PhotocellRegisterCallback(PhotocellCallbackFunction function)
 {
 	if (mFunction != 0)
 	{
-		return -1;
+		return 1;
 	}
 	else
 	{
@@ -40,17 +41,12 @@ ISR(ADC_vect)
 {
 	if (mFunction)
 	{
-		uint8_t retVal = 10;
-
-		if (ADCW < (unsigned)CUTOFF_LIGHT_LEVEL)
+		uint8_t val = PhotocellGetAbienceLightLevel();
+		if (_old_val != val)
 		{
-			retVal = 0;
+			mFunction(val);
+			_old_val = val;
 		}
-		else
-		{
-			retVal = 8-(uint8_t)( (65535 - ADCW) / ((65535 - CUTOFF_LIGHT_LEVEL) / 9) );
-		}
-		mFunction(retVal);
 	}
 }
 
@@ -64,7 +60,9 @@ uint8_t PhotocellGetAbienceLightLevel()
 	}
 	else
 	{
-		retVal = (uint8_t)( (65535 - ADCW) / ((65535 - CUTOFF_LIGHT_LEVEL) / 8) );
+		retVal = (uint8_t)( (ADCW - CUTOFF_LIGHT_LEVEL) / ((65535 - CUTOFF_LIGHT_LEVEL) / 9) );
+//		retVal = (uint8_t) (ADCW);
+//		retVal = ADCW;
 	}
 
 	return retVal;

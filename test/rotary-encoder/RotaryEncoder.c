@@ -9,11 +9,9 @@
 #include <avr/interrupt.h>
 #include "RotaryEncoder.h"
 
-volatile uint16_t count = (ROTARYENCODER_MIN_VALUE + ROTARYENCODER_MAX_VALUE) / 2;
-uint16_t old_count;
 volatile char old_raw_input;
-
-CallbackFunction mFunction = 0;
+RotaryEncoderChangeCallback mFunction = 0;
+char mSensitivityCount = 0;
 
 void RotaryEncoderInit()
 {
@@ -26,7 +24,6 @@ void RotaryEncoderInit()
 	///////////////////////////////////////
 
 	old_raw_input = (PINC & (1 << PC2 | 1 << PC3)) >> PC2;
-	old_count = count - 1;
 
 	// global interrupt
 	sei();
@@ -69,35 +66,22 @@ char decoded_value(char raw_value, char old_value)
 	return result;
 }
 
-uint16_t RotaryEncoderGetVal()
-{
-	uint16_t retVal = count;
-	if (count < 0)
-	{
-		retVal = -1;
-	}
-	return retVal;
-}
-
 ISR(PCINT1_vect)
 {
 	char raw_input = (PINC & (1 << PC2 | 1 << PC3)) >> PC2; // get raw_input = 0xAB
-	count += (uint16_t)(decoded_value(raw_input, old_raw_input));
-	old_raw_input = raw_input;
-
-	if (count < ROTARYENCODER_MIN_VALUE)
-		count = ROTARYENCODER_MIN_VALUE;
-	else if (count > ROTARYENCODER_MAX_VALUE)
-		count = ROTARYENCODER_MAX_VALUE;
-
-	if (old_count != count)
+	if (mFunction)
 	{
-		old_count = count;
-		mFunction(count);
+		char decoded_val = decoded_value(raw_input, old_raw_input);
+		if (decoded_val)
+		{
+			mFunction(decoded_val);
+		}
 	}
+
+	old_raw_input = raw_input;
 }
 
-uint8_t RotaryEncoderSetCallback(CallbackFunction function)
+uint8_t RotaryEncoderSetCallback(RotaryEncoderChangeCallback function)
 {
 	if (mFunction != 0)
 	{

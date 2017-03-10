@@ -2,20 +2,22 @@
 #include <avr/interrupt.h>
 #include <stdio.h>
 #include <string.h>
+#include <util/delay.h>
 
 #include "../lcd-i2c/LCD.h"
 #include "Photocell.h"
+#include "../led/LED.h"
 
-char msg[20];
-printPhotocell(uint16_t val)
+char msg[21];
+printPhotocell(uint8_t val)
 {
 	LCDSendCommand(CURSORHOME);
-	snprintf(msg, 20, "photo = %u", val);
+	snprintf(msg, 21, "Value = %u", val);
 	LCDPrint(msg);
 
 	if (val != 10)
 	{
-		LCDSetBrightness(val);
+		LCDSetBrightness((char)val);
 	}
 }
 
@@ -23,6 +25,10 @@ int main(void)
 {
 	LCDInit();
 	PhotocellInit();
+
+	snprintf(msg, 21, "Photo cell testing");
+	LCDSetCursor(3, 0);
+	LCDPrint(msg);
 
 	PhotocellRegisterCallback(printPhotocell);
 

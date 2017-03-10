@@ -2,7 +2,7 @@
 #define PHOTOCELL_H_
 
 // Callback function prototype
-typedef void (*PhotocellCallbackFunction)(uint16_t);
+typedef void (*PhotocellCallbackFunction)(uint8_t);
 
 /*
  * Call this before doing anything
@@ -18,6 +18,6 @@ uint8_t PhotocellGetAbienceLightLevel();
 /*
  * Register the callback function
  */
-uint16_t PhotocellRegisterCallback(PhotocellCallbackFunction function);
+uint8_t PhotocellRegisterCallback(PhotocellCallbackFunction function);
 
 #endif
