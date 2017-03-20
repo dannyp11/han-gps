@@ -151,7 +151,6 @@ uint8_t LCDSetCursor(char line, char position)
 
 void LCDInit()
 {
-	PORTC |= (1 << PC1);        // Enable pull-up for switch on PORTC bit 1
 	i2c_init(BDIV);             // Initialize the I2C port
 	_delay_ms(200);
 
