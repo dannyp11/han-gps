@@ -71,6 +71,8 @@
 #define AVR_SERIAL_USE_USART1              FALSE
 #define AVR_SERIAL_USE_USARTS              TRUE
 #define AVR_SDS_USE_INT0                   TRUE
+#define AVR_SDS_TX_PORT IOPORT3
+#define AVR_SDS_TX_PIN 0
 
 /*
  * I2C driver system settings.

@@ -11,6 +11,7 @@ THD_FUNCTION(tdMon, arg) {
     for (i = 0; i < 5; ++i)
       chThdSleepSeconds(1);
 
+    debugS("Test SDS\r\n");
     debug("GPS Latitude Degrees: %D\r\n", getGPSLatitudeDeg());
     debug("GPS Latitude Minutesx10000: %D\r\n", getGPSLatitudeMin());
     debug("GPS Longitude Degrees: %D\r\n", getGPSLongitudeDeg());

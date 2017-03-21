@@ -27,9 +27,9 @@
 #define BOARD_HAN
 #define BOARD_NAME "Hillary And Norgay"
 
-#ifdef BOARD_USE_UNO
+#if defined(BOARD_USE_UNO)
 #include "board_uno.h"
-#elif BOARD_USE_CUSTOM
+#elif defined(BOARD_USE_CUSTOM)
 #include "board_custom.h"
 #else
 #error "Must specify -DBOARD_USE_UNO or -DBOARD_USE_CUSTOM"
