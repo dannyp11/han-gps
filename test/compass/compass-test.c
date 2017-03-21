@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "LCD.h"
+#include "../lcd-i2c/LCD.h"
 
 #define BUFF_LEN LCD_LINE_LEN + 1
 

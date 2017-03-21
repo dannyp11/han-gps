@@ -9,13 +9,7 @@
 #define ROTARYENCODER_H_
 
 // Callback function prototype
-typedef void (*CallbackFunction)(uint16_t);
-
-/*
- * Feel free to change these values
- */
-#define ROTARYENCODER_MIN_VALUE 100
-#define ROTARYENCODER_MAX_VALUE 300
+typedef void (*RotaryEncoderChangeCallback)(char);
 
 /*
  * Call this before using APIs
@@ -23,18 +17,13 @@ typedef void (*CallbackFunction)(uint16_t);
 void RotaryEncoderInit();
 
 /*
- * Get value from encoder, encouraged to minimize calling this as oppose to callback
- * return -1 if error
- */
-uint16_t RotaryEncoderGetVal();
-
-/*
- * Register callback function to be called when rotary encoder gets net value
+ * Register callback function to be called when rotary encoder changes
+ * The char value is -1 if CCW, 1 if CW, 0 if error
  * Currently only supports 1 callback
- * eg. void printVal(int val)
+ * eg. void printVal(char val)
  *
  * return 0 on success, -1 if there's existing registered function
  */
-uint8_t RotaryEncoderSetCallback(CallbackFunction function);
+uint8_t RotaryEncoderSetCallback(RotaryEncoderChangeCallback function);
 
 #endif /* ROTARYENCODER_H_ */
