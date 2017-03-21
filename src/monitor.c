@@ -7,6 +7,7 @@
 THD_WORKING_AREA(waTdMon, MONITOR_WA_SIZE);
 THD_FUNCTION(tdMon, arg) {
   uint8_t i;
+  sdStart(&SDS, &softserial_config);
   while (true) {
     for (i = 0; i < 5; ++i)
       chThdSleepSeconds(1);
