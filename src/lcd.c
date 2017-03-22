@@ -73,7 +73,7 @@ void lcd_demo(void) {
   /*
 	 * Move cursor
 	 */
-  LCDPrint("Moving Cursor");
+  LCDPrint("Move Cursor");
   chThdSleepMilliseconds(2000);
   LCDSendCommand(CLEARSCREEN);
   LCDSendCommand(CURSORON);
