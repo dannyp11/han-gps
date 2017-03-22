@@ -20,6 +20,9 @@
 #include "softserialcfg.h"
 #include "gps.h"
 #include "monitor.h"
+#include "lcd.h"
+
+#define DRIVERPRIO HIGHPRIO
 
 /*
  * Threads static table, one entry per thread. The number of entries must
@@ -47,6 +50,7 @@ int main(void) {
 
   //chThdCreateStatic(waTdGPS, sizeof(waTdGPS), NORMALPRIO, tdGPS, NULL);
   //chThdCreateStatic(waTdMon, sizeof(waTdMon), HIGHPRIO, tdMon, NULL);
+  chThdCreateStatic(waTdLCD, sizeof(waTdLCD), DRIVERPRIO, tdLCD, NULL);
   //chprintf((BaseSequentialStream *) &SDS, "IDLE Thread\r\n");
   //chThdSetPriority(IDLEPRIO);
 

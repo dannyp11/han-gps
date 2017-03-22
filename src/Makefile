@@ -101,6 +101,7 @@ SRC = $(KERNSRC) \
 	  parser.c \
 	  monitor.c \
 	  LCD_ll.c \
+	  lcd.c \
       main.c
 
 # List C++ source files here. (C dependencies are automatically generated.)
