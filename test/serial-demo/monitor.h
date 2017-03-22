@@ -3,7 +3,7 @@
 
 #include "ch.h"
 
-#define MONITOR_WA_SIZE 64
+#define MONITOR_WA_SIZE 128
 
 extern THD_WORKING_AREA(waTdMon, MONITOR_WA_SIZE);
 extern THD_FUNCTION(tdMon, arg);

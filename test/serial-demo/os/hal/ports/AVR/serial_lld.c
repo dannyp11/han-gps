@@ -305,6 +305,7 @@ static void usartS_init(const SerialConfig *config) {
   /* Sets appropriate I/O mode.*/
   palSetPadMode(AVR_SDS_RX_PORT, AVR_SDS_RX_PIN, PAL_MODE_INPUT);
   palSetPadMode(AVR_SDS_TX_PORT, AVR_SDS_TX_PIN, PAL_MODE_OUTPUT_PUSHPULL);
+  palWritePad(AVR_SDS_TX_PORT, AVR_SDS_TX_PIN, 1);
   #if defined AVR_SDS_USE_INT0
     /* Falling edge of INT0 triggers interrupt.*/
     EICRA |= (1 << ISC01);
@@ -474,7 +475,7 @@ OSAL_IRQ_HANDLER(AVR_SDS_RX_VECT) {
 OSAL_IRQ_HANDLER(TIMER2_COMPA_vect) {
   static int8_t i;
   /* Data byte.*/
-  static int8_t byte;
+  static msg_t byte;
 
   OSAL_IRQ_PROLOGUE();
   switch (sds_state) {
