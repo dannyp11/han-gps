@@ -103,6 +103,8 @@ SRC = $(KERNSRC) \
 	  monitor.c \
 	  LCD_ll.c \
 	  lcd.c \
+	  LED_ll.c \
+	  led.c \
       main.c
 
 # List C++ source files here. (C dependencies are automatically generated.)
