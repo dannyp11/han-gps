@@ -107,7 +107,7 @@
  * @note    Unless an idle thread is spawned the @p main() thread must not
  *          enter a sleep state.
  */
-#define CH_CFG_NO_IDLE_THREAD               TRUE
+#define CH_CFG_NO_IDLE_THREAD               FALSE
 
 /** @} */
 

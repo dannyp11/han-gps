@@ -43,13 +43,20 @@ int main(void) {
   halInit();
   chSysInit();
 
-  chThdCreateStatic(waTdMon, sizeof(waTdMon), HIGHPRIO, tdMon, NULL);
-  chThdSetPriority(IDLEPRIO);
+  sdStart(&SD1, NULL);
+  sdStart(&SDS, &softserial_config);
+
+
+  //chThdSetPriority(IDLEPRIO);
+  //chThdCreateStatic(waTdMon, sizeof(waTdMon), NORMALPRIO, tdMon, NULL);
+
 
   /* This is now the idle thread loop, you may perform here a low priority
      task but you must never try to sleep or wait in this loop. Note that
      this tasks runs at the lowest priority level so any instruction added
      here will be executed after all other tasks have been started.*/
   while (true) {
+    chprintf((BaseSequentialStream *) &SDS, "USARTS!\r\n");
+    chThdSleepSeconds(1);
   }
 }

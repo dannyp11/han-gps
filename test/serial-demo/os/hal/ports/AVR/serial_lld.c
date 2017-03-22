@@ -84,10 +84,10 @@ SerialDriver SDS;
   #endif
   /* By default, uses PB1 as TX.*/
   #if !defined (AVR_SDS_TX_PORT)
-    #define AVR_SDS_TX_PORT IOPORT3
+    #define AVR_SDS_TX_PORT IOPORT4
   #endif
   #if !defined (AVR_SDS_TX_PIN)
-    #define AVR_SDS_TX_PIN 0
+    #define AVR_SDS_TX_PIN 3
   #endif
 #endif
 
@@ -305,7 +305,6 @@ static void usartS_init(const SerialConfig *config) {
   /* Sets appropriate I/O mode.*/
   palSetPadMode(AVR_SDS_RX_PORT, AVR_SDS_RX_PIN, PAL_MODE_INPUT);
   palSetPadMode(AVR_SDS_TX_PORT, AVR_SDS_TX_PIN, PAL_MODE_OUTPUT_PUSHPULL);
-  palWritePad(AVR_SDS_TX_PORT, AVR_SDS_TX_PIN, 1);
   #if defined AVR_SDS_USE_INT0
     /* Falling edge of INT0 triggers interrupt.*/
     EICRA |= (1 << ISC01);
@@ -483,7 +482,7 @@ OSAL_IRQ_HANDLER(TIMER2_COMPA_vect) {
       osalSysLockFromISR();
       byte = sdRequestDataI(&SDS);
       osalSysUnlockFromISR();
-      if (byte >= Q_OK)
+      if (byte > Q_OK)
         sds_state = TRANSMIT_INIT;
       /* Do Nothing.*/
     break;
