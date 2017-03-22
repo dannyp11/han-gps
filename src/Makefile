@@ -100,6 +100,7 @@ SRC = $(KERNSRC) \
 	  gpsParser.c \
 	  parser.c \
 	  monitor.c \
+	  LCD_ll.c \
       main.c
 
 # List C++ source files here. (C dependencies are automatically generated.)
