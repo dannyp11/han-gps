@@ -21,6 +21,7 @@
 #include "gps.h"
 #include "monitor.h"
 #include "lcd.h"
+#include "led.h"
 
 #define DRIVERPRIO HIGHPRIO
 
@@ -50,7 +51,8 @@ int main(void) {
 
   //chThdCreateStatic(waTdGPS, sizeof(waTdGPS), NORMALPRIO, tdGPS, NULL);
   //chThdCreateStatic(waTdMon, sizeof(waTdMon), HIGHPRIO, tdMon, NULL);
-  chThdCreateStatic(waTdLCD, sizeof(waTdLCD), DRIVERPRIO, tdLCD, NULL);
+  //chThdCreateStatic(waTdLCD, sizeof(waTdLCD), DRIVERPRIO, tdLCD, NULL);
+  chThdCreateStatic(waTdLED, sizeof(waTdLED), DRIVERPRIO, tdLED, NULL);
   //chprintf((BaseSequentialStream *) &SDS, "IDLE Thread\r\n");
   //chThdSetPriority(IDLEPRIO);
 

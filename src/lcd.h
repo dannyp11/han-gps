@@ -1,10 +1,8 @@
 #pragma once 
 
 #include "ch.h"
-#include "hal.h"
+//#include "hal.h"
 #include "LCD_ll.h"
-
-#define LCD_WA_SIZE 128
 
 /*
  * LCDPrint - write char array to the LCD over the I2C bus
@@ -35,5 +33,6 @@ extern uint8_t LCDSetContrast(char level);
  */
 extern uint8_t LCDSetCursor(char line, char position);
 
+#define LCD_WA_SIZE 128
 extern THD_WORKING_AREA(waTdLCD, LCD_WA_SIZE);
 extern THD_FUNCTION(tdLCD, arg);
