@@ -51,8 +51,8 @@ int main(void) {
 
   while (true) {
     chprintf((BaseSequentialStream *) &SD1, "USART1!\r\n");
-    //chprintf((BaseSequentialStream *) &SDS, "USARTS!\r\n");
-    sdPut(&SDS, 'S');
+    chThdSleepSeconds(1);
+    chprintf((BaseSequentialStream *) &SDS, "USARTS!\r\n");
     chThdSleepSeconds(1);
   }
 }
