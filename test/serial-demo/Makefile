@@ -96,7 +96,6 @@ SRC = $(KERNSRC) \
       $(TESTSRC) \
 	  $(CHIBIOS)/os/hal/lib/streams/chprintf.c \
 	  softserialcfg.c \
-	  monitor.c \
       main.c
 
 # List C++ source files here. (C dependencies are automatically generated.)

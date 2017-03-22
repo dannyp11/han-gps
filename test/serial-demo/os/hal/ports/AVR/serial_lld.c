@@ -38,16 +38,16 @@
 #if AVR_SERIAL_USE_USART0 || defined(__DOXYGEN__)
 SerialDriver SD1;
 
-  /* USARTs are not consistently named across the AVR range */
-  #ifdef USART0_RX_vect
-    #define AVR_SD1_RX_VECT USART0_RX_vect
-    #define AVR_SD1_TX_VECT USART0_UDRE_vect
-  #elif defined(USART_RX_vect)
-    #define AVR_SD1_RX_VECT USART_RX_vect
-    #define AVR_SD1_TX_VECT USART_UDRE_vect
-  #else
-    #error "Cannot find USART to use for SD1"
-  #endif
+/* USARTs are not consistently named across the AVR range */
+#ifdef USART0_RX_vect
+#define AVR_SD1_RX_VECT USART0_RX_vect
+#define AVR_SD1_TX_VECT USART0_UDRE_vect
+#elif defined(USART_RX_vect)
+#define AVR_SD1_RX_VECT USART_RX_vect
+#define AVR_SD1_TX_VECT USART_UDRE_vect
+#else
+#error "Cannot find USART to use for SD1"
+#endif
 #endif /* AVR_SERIAL_USE_USART0 */
 
 /**
@@ -58,37 +58,37 @@ SerialDriver SD1;
 #if AVR_SERIAL_USE_USART1 || defined(__DOXYGEN__)
 SerialDriver SD2;
 
-  /* Check if USART1 exists for this MCU */
-  #ifdef USART1_RX_vect
-    #define AVR_SD2_RX_VECT USART1_RX_vect
-    #define AVR_SD2_TX_VECT USART1_UDRE_vect
-  #else
-    #error "Cannot find USART to use for SD2"
-  #endif
+/* Check if USART1 exists for this MCU */
+#ifdef USART1_RX_vect
+#define AVR_SD2_RX_VECT USART1_RX_vect
+#define AVR_SD2_TX_VECT USART1_UDRE_vect
+#else
+#error "Cannot find USART to use for SD2"
+#endif
 #endif /* AVR_SERIAL_USE_USART1 */
 
 /**
  * @brief   Software serial driver identifier
  */
-#if AVR_SERIAL_USE_USARTS || defined (__DOXYGEN__)
+#if AVR_SERIAL_USE_USARTS || defined(__DOXYGEN__)
 SerialDriver SDS;
-  #if !defined AVR_GPT_USE_TIM2
-    #error "Software serial requires AVR_GPT_USE_TIM2"
-  #endif
-  /* Uses INT0*/
-  #if AVR_SDS_USE_INT0
-    #define AVR_SDS_RX_PORT IOPORT4
-    #define AVR_SDS_RX_PIN 2
-    #define AVR_SDS_RX_VECT PCINT0_vect
-    #define AVR_SDS_RX_TCCR2B_CLK_MASK 0b00000111
-  #endif
-  /* By default, uses PB1 as TX.*/
-  #if !defined (AVR_SDS_TX_PORT)
-    #define AVR_SDS_TX_PORT IOPORT4
-  #endif
-  #if !defined (AVR_SDS_TX_PIN)
-    #define AVR_SDS_TX_PIN 3
-  #endif
+#if !defined AVR_GPT_USE_TIM2
+#error "Software serial requires AVR_GPT_USE_TIM2"
+#endif
+/* Uses INT0*/
+#if AVR_SDS_USE_INT0
+#define AVR_SDS_RX_PORT IOPORT4
+#define AVR_SDS_RX_PIN 2
+#define AVR_SDS_RX_VECT PCINT0_vect
+#define AVR_SDS_RX_TCCR2B_CLK_MASK 0b00000111
+#endif
+/* By default, uses PB1 as TX.*/
+#if !defined(AVR_SDS_TX_PORT)
+#define AVR_SDS_TX_PORT IOPORT4
+#endif
+#if !defined(AVR_SDS_TX_PIN)
+#define AVR_SDS_TX_PIN 3
+#endif
 #endif
 
 /*===========================================================================*/
@@ -110,11 +110,10 @@ typedef enum {
  * @brief   Driver default configuration.
  */
 static const SerialConfig default_config = {
-  UBRR(SERIAL_DEFAULT_BITRATE),
-  USART_CHAR_SIZE_8,
-  96,
-  (1 << CS21)
-};
+    UBRR(SERIAL_DEFAULT_BITRATE),
+    USART_CHAR_SIZE_8,
+    96,
+    (1 << CS21)};
 
 /**
  * @brief SDS Timer clock control value
@@ -276,7 +275,7 @@ void usartS_start_timer_half(void) {
   TCNT2 = OCR2A / 2;
   /* Start timer.*/
   TCCR2B &= ~AVR_SDS_RX_TCCR2B_CLK_MASK; /* Clear CLK section.*/
-  TCCR2B |= sds_rx_tccr2b_div; /* Set CLK setting.*/
+  TCCR2B |= sds_rx_tccr2b_div;           /* Set CLK setting.*/
 }
 
 void usartS_start_timer(void) {
@@ -284,7 +283,7 @@ void usartS_start_timer(void) {
   TCNT2 = 0;
   /* Start timer.*/
   TCCR2B &= ~AVR_SDS_RX_TCCR2B_CLK_MASK; /* Clear CLK section.*/
-  TCCR2B |= sds_rx_tccr2b_div; /* Set CLK setting.*/
+  TCCR2B |= sds_rx_tccr2b_div;           /* Set CLK setting.*/
 }
 
 void usartS_stop_timer(void) {
@@ -305,34 +304,34 @@ static void usartS_init(const SerialConfig *config) {
   /* Sets appropriate I/O mode.*/
   palSetPadMode(AVR_SDS_RX_PORT, AVR_SDS_RX_PIN, PAL_MODE_INPUT);
   palSetPadMode(AVR_SDS_TX_PORT, AVR_SDS_TX_PIN, PAL_MODE_OUTPUT_PUSHPULL);
-  #if defined AVR_SDS_USE_INT0
-    /* Falling edge of INT0 triggers interrupt.*/
-    EICRA |= (1 << ISC01);
-    EICRA &= ~(1 << ISC00);
-    /* Timer 2 CTC mode.*/
-    TCCR2A |= 1 << WGM21;
-    TCCR2A &= ~((1 << WGM22) | (1 << WGM20));
-    /* Save the timer clock input.*/
-    sds_rx_tccr2b_div = config->sc_tccr2b_div;
-    /* Default to be 8 bit.*/
-    switch (config->sc_bits_per_char) {
-      default:
-        sds_bits_per_char = 8;
-    }
-    /* Timer 2 Top.*/
-    OCR2A = config->sc_ocr2a;
-    /* Timer 2 output compare A interrupt.*/
-    TIMSK2 |= 1 << OCIE2A;
-    usartS_start_timer();
-  #endif
+#if defined AVR_SDS_USE_INT0
+  /* Falling edge of INT0 triggers interrupt.*/
+  EICRA |= (1 << ISC01);
+  EICRA &= ~(1 << ISC00);
+  /* Timer 2 CTC mode.*/
+  TCCR2A |= 1 << WGM21;
+  TCCR2A &= ~((1 << WGM22) | (1 << WGM20));
+  /* Save the timer clock input.*/
+  sds_rx_tccr2b_div = config->sc_tccr2b_div;
+  /* Default to be 8 bit.*/
+  switch (config->sc_bits_per_char) {
+  default:
+    sds_bits_per_char = 8;
+  }
+  /* Timer 2 Top.*/
+  OCR2A = config->sc_ocr2a;
+  /* Timer 2 output compare A interrupt.*/
+  TIMSK2 |= 1 << OCIE2A;
+  usartS_start_timer();
+#endif
 }
 
 void usartS_enable_rx(void) {
-  EIMSK |= 1<<0;
+  EIMSK |= 1 << 0;
 }
 
 void usartS_disable_rx(void) {
-  EIMSK &= ~(1<<0);
+  EIMSK &= ~(1 << 0);
 }
 
 /**
@@ -447,18 +446,18 @@ OSAL_IRQ_HANDLER(AVR_SD2_TX_VECT) {
 OSAL_IRQ_HANDLER(AVR_SDS_RX_VECT) {
   OSAL_IRQ_PROLOGUE();
   switch (sds_state) {
-    case IDLE:
-      sds_state = RECEIVE_INIT;
-      usartS_stop_timer();
-      usartS_start_timer_half();
+  case IDLE:
+    sds_state = RECEIVE_INIT;
+    usartS_stop_timer();
+    usartS_start_timer_half();
     break;
-    case RECEIVE_INIT:
-    case RECEIVE:
-      /* Do nothing.*/
+  case RECEIVE_INIT:
+  case RECEIVE:
+    /* Do nothing.*/
     break;
-    case TRANSMIT_INIT:
-    case TRANSMIT:
-      /* Do nothing.*/
+  case TRANSMIT_INIT:
+  case TRANSMIT:
+    /* Do nothing.*/
     break;
   }
   OSAL_IRQ_EPILOGUE();
@@ -475,72 +474,69 @@ OSAL_IRQ_HANDLER(TIMER2_COMPA_vect) {
   static int8_t i;
   /* Data byte.*/
   static msg_t byte;
+  uint8_t bit;
 
   OSAL_IRQ_PROLOGUE();
   switch (sds_state) {
-    case IDLE:
-      osalSysLockFromISR();
-      byte = sdRequestDataI(&SDS);
-      osalSysUnlockFromISR();
-      if (byte > Q_OK)
-        sds_state = TRANSMIT_INIT;
-      /* Do Nothing.*/
+  case IDLE:
+    osalSysLockFromISR();
+    byte = sdRequestDataI(&SDS);
+    osalSysUnlockFromISR();
+    if (byte >= Q_OK)
+      sds_state = TRANSMIT_INIT;
+    /* Do Nothing.*/
     break;
-    case RECEIVE_INIT:
+  case RECEIVE_INIT:
+    i = 0;
+    byte = 0;
+    sds_state = RECEIVE;
+    break; /* Break for the initial half period.*/
+  case RECEIVE:
+    if (i < sds_bits_per_char) {
+      byte |= palReadPad(AVR_SDS_RX_PORT, AVR_SDS_RX_PIN) << i;
+      ++i;
+    } else {
+      /* If last bit is STOP, then assume info is correct. Otherwise, treat as garbage*/
+      if (palReadPad(AVR_SDS_RX_PORT, AVR_SDS_RX_PIN)) {
+        osalSysLockFromISR();
+        sdIncomingDataI(&SDS, byte);
+        osalSysUnlockFromISR();
+      }
+      sds_state = IDLE;
       i = 0;
       byte = 0;
-      sds_state = RECEIVE;
-      break; /* Break for the initial half period.*/
-    case RECEIVE:
-      if (i < sds_bits_per_char) {
-        byte |= palReadPad(AVR_SDS_RX_PORT, AVR_SDS_RX_PIN) << i;
-        ++i;
-      }
-      else {
-        /* If last bit is STOP, then assume info is correct. Otherwise, treat as garbage*/
-        if (palReadPad(AVR_SDS_RX_PORT, AVR_SDS_RX_PIN)) {
-          osalSysLockFromISR();
-          sdIncomingDataI(&SDS, byte);
-          osalSysUnlockFromISR();
-        }
-        sds_state = IDLE;
-        i = 0;
-        byte = 0;
-      }
-    break;
-    case TRANSMIT_INIT:
-      /* Transmit must not be interrupted.*/
-      usartS_disable_rx();
-      sds_state = TRANSMIT;
-      i = -1;
-      /* No break here or timing will be wrong.*/
-    case TRANSMIT: {
-      uint8_t bit;
-      /* START.*/
-      if (i == -1) {
-        bit = 0;
-      }
-      /* STOP.*/
-      else if (i == sds_bits_per_char) {
-        bit = 1;
-        sds_state = IDLE;
-        /* Re-enable receive at the end of a transmit.*/
-        usartS_enable_rx();
-      }
-      /* Data.*/
-      else {
-        bit = (byte & (1 << i)) != 0;
-      }
-      palWritePad(AVR_SDS_TX_PORT, AVR_SDS_TX_PIN, bit);
-      ++i;
-    break;
     }
+    break;
+  case TRANSMIT_INIT:
+    /* Transmit must not be interrupted.*/
+    usartS_disable_rx();
+    sds_state = TRANSMIT;
+    i = -1;
+  /* No break here or timing will be wrong.*/
+  case TRANSMIT:
+    /* START.*/
+    if (i == -1) {
+      bit = 0;
+    }
+    /* STOP.*/
+    else if (i == sds_bits_per_char) {
+      bit = 1;
+      sds_state = IDLE;
+      /* Re-enable receive at the end of a transmit.*/
+      usartS_enable_rx();
+    }
+    /* Data.*/
+    else {
+      bit = (byte & (1 << i)) != 0;
+    }
+    palWritePad(AVR_SDS_TX_PORT, AVR_SDS_TX_PIN, bit);
+    ++i;
+    break;
   }
   OSAL_IRQ_EPILOGUE();
 }
 
 #endif
-
 
 /*===========================================================================*/
 /* Driver exported functions.                                                */

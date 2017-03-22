@@ -47,7 +47,7 @@
  *          setting also defines the system tick time unit.
  */
 #define CH_CFG_ST_FREQUENCY                 15624
-//#define CH_CFG_ST_FREQUENCY                 1000
+//#define CH_CFG_ST_FREQUENCY                 6400
 
 /**
  * @brief   Time delta constant for the tick-less mode.
