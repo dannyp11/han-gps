@@ -94,6 +94,7 @@ SRC = $(KERNSRC) \
       $(PLATFORMSRC) \
       $(BOARDSRC) \
       $(TESTSRC) \
+	  $(CHIBIOS)/os/hal/lib/streams/memstreams.c \
 	  $(CHIBIOS)/os/hal/lib/streams/chprintf.c \
 	  softserialcfg.c \
 	  gps.c \

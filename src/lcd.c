@@ -1,5 +1,6 @@
 #include "lcd.h"
 #include "LCD_ll.h"
+#include "chprintf.h"
 
 #define BUFF_LEN LCD_LINE_LEN + 1
 
@@ -10,15 +11,15 @@ void lcd_demo(void) {
   LCDSendCommand(SHOWFIRMWARE);
 
   LCDSetCursor(2, 0);
-  LCDPrint("LCD Demo by Dat Pham");
+  LCDPrint("LCD:D.Pham,OS:R.Dong");
   LCDSetCursor(3, 0);
-  // snprintf(buffer, BUFF_LEN, "Version: %s", __DATE__);
+  chsnprintf(buffer, BUFF_LEN, "Version: %s", __DATE__);
   LCDPrint(buffer);
 
   char i;
   for (i = 0; i < 5; ++i) {
     LCDSetCursor(4, 0);
-    // snprintf(buffer, BUFF_LEN, "Demo in %d seconds...", 5 - i);
+    chsnprintf(buffer, BUFF_LEN, "Demo in %d seconds...", 5 - i);
     LCDPrint(buffer);
     chThdSleepMilliseconds(1000);
   }
@@ -30,7 +31,7 @@ void lcd_demo(void) {
   LCDPrint("Changing brightness");
   for (i = 1; i <= 8; ++i) {
     LCDSetCursor(3, 0);
-    // snprintf(buffer, BUFF_LEN, "Level: %d", (int) i);
+    chsnprintf(buffer, BUFF_LEN, "Level: %d", (int) i);
     LCDPrint(buffer);
     LCDSetBrightness(i);
     chThdSleepMilliseconds(500);
@@ -43,7 +44,7 @@ void lcd_demo(void) {
   LCDPrint("Changing contrast");
   for (i = 1; i <= 50; ++i) {
     LCDSetCursor(3, 0);
-    // snprintf(buffer, BUFF_LEN, "Level: %d", (int) i);
+    chsnprintf(buffer, BUFF_LEN, "Level: %d", (int) i);
     LCDPrint(buffer);
     LCDSetContrast(i);
     chThdSleepMilliseconds(50);
