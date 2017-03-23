@@ -5,7 +5,7 @@
 #define BUFF_LEN LCD_LINE_LEN + 1
 
 void lcd_demo(void) {
-  char buffer[BUFF_LEN];
+  static char buffer[BUFF_LEN];
 
   LCDSendCommand(CURSOROFF);
   LCDSendCommand(SHOWFIRMWARE);
@@ -23,11 +23,11 @@ void lcd_demo(void) {
     LCDPrint(buffer);
     chThdSleepMilliseconds(1000);
   }
+  LCDClear();
 
   /*
 	 * brightness
 	 */
-  LCDSendCommand(CLEARSCREEN);
   LCDPrint("Changing brightness");
   for (i = 1; i <= 8; ++i) {
     LCDSetCursor(3, 0);
@@ -36,7 +36,7 @@ void lcd_demo(void) {
     LCDSetBrightness(i);
     chThdSleepMilliseconds(500);
   }
-  LCDInit();
+  LCDClear();
 
   /*
 	 * contrast
@@ -49,7 +49,7 @@ void lcd_demo(void) {
     LCDSetContrast(i);
     chThdSleepMilliseconds(50);
   }
-  LCDInit();
+  LCDClear();
 
   /*
 	 * Turn on and off
@@ -68,7 +68,7 @@ void lcd_demo(void) {
     LCDSendCommand(LCDON);
     chThdSleepMilliseconds(500);
   }
-  LCDInit();
+  LCDClear();
 
   /*
 	 * Move cursor
@@ -84,7 +84,7 @@ void lcd_demo(void) {
       chThdSleepMilliseconds(100);
     }
   }
-  LCDInit();
+  LCDClear();
 
   LCDSetCursor(2, 5);
   LCDPrint("Done demo");

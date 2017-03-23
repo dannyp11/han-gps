@@ -29,6 +29,8 @@ enum LCDCommand
  */
 void LCDInit(void);
 
+void LCDClear(void);
+
 /*
  * LCDPrint - write char array to the LCD over the I2C bus
  * input: msg

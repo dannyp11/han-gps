@@ -110,8 +110,6 @@ void led_demo(void) {
   }
 }
 
-#define LED_WA_SIZE 128
-
 THD_WORKING_AREA(waTdLED, LED_WA_SIZE);
 THD_FUNCTION(tdLED, arg) {
   (void)arg;

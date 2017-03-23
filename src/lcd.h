@@ -4,6 +4,8 @@
 //#include "hal.h"
 #include "LCD_ll.h"
 
+extern void LCDClear(void);
+
 /*
  * LCDPrint - write char array to the LCD over the I2C bus
  * input: msg
