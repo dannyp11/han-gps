@@ -1,5 +1,5 @@
 #pragma once 
 
 const I2CConfig i2c_config = {
-  50000
+  10000
 };

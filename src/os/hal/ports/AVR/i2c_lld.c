@@ -153,17 +153,37 @@ void i2c_lld_init(void) {
  */
 void i2c_lld_start(I2CDriver *i2cp) {
   uint32_t clock_speed = 100000;
-
+  // uint32_t clock_speed = 1000;
   /* TODO: Test TWI without external pull-ups (use internal) */
 
-  /* Configure prescaler to 1 */
-  TWSR &= 0xF8;
 
   if (i2cp->config != NULL)
     clock_speed = i2cp->config->clock_speed;
 
+  uint32_t bdiv = ((F_CPU / clock_speed) - 16 ) / 2;
+  if (bdiv < 256) {
+    /* Configure prescaler to 1 */
+    TWSR &= 0xF8;
+    TWBR = bdiv;
+  }
+  else if (bdiv < 1024) {
+    /* Prescale 4.*/
+    TWSR &= 0xF9;
+    TWSR |= 0x01;
+    TWBR = bdiv / 4;
+  }
+  else if (bdiv < 4096) {
+    TWSR &= 0xFA;
+    TWSR |= 0x02;
+    TWBR = bdiv / 16;
+  }
+  else {
+    TWSR &= 0xFB;
+    TWSR |= 0x03; 
+    TWBR = bdiv / 64;
+  }
   /* Configure baudrate */
-  TWBR = ((F_CPU / clock_speed) - 16) / 2;
+  // TWBR = ((F_CPU / clock_speed) - 16) / 2;
 }
 
 /**

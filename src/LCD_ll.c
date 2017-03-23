@@ -10,12 +10,11 @@
 #include "LCD_ll.h"
 #include "ch.h"
 #include "hal.h"
-#include "i2cconf.h"
 #include <stdio.h>
 #include <string.h>
 
 // Find divisors for the UART0 and I2C baud rates
-#define BDIV (F_CPU / 100000 - 16) / 2 + 1 // Puts I2C rate just below 100kHz
+//#define BDIV (F_CPU / 100000 - 16) / 2 + 1 // Puts I2C rate just below 100kHz
 
 /* Address of the LCD on the I2C bus */
 #define LCD_ADDR 0x50
@@ -158,8 +157,6 @@ uint8_t LCDSetCursor(char line, char position) {
 }
 
 void LCDInit() {
-  PORTC |= (1 << PC1); // Enable pull-up for switch on PORTC bit 1
-  i2cStart(&I2CD1, &i2c_config);
   // i2c_init(BDIV);      // Initialize the I2C port
   //_delay_ms(200);
 
