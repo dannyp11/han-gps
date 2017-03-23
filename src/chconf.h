@@ -47,7 +47,11 @@
  *          setting also defines the system tick time unit.
  */
 //#define CH_CFG_ST_FREQUENCY                 15624
+#if defined(BOARD_USE_CUSTOM)
 #define CH_CFG_ST_FREQUENCY                 12800
+#elif defined(BOARD_USE_UNO)
+#define CH_CFG_ST_FREQUENCY                 16000
+#endif
 
 /**
  * @brief   Time delta constant for the tick-less mode.
