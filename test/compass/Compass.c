@@ -2,19 +2,28 @@
 #include <util/delay.h>
 
 #include "Compass.h"
+#include "../lcd-i2c/LCD.h"
 
 #define FOSC 7372800            // Clock frequency = Oscillator freq.
 #define BAUD 9600               // UART0 baud rate
 #define MYUBRR FOSC/16/BAUD-1   // Value for UBRR0 register
 #define BDIV (FOSC / 100000 - 16) / 2 + 1    // Puts I2C rate just below 100kHz
 
-void i2c_init(uint8_t);
-uint8_t i2c_io(uint8_t, uint8_t *, uint16_t,
+#define COMPASS_ADDR	0x1e
+
+void Compassi2c_init(uint8_t);
+uint8_t Compassi2c_io(uint8_t, uint8_t *, uint16_t,
                uint8_t *, uint16_t, uint8_t *, uint16_t);
 
 void CompassInit()
 {
-	i2c_init(BDIV);
+	Compassi2c_init(BDIV);
+
+	LCDInit();
+	LCDPrint("Testing compass.");
+
+	uint8_t cmd[2];
+	Compassi2c_io(COMPASS_ADDR, cmd, 2, )
 }
 
 
@@ -77,7 +86,7 @@ A typical read with a 1-byte address is done with
     i2c_io(0xD0, abuf, 1, NULL, 0, rbuf, 20);
 */
 
-uint8_t i2c_io(uint8_t device_addr, uint8_t *ap, uint16_t an,
+uint8_t Compassi2c_io(uint8_t device_addr, uint8_t *ap, uint16_t an,
                uint8_t *wp, uint16_t wn, uint8_t *rp, uint16_t rn)
 {
     uint8_t status, send_stop, wrote, start_stat;
@@ -194,7 +203,7 @@ nakstop:                                    // Come here to send STOP after a NA
 /*
   i2c_init - Initialize the I2C port
 */
-void i2c_init(uint8_t bdiv)
+void Compassi2c_init(uint8_t bdiv)
 {
     TWSR = 0;                           // Set prescalar for 1
     TWBR = bdiv;                        // Set bit rate register

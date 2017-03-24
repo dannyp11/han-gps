@@ -16,9 +16,9 @@ int main(void)
 {
 	char buffer[BUFF_LEN];
 	SerialDebugInit();
-	LCDInit();
-
-	LCDPrint("Testing Compass");
+//	LCDInit();
+//
+//	LCDPrint("Testing Compass");
 
 	CompassInit();
 
