@@ -54,7 +54,7 @@ int main(void) {
 
   //chThdCreateStatic(waTdGPS, sizeof(waTdGPS), NORMALPRIO, tdGPS, NULL);
   //chThdCreateStatic(waTdMon, sizeof(waTdMon), HIGHPRIO, tdMon, NULL);
-  chThdCreateStatic(waTdLCD, sizeof(waTdLCD), DRIVERPRIO, tdLCD, NULL);
+  //chThdCreateStatic(waTdLCD, sizeof(waTdLCD), DRIVERPRIO, tdLCD, NULL);
   //chThdCreateStatic(waTdLED, sizeof(waTdLED), DRIVERPRIO, tdLED, NULL);
   //chprintf((BaseSequentialStream *) &SDS, "IDLE Thread\r\n");
   //chThdSetPriority(IDLEPRIO);
@@ -67,7 +67,7 @@ int main(void) {
   while (true) {
     //debug("USART1\r\n");
     //chThdSleepSeconds(1);
-    // chprintf((BaseSequentialStream*) &SDS, "USARTS\r\n");
+    chprintf((BaseSequentialStream*) &SDS, "USARTS\r\n");
     chThdSleepSeconds(1);
   }
 }
