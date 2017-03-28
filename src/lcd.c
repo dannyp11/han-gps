@@ -96,16 +96,14 @@ void lcd_demo(void) {
 THD_WORKING_AREA(waTdLCD, LCD_WA_SIZE);
 THD_FUNCTION(tdLCD, arg) {
   (void)arg;
-  char buf[3] = {'A', 'B', 'C'};
+  //char buf[3] = {'A', 'B', 'C'};
 
   PORTC |= (1 << PC1); // Enable pull-up for switch on PORTC bit 1
-  i2cStart(&I2CD1, &i2c_config);
-  // i2cStart(&I2CD1, NULL);
-  //LCDInit();
+  LCDInit();
 
   while (true) {
-    //lcd_demo();
-    i2cMasterTransmit(&I2CD1, 0x50, buf, 3, NULL, 0);
+    lcd_demo();
+    //i2cMasterTransmit(&I2CD1, 0x50, buf, 3, NULL, 0);
     chThdSleepSeconds(1);
   }
 }

@@ -22,6 +22,7 @@
 #include "monitor.h"
 #include "lcd.h"
 #include "led.h"
+#include "debug.h"
 
 #define DRIVERPRIO HIGHPRIO
 
@@ -48,19 +49,25 @@ int main(void) {
   halInit();
   chSysInit();
 
+  sdStart(&SD1, NULL);
+  sdStart(&SDS, &softserial_config);
 
   //chThdCreateStatic(waTdGPS, sizeof(waTdGPS), NORMALPRIO, tdGPS, NULL);
   //chThdCreateStatic(waTdMon, sizeof(waTdMon), HIGHPRIO, tdMon, NULL);
   chThdCreateStatic(waTdLCD, sizeof(waTdLCD), DRIVERPRIO, tdLCD, NULL);
-  chThdCreateStatic(waTdLED, sizeof(waTdLED), DRIVERPRIO, tdLED, NULL);
+  //chThdCreateStatic(waTdLED, sizeof(waTdLED), DRIVERPRIO, tdLED, NULL);
   //chprintf((BaseSequentialStream *) &SDS, "IDLE Thread\r\n");
   //chThdSetPriority(IDLEPRIO);
-
+#if 0
   /* This is now the idle thread loop, you may perform here a low priority
      task but you must never try to sleep or wait in this loop. Note that
      this tasks runs at the lowest priority level so any instruction added
      here will be executed after all other tasks have been started.*/
+#endif
   while (true) {
+    //debug("USART1\r\n");
+    //chThdSleepSeconds(1);
+    // chprintf((BaseSequentialStream*) &SDS, "USARTS\r\n");
     chThdSleepSeconds(1);
   }
 }

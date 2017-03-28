@@ -267,6 +267,7 @@ msg_t i2c_lld_master_transmit_timeout(I2CDriver *i2cp, i2caddr_t addr,
                                       const uint8_t *txbuf, size_t txbytes,
                                       uint8_t *rxbuf, size_t rxbytes,
                                       systime_t timeout) {
+                                          chDbgAssert(I2CD1.errors == I2C_NO_ERROR, "i2c");
   i2cp->errors = I2C_NO_ERROR;
   i2cp->addr = addr;
   i2cp->txbuf = txbuf;
