@@ -10,23 +10,25 @@
 #include "LCD_ll.h"
 #include "ch.h"
 #include "hal.h"
-  // #include "i2cconf.h"
 #include <stdio.h>
 #include <string.h>
+#include "i2cconf.h"
 
 // Find divisors for the UART0 and I2C baud rates
-#define BDIV (F_CPU / 100000 - 16) / 2 + 1 // Puts I2C rate just below 100kHz
+// #define BDIV (F_CPU / 100000 - 16) / 2 + 1 // Puts I2C rate just below 100kHz
 
 /* Address of the LCD on the I2C bus */
-#define LCD_ADDR 0x50
+// #define LCD_ADDR 0x50
+#define LCD_ADDR 0x28
 
+#if 0
 /*
  * Low level codes here
  */
 void i2c_init(uint8_t);
 uint8_t i2c_io(uint8_t, uint8_t *, uint16_t, uint8_t *, uint16_t, uint8_t *,
-                uint16_t);
-
+               uint16_t);
+#endif
 /*
  * LCD APIs here
  */
@@ -39,15 +41,15 @@ uint8_t LCDSendCommand(enum LCDCommand command) {
   switch (command) {
   case LCDON: {
     cmd[1] = 0x41;
-    status = i2c_io(LCD_ADDR, cmd, 2, NULL, 0, NULL, 0);
-    // status = i2cMasterTransmit(&I2CD1, LCD_ADDR, cmd, 2, NULL, 0);
+    // status = i2c_io(LCD_ADDR, cmd, 2, NULL, 0, NULL, 0);
+    status = i2cMasterTransmit(&I2CD1, LCD_ADDR, cmd, 2, NULL, 0);
     // _delay_us(150);
     chThdSleepMicroseconds(150);
   } break;
   case LCDOFF: {
     cmd[1] = 0x42;
-    status = i2c_io(LCD_ADDR, cmd, 2, NULL, 0, NULL, 0);
-    // status = i2cMasterTransmit(&I2CD1, LCD_ADDR, cmd, 2, NULL, 0);
+    // status = i2c_io(LCD_ADDR, cmd, 2, NULL, 0, NULL, 0);
+    status = i2cMasterTransmit(&I2CD1, LCD_ADDR, cmd, 2, NULL, 0);
 
     // _delay_us(150);
     chThdSleepMicroseconds(150);
@@ -55,8 +57,8 @@ uint8_t LCDSendCommand(enum LCDCommand command) {
   } break;
   case CLEARSCREEN: {
     cmd[1] = 0x51;
-    status = i2c_io(LCD_ADDR, cmd, 2, NULL, 0, NULL, 0);
-    // status = i2cMasterTransmit(&I2CD1, LCD_ADDR, cmd, 2, NULL, 0);
+    // status = i2c_io(LCD_ADDR, cmd, 2, NULL, 0, NULL, 0);
+    status = i2cMasterTransmitTimeout(&I2CD1, LCD_ADDR, cmd, 2, NULL, 0, TIME_INFINITE);
 
     // _delay_ms(150);
     chThdSleepMilliseconds(150);
@@ -64,16 +66,16 @@ uint8_t LCDSendCommand(enum LCDCommand command) {
   } break;
   case CURSORHOME: {
     cmd[1] = 0x46;
-    status = i2c_io(LCD_ADDR, cmd, 2, NULL, 0, NULL, 0);
-    // status = i2cMasterTransmit(&I2CD1, LCD_ADDR, cmd, 2, NULL, 0);
+    // status = i2c_io(LCD_ADDR, cmd, 2, NULL, 0, NULL, 0);
+    status = i2cMasterTransmit(&I2CD1, LCD_ADDR, cmd, 2, NULL, 0);
 
     // _delay_ms(2);
     chThdSleepMilliseconds(2);
   } break;
   case CURSORON: {
     cmd[1] = 0x4b;
-    status = i2c_io(LCD_ADDR, cmd, 2, NULL, 0, NULL, 0);
-    // status = i2cMasterTransmit(&I2CD1, LCD_ADDR, cmd, 2, NULL, 0);
+    // status = i2c_io(LCD_ADDR, cmd, 2, NULL, 0, NULL, 0);
+    status = i2cMasterTransmit(&I2CD1, LCD_ADDR, cmd, 2, NULL, 0);
 
     // _delay_us(150);
     chThdSleepMicroseconds(150);
@@ -81,8 +83,8 @@ uint8_t LCDSendCommand(enum LCDCommand command) {
   } break;
   case CURSOROFF: {
     cmd[1] = 0x4c;
-    status = i2c_io(LCD_ADDR, cmd, 2, NULL, 0, NULL, 0);
-    // status = i2cMasterTransmit(&I2CD1, LCD_ADDR, cmd, 2, NULL, 0);
+    // status = i2c_io(LCD_ADDR, cmd, 2, NULL, 0, NULL, 0);
+    status = i2cMasterTransmit(&I2CD1, LCD_ADDR, cmd, 2, NULL, 0);
 
     // _delay_us(150);
     chThdSleepMicroseconds(150);
@@ -90,8 +92,8 @@ uint8_t LCDSendCommand(enum LCDCommand command) {
   } break;
   case SHOWFIRMWARE: {
     cmd[1] = 0x70;
-    status = i2c_io(LCD_ADDR, cmd, 2, NULL, 0, NULL, 0);
-    // status = i2cMasterTransmit(&I2CD1, LCD_ADDR, cmd, 2, NULL, 0);
+    // status = i2c_io(LCD_ADDR, cmd, 2, NULL, 0, NULL, 0);
+    status = i2cMasterTransmit(&I2CD1, LCD_ADDR, cmd, 2, NULL, 0);
 
     // _delay_ms(5);
     chThdSleepMilliseconds(5);
@@ -112,8 +114,8 @@ uint8_t LCDSetBrightness(char level) {
   cmd[0] = 0xfe;
   cmd[1] = 0x53;
   cmd[2] = level;
-  status = i2c_io(LCD_ADDR, cmd, 3, NULL, 0, NULL, 0);
-  // status = i2cMasterTransmit(&I2CD1, LCD_ADDR, cmd, 3, NULL, 0);
+  // status = i2c_io(LCD_ADDR, cmd, 3, NULL, 0, NULL, 0);
+  status = i2cMasterTransmit(&I2CD1, LCD_ADDR, cmd, 3, NULL, 0);
   //_delay_us(100);
   chThdSleepMicroseconds(100);
   return status;
@@ -126,8 +128,8 @@ uint8_t LCDSetContrast(char level) {
   cmd[0] = 0xfe;
   cmd[1] = 0x52;
   cmd[2] = level;
-  status = i2c_io(LCD_ADDR, cmd, 3, NULL, 0, NULL, 0);
-  // status = i2cMasterTransmit(&I2CD1, LCD_ADDR, cmd, 3, NULL, 0);
+  // status = i2c_io(LCD_ADDR, cmd, 3, NULL, 0, NULL, 0);
+  status = i2cMasterTransmit(&I2CD1, LCD_ADDR, cmd, 3, NULL, 0);
   //_delay_ms(50);
   chThdSleepMilliseconds(50);
 
@@ -149,8 +151,8 @@ uint8_t LCDSetCursor(char line, char position) {
   cmd[0] = 0xfe;
   cmd[1] = 0x45;
   cmd[2] = col + position;
-  status = i2c_io(LCD_ADDR, cmd, 3, NULL, 0, NULL, 0);
-  // status = i2cMasterTransmit(&I2CD1, LCD_ADDR, cmd, 3, NULL, 0);
+  // status = i2c_io(LCD_ADDR, cmd, 3, NULL, 0, NULL, 0);
+  status = i2cMasterTransmit(&I2CD1, LCD_ADDR, cmd, 3, NULL, 0);
   //_delay_us(150);
   chThdSleepMicroseconds(150);
 
@@ -158,11 +160,10 @@ uint8_t LCDSetCursor(char line, char position) {
 }
 
 void LCDInit() {
-  PORTC |= (1 << PC1); // Enable pull-up for switch on PORTC bit 1
-  // i2cStart(&I2CD1, NULL);
-  i2c_init(BDIV);      // Initialize the I2C port
+  // i2c_init(BDIV);      // Initialize the I2C port
   //_delay_ms(200);
 
+  i2cStart(&I2CD1, &i2c_config);
   chThdSleepMilliseconds(200);
 
   LCDSendCommand(CLEARSCREEN);
@@ -183,18 +184,36 @@ uint8_t LCDPrint(const char *msg) {
   uint8_t i;
   char len = strlen(msg);
   for (i = 0; i < (uint8_t)len; ++i) {
-    status = i2c_io(LCD_ADDR, (uint8_t *)&msg[i], 1, NULL, 0, NULL, 0);
-    // status = i2cMasterTransmit(&I2CD1, LCD_ADDR, (uint8_t *)&msg[i], 1, NULL, 0);
+    // status = i2c_io(LCD_ADDR, (uint8_t *)&msg[i], 1, NULL, 0, NULL, 0);
+    status = i2cMasterTransmit(&I2CD1, LCD_ADDR, (uint8_t *)&msg[i], 1, NULL, 0);
     // _delay_us(150);
     chThdSleepMicroseconds(150);
 
-    if (status) {
-      return status;
-    }
+    /* TODO Deal with problems later */
+    // if (status) {
+    //   return status;
+    // }
   }
   return status;
 }
 // End LCD APIs -------------------------------------------------------------
+
+#if 0
+uint8_t i2c_io(uint8_t device_addr, uint8_t *ap, uint16_t an, uint8_t *wp,
+               uint16_t wn, uint8_t *rp, uint16_t rn) {
+  (void)wp;
+  (void)wn;
+  (void)rp;
+  (void)rn;
+  return i2cMasterTransmit(&I2CD1, device_addr, ap, an, NULL, 0);
+}
+
+void i2c_init(uint8_t bdiv) {
+  (void) bdiv;
+  i2cStart(&I2CD1, &i2c_config);
+} 
+#endif
+#if 0
 
 /* ----------------------------------------------------------------------- */
 
@@ -397,3 +416,4 @@ void i2c_init(uint8_t bdiv) {
 }
 
 /* ----------------------------------------------------------------------- */
+#endif

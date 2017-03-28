@@ -43,8 +43,8 @@
 MCU = atmega328p
 
 # Chosen board. Either BOARD_USE_UNO or BOARD_USE_CUSTOM
-# BOARD_CHOSEN = BOARD_USE_CUSTOM
-BOARD_CHOSEN = BOARD_USE_UNO
+BOARD_CHOSEN = BOARD_USE_CUSTOM
+# BOARD_CHOSEN = BOARD_USE_UNO
 
 # Processor frequency.
 ifeq ($(BOARD_CHOSEN), BOARD_USE_CUSTOM)
@@ -105,6 +105,7 @@ SRC = $(KERNSRC) \
 	  lcd.c \
 	  LED_ll.c \
 	  led.c \
+	  i2cconf.c \
       main.c
 
 # List C++ source files here. (C dependencies are automatically generated.)

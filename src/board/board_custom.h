@@ -15,5 +15,7 @@
 #define VAL_DDRD  0b00001110
 #define VAL_PORTD 0b11110001
 
+#define AVR_SDS_TX_PORT IOPORT3
+#define AVR_SDS_TX_PIN 0
 
 #endif

@@ -1,5 +1,7 @@
 #pragma once 
 
-const I2CConfig i2c_config = {
-  100000
-};
+#include "hal.h"
+
+#if HAL_USE_I2C
+const I2CConfig i2c_config;
+#endif
