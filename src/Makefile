@@ -105,6 +105,7 @@ SRC = $(KERNSRC) \
 	  lcd.c \
 	  LED_ll.c \
 	  led.c \
+	  i2cconf.c \
       main.c
 
 # List C++ source files here. (C dependencies are automatically generated.)
