@@ -319,13 +319,12 @@ static void usartS_init(const SerialConfig *config) {
     sds_bits_per_char = 8;
   }
 #endif
-#if 0
+
   /* Timer 2 Top.*/
   OCR2A = config->sc_ocr2a;
   /* Timer 2 output compare A interrupt.*/
   TIMSK2 |= 1 << OCIE2A;
   usartS_start_timer();
-#endif
 }
 
 void usartS_enable_rx(void) {
