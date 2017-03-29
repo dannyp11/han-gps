@@ -65,8 +65,8 @@ int main(void) {
      here will be executed after all other tasks have been started.*/
 #endif
   while (true) {
-    //debug("USART1\r\n");
-    //chThdSleepSeconds(1);
+    debug("USART1\r\n");
+    chThdSleepSeconds(1);
     chprintf((BaseSequentialStream*) &SDS, "USARTS\r\n");
     chThdSleepSeconds(1);
   }
