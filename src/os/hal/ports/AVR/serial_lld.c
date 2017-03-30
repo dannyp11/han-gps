@@ -106,7 +106,8 @@ typedef enum {
 
 typedef enum {
   SDS_TX_IDLE,
-  SDS_TX_TRANSMIT
+  SDS_TX_TRANSMIT,
+  SDS_TX_WAIT
 } sds_tx_state_t;
 
 /**
@@ -128,11 +129,7 @@ static uint8_t sds_rx_tccr2b_div;
  */
 static uint8_t sds_bits_per_char;
 
-/**
- * @brief SDS state
- */
 static volatile sds_rx_state_t sds_rx_state = SDS_RX_IDLE;
-static volatile sds_tx_state_t sds_tx_state = SDS_TX_IDLE;
 
 /*===========================================================================*/
 /* Driver local functions.                                                   */
@@ -465,7 +462,8 @@ OSAL_IRQ_HANDLER(AVR_SDS_RX_VECT) {
 /**
  * @brief TIMER2 Comparator A interrupt
  *
- * @details Receives data if state is in RECEIVE
+ * @details VERY IMPORTANT: Timer is triggered twice per data bit, so 4800 BAUD 
+ * serial requires 9600Hz clock.
  *
  * @isr
  */
@@ -485,11 +483,7 @@ OSAL_IRQ_HANDLER(TIMER2_COMPA_vect) {
       break;
     case SDS_RX_WAIT: /* Waits a clock before sampling*/
       // byte = 0;
-      if (rx_i < sds_bits_per_char) {
-        sds_rx_state = SDS_RX_SAMPLE;
-      } else {
-        sds_rx_state = SDS_RX_IDLE;
-      }
+      sds_rx_state = SDS_RX_SAMPLE;
       break;
     case SDS_RX_SAMPLE:
       if (rx_i < sds_bits_per_char) {
@@ -503,23 +497,28 @@ OSAL_IRQ_HANDLER(TIMER2_COMPA_vect) {
         }
         rx_byte = 0;
       }
+      if (rx_i < sds_bits_per_char) {
+        sds_rx_state = SDS_RX_SAMPLE;
+      } else {
+        sds_rx_state = SDS_RX_IDLE;
+      }
       ++rx_i;
-      sds_rx_state = SDS_RX_WAIT;
       break;
     }
   }
   /* TX state machine.*/
   {
+    static sds_tx_state_t tx_state = SDS_TX_IDLE;
     static int8_t tx_byte;
     static int8_t tx_i;
-    switch (sds_tx_state) {
+    switch (tx_state) {
     case SDS_TX_IDLE:
       tx_i = -1;
       osalSysLockFromISR();
       tx_byte = sdRequestDataI(&SDS);
       osalSysUnlockFromISR();
       if (tx_byte >= Q_OK) {
-        sds_tx_state = SDS_TX_TRANSMIT;
+        tx_state = SDS_TX_TRANSMIT;
       }
       break;
     case SDS_TX_TRANSMIT: {
@@ -531,16 +530,24 @@ OSAL_IRQ_HANDLER(TIMER2_COMPA_vect) {
       /* STOP.*/
       else if (tx_i == sds_bits_per_char) {
         bit = 1;
-        sds_rx_state = SDS_TX_IDLE;
+        // sds_rx_state = SDS_TX_IDLE;
       }
       /* Data.*/
       else {
         bit = (tx_byte & (1 << tx_i)) != 0;
       }
       palWritePad(AVR_SDS_TX_PORT, AVR_SDS_TX_PIN, bit);
-      ++tx_i;
+      tx_state = SDS_TX_WAIT;
       break;
     }
+    case SDS_TX_WAIT:
+      if (tx_i == sds_bits_per_char) {
+        tx_state = SDS_TX_IDLE;
+      } else {
+        tx_state = SDS_TX_TRANSMIT;
+      }
+      ++tx_i;
+      break;
     }
   }
   OSAL_IRQ_EPILOGUE();
