@@ -99,12 +99,15 @@ SerialDriver SDS;
  * @brief SDS state machine
  */
 typedef enum {
-  IDLE,
-  RECEIVE_INIT,
-  RECEIVE,
-  TRANSMIT_INIT,
-  TRANSMIT
-} sds_state_t;
+  SDS_RX_IDLE,
+  SDS_RX_WAIT,
+  SDS_RX_SAMPLE
+} sds_rx_state_t;
+
+typedef enum {
+  SDS_TX_IDLE,
+  SDS_TX_TRANSMIT
+} sds_tx_state_t;
 
 /**
  * @brief   Driver default configuration.
@@ -128,7 +131,8 @@ static uint8_t sds_bits_per_char;
 /**
  * @brief SDS state
  */
-static volatile sds_state_t sds_state = IDLE;
+static volatile sds_rx_state_t sds_rx_state = SDS_RX_IDLE;
+static volatile sds_tx_state_t sds_tx_state = SDS_TX_IDLE;
 
 /*===========================================================================*/
 /* Driver local functions.                                                   */
@@ -267,16 +271,16 @@ static void usart1_deinit(void) {
 
 #if AVR_SERIAL_USE_USARTS || defined(__DOXYGEN__)
 
-/**
- * @brief Generates a single half period. Used in receiving
- */
-void usartS_start_timer_half(void) {
-  /* Resets counter to half length.*/
-  TCNT2 = OCR2A / 2;
-  /* Start timer.*/
-  TCCR2B &= ~AVR_SDS_RX_TCCR2B_CLK_MASK; /* Clear CLK section.*/
-  TCCR2B |= sds_rx_tccr2b_div;           /* Set CLK setting.*/
-}
+// /**
+//  * @brief Generates a single half period. Used in receiving
+//  */
+// void usartS_start_timer_half(void) {
+//   /* Resets counter to half length.*/
+//   TCNT2 = OCR2A / 2;
+//   /* Start timer.*/
+//   TCCR2B &= ~AVR_SDS_RX_TCCR2B_CLK_MASK; /* Clear CLK section.*/
+//   TCCR2B |= sds_rx_tccr2b_div;           /* Set CLK setting.*/
+// }
 
 void usartS_start_timer(void) {
   /* Reset counter.*/
@@ -308,6 +312,7 @@ static void usartS_init(const SerialConfig *config) {
   /* Falling edge of INT0 triggers interrupt.*/
   EICRA |= (1 << ISC01);
   EICRA &= ~(1 << ISC00);
+#endif
   /* Timer 2 CTC mode.*/
   TCCR2A |= 1 << WGM21;
   TCCR2A &= ~((1 << WGM22) | (1 << WGM20));
@@ -318,7 +323,6 @@ static void usartS_init(const SerialConfig *config) {
   default:
     sds_bits_per_char = 8;
   }
-#endif
 
   /* Timer 2 Top.*/
   OCR2A = config->sc_ocr2a;
@@ -446,21 +450,15 @@ OSAL_IRQ_HANDLER(AVR_SD2_TX_VECT) {
  */
 OSAL_IRQ_HANDLER(AVR_SDS_RX_VECT) {
   OSAL_IRQ_PROLOGUE();
-  switch (sds_state) {
-  case IDLE:
-    sds_state = RECEIVE_INIT;
-    usartS_stop_timer();
-    usartS_start_timer_half();
+  chSysDisable();
+  switch (sds_rx_state) {
+  case SDS_RX_IDLE:
+    sds_rx_state = SDS_RX_WAIT;
     break;
-  case RECEIVE_INIT:
-  case RECEIVE:
-    /* Do nothing.*/
-    break;
-  case TRANSMIT_INIT:
-  case TRANSMIT:
-    /* Do nothing.*/
+  default:
     break;
   }
+  chSysEnable();
   OSAL_IRQ_EPILOGUE();
 }
 
@@ -472,68 +470,78 @@ OSAL_IRQ_HANDLER(AVR_SDS_RX_VECT) {
  * @isr
  */
 OSAL_IRQ_HANDLER(TIMER2_COMPA_vect) {
-  static int8_t i;
   /* Data byte.*/
-  static int8_t byte;
 
   OSAL_IRQ_PROLOGUE();
-  switch (sds_state) {
-  case IDLE:
-    osalSysLockFromISR();
-    byte = sdRequestDataI(&SDS);
-    osalSysUnlockFromISR();
-    if (byte >= Q_OK)
-      sds_state = TRANSMIT_INIT;
-    /* Do Nothing.*/
-    break;
-  case RECEIVE_INIT:
-    i = 0;
-    byte = 0;
-    sds_state = RECEIVE;
-    break; /* Break for the initial half period.*/
-  case RECEIVE:
-    if (i < sds_bits_per_char) {
-      byte |= palReadPad(AVR_SDS_RX_PORT, AVR_SDS_RX_PIN) << i;
-      ++i;
-    } else {
-      /* If last bit is STOP, then assume info is correct. Otherwise, treat as garbage*/
-      if (palReadPad(AVR_SDS_RX_PORT, AVR_SDS_RX_PIN)) {
-        osalSysLockFromISR();
-        sdIncomingDataI(&SDS, byte);
-        osalSysUnlockFromISR();
+  {
+    static int8_t rx_i;
+    static int8_t rx_byte;
+    /* RX state machine.*/
+    switch (sds_rx_state) {
+    case SDS_RX_IDLE:
+      rx_i = 0;
+      rx_byte = 0;
+      /* Do Nothing.*/
+      break;
+    case SDS_RX_WAIT: /* Waits a clock before sampling*/
+      // byte = 0;
+      if (rx_i < sds_bits_per_char) {
+        sds_rx_state = SDS_RX_SAMPLE;
+      } else {
+        sds_rx_state = SDS_RX_IDLE;
       }
-      sds_state = IDLE;
-      i = 0;
-      byte = 0;
+      break;
+    case SDS_RX_SAMPLE:
+      if (rx_i < sds_bits_per_char) {
+        rx_byte |= palReadPad(AVR_SDS_RX_PORT, AVR_SDS_RX_PIN) << rx_i;
+      } else {
+        /* If last bit is STOP, then assume info is correct. Otherwise, treat as garbage*/
+        if (palReadPad(AVR_SDS_RX_PORT, AVR_SDS_RX_PIN)) {
+          osalSysLockFromISR();
+          sdIncomingDataI(&SDS, rx_byte);
+          osalSysUnlockFromISR();
+        }
+        rx_byte = 0;
+      }
+      ++rx_i;
+      sds_rx_state = SDS_RX_WAIT;
+      break;
     }
-    break;
-  case TRANSMIT_INIT:
-    /* Transmit must not be interrupted.*/
-    usartS_disable_rx();
-    sds_state = TRANSMIT;
-    i = -1;
-  /* No break here or timing will be wrong.*/
-  case TRANSMIT: {
-    uint8_t bit;
-    /* START.*/
-    if (i == -1) {
-      bit = 0;
-    }
-    /* STOP.*/
-    else if (i == sds_bits_per_char) {
-      bit = 1;
-      sds_state = IDLE;
-      /* Re-enable receive at the end of a transmit.*/
-      usartS_enable_rx();
-    }
-    /* Data.*/
-    else {
-      bit = (byte & (1 << i)) != 0;
-    }
-    palWritePad(AVR_SDS_TX_PORT, AVR_SDS_TX_PIN, bit);
-    ++i;
-    break;
   }
+  /* TX state machine.*/
+  {
+    static int8_t tx_byte;
+    static int8_t tx_i;
+    switch (sds_tx_state) {
+    case SDS_TX_IDLE:
+      tx_i = -1;
+      osalSysLockFromISR();
+      tx_byte = sdRequestDataI(&SDS);
+      osalSysUnlockFromISR();
+      if (tx_byte >= Q_OK) {
+        sds_tx_state = SDS_TX_TRANSMIT;
+      }
+      break;
+    case SDS_TX_TRANSMIT: {
+      uint8_t bit;
+      /* START.*/
+      if (tx_i == -1) {
+        bit = 0;
+      }
+      /* STOP.*/
+      else if (tx_i == sds_bits_per_char) {
+        bit = 1;
+        sds_rx_state = SDS_TX_IDLE;
+      }
+      /* Data.*/
+      else {
+        bit = (tx_byte & (1 << tx_i)) != 0;
+      }
+      palWritePad(AVR_SDS_TX_PORT, AVR_SDS_TX_PIN, bit);
+      ++tx_i;
+      break;
+    }
+    }
   }
   OSAL_IRQ_EPILOGUE();
 }
