@@ -65,14 +65,11 @@ int main(void) {
      here will be executed after all other tasks have been started.*/
 #endif
   while (true) {
-    debug("USART1\r\n");
-    chThdSleepSeconds(1);
-    chprintf((BaseSequentialStream *)&SDS, "USARTS\r\n");
-    chprintf((BaseSequentialStream *)&SDS, "USARTS Press A Key > ");
-    {
-      char x = sdGet(&SDS);
-      chprintf((BaseSequentialStream *)&SDS, "%d\r\n", x);
-    }
-    chThdSleepSeconds(1);
+    signed char x;
+
+    x = sdGet(&SDS);
+    chprintf((BaseSequentialStream *)&SDS, "%c", x);
+
+    chThdSleepMilliseconds(2);
   }
 }

@@ -72,14 +72,14 @@ SerialDriver SD2;
  */
 #if AVR_SERIAL_USE_USARTS || defined(__DOXYGEN__)
 SerialDriver SDS;
-#if !defined AVR_GPT_USE_TIM2
+#if !AVR_GPT_USE_TIM2
 #error "Software serial requires AVR_GPT_USE_TIM2"
 #endif
 /* Uses INT0*/
 #if AVR_SDS_USE_INT0
 #define AVR_SDS_RX_PORT IOPORT4
 #define AVR_SDS_RX_PIN 2
-#define AVR_SDS_RX_VECT PCINT0_vect
+#define AVR_SDS_RX_VECT INT0_vect
 #define AVR_SDS_RX_TCCR2B_CLK_MASK 0b00000111
 #endif
 /* By default, uses PB1 as TX.*/
@@ -305,12 +305,11 @@ static void usartS_init(const SerialConfig *config) {
   /* Sets appropriate I/O mode.*/
   palSetPadMode(AVR_SDS_RX_PORT, AVR_SDS_RX_PIN, PAL_MODE_INPUT);
   palSetPadMode(AVR_SDS_TX_PORT, AVR_SDS_TX_PIN, PAL_MODE_OUTPUT_PUSHPULL);
-#if defined AVR_SDS_USE_INT0
+#if AVR_SDS_USE_INT0
   /* Falling edge of INT0 triggers interrupt.*/
   EICRA |= (1 << ISC01);
   EICRA &= ~(1 << ISC00);
   EIMSK |= 1 << 0;
-
 #endif
   /* Timer 2 CTC mode.*/
   TCCR2A |= 1 << WGM21;
@@ -467,11 +466,11 @@ OSAL_IRQ_HANDLER(TIMER2_COMPA_vect) {
   OSAL_IRQ_PROLOGUE();
   {
     static int8_t rx_i;
-    static int8_t rx_byte;
+    static uint8_t rx_byte;
     /* RX state machine.*/
     switch (sds_rx_state) {
     case SDS_RX_IDLE:
-      rx_i = 0;
+      rx_i = -1;
       rx_byte = 0;
       /* Do Nothing.*/
       break;
@@ -480,7 +479,9 @@ OSAL_IRQ_HANDLER(TIMER2_COMPA_vect) {
       sds_rx_state = SDS_RX_SAMPLE;
       break;
     case SDS_RX_SAMPLE:
-      if (rx_i < sds_bits_per_char) {
+      if (rx_i < 0) {
+        /* Do nothing, START.*/
+      } else if (rx_i < sds_bits_per_char) {
         rx_byte |= palReadPad(AVR_SDS_RX_PORT, AVR_SDS_RX_PIN) << rx_i;
       } else {
         /* If last bit is STOP, then assume info is correct. Otherwise, treat as garbage*/
@@ -492,7 +493,7 @@ OSAL_IRQ_HANDLER(TIMER2_COMPA_vect) {
         rx_byte = 0;
       }
       if (rx_i < sds_bits_per_char) {
-        sds_rx_state = SDS_RX_SAMPLE;
+        sds_rx_state = SDS_RX_WAIT;
       } else {
         sds_rx_state = SDS_RX_IDLE;
       }
