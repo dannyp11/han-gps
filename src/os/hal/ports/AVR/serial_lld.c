@@ -309,6 +309,8 @@ static void usartS_init(const SerialConfig *config) {
   /* Falling edge of INT0 triggers interrupt.*/
   EICRA |= (1 << ISC01);
   EICRA &= ~(1 << ISC00);
+  EIMSK |= 1 << 0;
+
 #endif
   /* Timer 2 CTC mode.*/
   TCCR2A |= 1 << WGM21;
@@ -328,21 +330,13 @@ static void usartS_init(const SerialConfig *config) {
   usartS_start_timer();
 }
 
-void usartS_enable_rx(void) {
-  EIMSK |= 1 << 0;
-}
-
-void usartS_disable_rx(void) {
-  EIMSK &= ~(1 << 0);
-}
-
 /**
 * @brief   USART0 de-initialization.
 */
 static void usartS_deinit(void) {
   usartS_stop_timer();
-  usartS_disable_rx();
   TIMSK2 &= ~(1 << OCIE2A);
+  EIMSK &= ~(1 << 0);
 }
 
 #endif
@@ -530,7 +524,6 @@ OSAL_IRQ_HANDLER(TIMER2_COMPA_vect) {
       /* STOP.*/
       else if (tx_i == sds_bits_per_char) {
         bit = 1;
-        // sds_rx_state = SDS_TX_IDLE;
       }
       /* Data.*/
       else {
