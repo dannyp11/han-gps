@@ -43,8 +43,8 @@
 MCU = atmega328p
 
 # Chosen board. Either BOARD_USE_UNO or BOARD_USE_CUSTOM
-BOARD_CHOSEN = BOARD_USE_CUSTOM
-#BOARD_CHOSEN = BOARD_USE_UNO
+# BOARD_CHOSEN = BOARD_USE_CUSTOM
+BOARD_CHOSEN = BOARD_USE_UNO
 
 # Processor frequency.
 ifeq ($(BOARD_CHOSEN), BOARD_USE_CUSTOM)
@@ -94,8 +94,10 @@ SRC = $(KERNSRC) \
       $(PLATFORMSRC) \
       $(BOARDSRC) \
       $(TESTSRC) \
+	  $(CHIBIOS)/os/hal/lib/streams/memstreams.c \
 	  $(CHIBIOS)/os/hal/lib/streams/chprintf.c \
 	  softserialcfg.c \
+	  monitor.c \
       main.c
 
 # List C++ source files here. (C dependencies are automatically generated.)
@@ -281,7 +283,7 @@ LDFLAGS += $(PRINTF_LIB) $(SCANF_LIB) $(MATH_LIB)
 #
 ifeq ($(BOARD_CHOSEN), BOARD_USE_CUSTOM)
 AVRDUDE_PROGRAMMER = usbtiny
-AVRDUDE_PORT_OPTION= -P usb
+AVRDUDE_PORT_OPTION=
 else ifeq ($(BOARD_CHOSEN), BOARD_USE_UNO)
 AVRDUDE_PROGRAMMER = arduino
 # com1 = serial port. Use lpt1 to connect to parallel port.
@@ -396,7 +398,7 @@ ALL_CPPFLAGS = -mmcu=$(MCU) -I. -x c++ $(CPPFLAGS) $(GENDEPFLAGS)
 ALL_ASFLAGS = -mmcu=$(MCU) -I. -x assembler-with-cpp $(ASFLAGS)
 
 # Default target.
-all: begin gccversion sizebefore build sizeafter end
+all: begin gccversion build sizebefore sizeafter end
 
 # Change the build target to build a HEX file or a library.
 build: elf hex bin eep lss sym

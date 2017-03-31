@@ -14,15 +14,15 @@
     limitations under the License.
 */
 
-#include "hal.h"
 #include "ch.h"
 #include "chprintf.h"
-#include "softserialcfg.h"
+#include "debug.h"
 #include "gps.h"
-#include "monitor.h"
+#include "hal.h"
 #include "lcd.h"
 #include "led.h"
-#include "debug.h"
+#include "monitor.h"
+#include "softserialcfg.h"
 
 #define DRIVERPRIO HIGHPRIO
 
@@ -52,12 +52,12 @@ int main(void) {
   sdStart(&SD1, NULL);
   sdStart(&SDS, &softserial_config);
 
-  //chThdCreateStatic(waTdGPS, sizeof(waTdGPS), NORMALPRIO, tdGPS, NULL);
-  //chThdCreateStatic(waTdMon, sizeof(waTdMon), HIGHPRIO, tdMon, NULL);
-  chThdCreateStatic(waTdLCD, sizeof(waTdLCD), DRIVERPRIO, tdLCD, NULL);
-  //chThdCreateStatic(waTdLED, sizeof(waTdLED), DRIVERPRIO, tdLED, NULL);
-  //chprintf((BaseSequentialStream *) &SDS, "IDLE Thread\r\n");
-  //chThdSetPriority(IDLEPRIO);
+//chThdCreateStatic(waTdGPS, sizeof(waTdGPS), NORMALPRIO, tdGPS, NULL);
+//chThdCreateStatic(waTdMon, sizeof(waTdMon), HIGHPRIO, tdMon, NULL);
+//chThdCreateStatic(waTdLCD, sizeof(waTdLCD), DRIVERPRIO, tdLCD, NULL);
+//chThdCreateStatic(waTdLED, sizeof(waTdLED), DRIVERPRIO, tdLED, NULL);
+//chprintf((BaseSequentialStream *) &SDS, "IDLE Thread\r\n");
+//chThdSetPriority(IDLEPRIO);
 #if 0
   /* This is now the idle thread loop, you may perform here a low priority
      task but you must never try to sleep or wait in this loop. Note that
@@ -65,9 +65,11 @@ int main(void) {
      here will be executed after all other tasks have been started.*/
 #endif
   while (true) {
-    //debug("USART1\r\n");
-    //chThdSleepSeconds(1);
-    // chprintf((BaseSequentialStream*) &SDS, "USARTS\r\n");
-    chThdSleepSeconds(1);
+    signed char x;
+
+    x = sdGet(&SDS);
+    chprintf((BaseSequentialStream *)&SDS, "%c", x);
+
+    chThdSleepMilliseconds(2);
   }
 }

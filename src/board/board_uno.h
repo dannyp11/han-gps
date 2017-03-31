@@ -13,9 +13,6 @@
 #define VAL_DDRD  0x02
 #define VAL_PORTD 0xFF
 
-#define TEST_LED_PORT IOPORT2
-#define TEST_LED_PIN  5
-
 #define AVR_SDS_TX_PORT IOPORT4
 #define AVR_SDS_TX_PIN 3
 

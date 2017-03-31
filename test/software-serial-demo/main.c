@@ -14,10 +14,14 @@
     limitations under the License.
 */
 
-#include "hal.h"
 #include "ch.h"
 #include "chprintf.h"
+#include "debug.h"
+#include "hal.h"
+#include "monitor.h"
 #include "softserialcfg.h"
+
+#define DRIVERPRIO HIGHPRIO
 
 /*
  * Threads static table, one entry per thread. The number of entries must
@@ -44,15 +48,14 @@ int main(void) {
 
   sdStart(&SD1, NULL);
   sdStart(&SDS, &softserial_config);
-
-
-  //chThdSetPriority(IDLEPRIO);
-  //chThdCreateStatic(waTdMon, sizeof(waTdMon), NORMALPRIO, tdMon, NULL);
+  chThdCreateStatic(waTdMon, sizeof(waTdMon), HIGHPRIO, tdMon, NULL);
 
   while (true) {
-    chprintf((BaseSequentialStream *) &SD1, "USART1!\r\n");
-    chThdSleepSeconds(1);
-    chprintf((BaseSequentialStream *) &SDS, "USARTS!\r\n");
-    chThdSleepSeconds(1);
+    signed char x;
+    /* This is blocking.*/
+    x = sdGet(&SDS);
+    chprintf((BaseSequentialStream *)&SDS, "%c", x);
+    /* Yield to other threads.*/
+    chThdSleepMilliseconds(2);
   }
 }
