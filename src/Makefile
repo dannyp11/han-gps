@@ -43,7 +43,7 @@
 MCU = atmega328p
 
 # Chosen board. Either BOARD_USE_UNO or BOARD_USE_CUSTOM
-#BOARD_CHOSEN = BOARD_USE_CUSTOM
+# BOARD_CHOSEN = BOARD_USE_CUSTOM
 BOARD_CHOSEN = BOARD_USE_UNO
 
 # Processor frequency.
@@ -60,6 +60,9 @@ $(warning [Warning] Using unknown config)
 F_CPU=
 TGT=unkn
 endif
+
+# Comment this to turn off printf debugs
+USE_DEBUG=-DUSE_DEBUG
 
 # Output format. (can be srec, ihex, binary)
 FORMAT = ihex
@@ -78,9 +81,9 @@ include $(CHIBIOS)/os/hal/hal.mk
 #include $(CHIBIOS)/os/hal/boards/ARDUINO_UNO/board.mk
 include board/board.mk
 include $(CHIBIOS)/os/hal/ports/AVR/platform.mk
-include $(CHIBIOS)/os/hal/osal/nil/osal.mk
-include $(CHIBIOS)/os/nil/nil.mk
-include $(CHIBIOS)/os/nil/ports/AVR/compilers/GCC/mk/port.mk
+include $(CHIBIOS)/os/hal/osal/rt/osal.mk
+include $(CHIBIOS)/os/rt/rt.mk
+include $(CHIBIOS)/os/rt/ports/AVR/compilers/GCC/mk/port.mk
 #include $(CHIBIOS)/test/nil/test.mk
 
 # List C source files here. (C dependencies are automatically generated.)
@@ -91,8 +94,18 @@ SRC = $(KERNSRC) \
       $(PLATFORMSRC) \
       $(BOARDSRC) \
       $(TESTSRC) \
-			$(CHIBIOS)/os/hal/lib/streams/chprintf.c \
-			softserialcfg.c \
+	  $(CHIBIOS)/os/hal/lib/streams/memstreams.c \
+	  $(CHIBIOS)/os/hal/lib/streams/chprintf.c \
+	  softserialcfg.c \
+	  gps.c \
+	  gpsParser.c \
+	  parser.c \
+	  monitor.c \
+	  LCD_ll.c \
+	  lcd.c \
+	  LED_ll.c \
+	  led.c \
+	  i2cconf.c \
       main.c
 
 # List C++ source files here. (C dependencies are automatically generated.)
@@ -124,7 +137,9 @@ DEBUG = dwarf-2
 #     For a directory that has spaces, enclose it in quotes.
 EXTRAINCDIRS = $(PORTINC) $(KERNINC) $(TESTINC) \
                $(HALINC) $(OSALINC) $(PLATFORMINC) \
-               $(BOARDINC) $(CHIBIOS)/os/hal/lib/streams
+               $(BOARDINC) \
+			   $(CHIBIOS)/os/hal/lib/streams \
+			   $(CHIBIOS)/os/various
 
 # Compiler flag to set the C Standard level.
 #     c89   = "ANSI" C
@@ -152,6 +167,7 @@ CPPDEFS = -DF_CPU=$(F_CPU)UL
 #  -Wa,...:      tell GCC to pass this to the assembler.
 #    -adhlns...: create assembler listing
 CFLAGS = -g$(DEBUG)
+CFLAGS = $(USE_DEBUG)
 CFLAGS += $(CDEFS)
 CFLAGS += -O$(OPT)
 CFLAGS += -funsigned-char
@@ -159,7 +175,7 @@ CFLAGS += -funsigned-bitfields
 CFLAGS += -fpack-struct
 CFLAGS += -fshort-enums
 #CFLAGS += -fno-strict-aliasing
-CFLAGS += -Wall
+CFLAGS += -Werror
 CFLAGS += -Wstrict-prototypes
 #CFLAGS += -mshort-calls
 #CFLAGS += -fno-unit-at-a-time
@@ -188,7 +204,7 @@ CPPFLAGS += -funsigned-bitfields
 CPPFLAGS += -fpack-struct
 CPPFLAGS += -fshort-enums
 CPPFLAGS += -fno-exceptions
-CPPFLAGS += -Wall
+CPPFLAGS += -Werror
 CFLAGS += -Wundef
 #CPPFLAGS += -mshort-calls
 #CPPFLAGS += -fno-unit-at-a-time
@@ -390,7 +406,7 @@ ALL_CPPFLAGS = -mmcu=$(MCU) -I. -x c++ $(CPPFLAGS) $(GENDEPFLAGS)
 ALL_ASFLAGS = -mmcu=$(MCU) -I. -x assembler-with-cpp $(ASFLAGS)
 
 # Default target.
-all: begin gccversion sizebefore build sizeafter end
+all: begin gccversion build sizebefore sizeafter end
 
 # Change the build target to build a HEX file or a library.
 build: elf hex bin eep lss sym

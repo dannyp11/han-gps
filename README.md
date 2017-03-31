@@ -11,3 +11,7 @@ Depending on the board, modify `BOARD_CHOSEN` in `src/Makefile`.
 # Roadmap
 
 - [ ] Create a roadmap
+
+# Software Serial
+Rx - PD2
+Tx - PD3

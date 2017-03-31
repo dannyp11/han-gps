@@ -14,57 +14,25 @@
     limitations under the License.
 */
 
-#include "hal.h"
-#include "nil.h"
+#include "ch.h"
 #include "chprintf.h"
+#include "debug.h"
+#include "gps.h"
+#include "hal.h"
+#include "lcd.h"
+#include "led.h"
+#include "monitor.h"
 #include "softserialcfg.h"
 
-/*
- * Thread 1.
- */
-THD_WORKING_AREA(waThread1, 128);
-THD_FUNCTION(Thread1, arg) {
-
-  (void)arg;
-
-  while (true) {
-    palTogglePad(TEST_LED_PORT, TEST_LED_PIN);
-    //palTogglePad(IOPORT3, 0);
-    chThdSleepMilliseconds(500);
-  }
-}
-
-/*
- * Thread 2.
- */
-THD_WORKING_AREA(waThread2, 128);
-THD_FUNCTION(Thread2, arg) {
-
-  (void)arg;
-
-  /*
-   * Activates the serial driver 1 using the driver default configuration.
-   * PA9 and PA10 are routed to USART1.
-   */
-  sdStart(&SD1, NULL);
-
-  sdStart(&SDS, &softserial_config);
-
-  while (true) {
-    chprintf((BaseSequentialStream *)&SD1, "Hello World SD1!\r\n");
-    chprintf((BaseSequentialStream *)&SDS, "Hello World SDS!\r\n");
-    chThdSleepMilliseconds(2000);
-  }
-}
+#define DRIVERPRIO HIGHPRIO
 
 /*
  * Threads static table, one entry per thread. The number of entries must
  * match NIL_CFG_NUM_THREADS.
  */
-THD_TABLE_BEGIN
-  THD_TABLE_ENTRY(waThread1, "blinker", Thread1, NULL)
-  THD_TABLE_ENTRY(waThread2, "hello", Thread2, NULL)
-THD_TABLE_END
+/*THD_TABLE_BEGIN
+  THD_TABLE_ENTRY(waTdGPS, "GPS", tdGPS, NULL)
+THD_TABLE_END*/
 
 /*
  * Application entry point.
@@ -81,10 +49,27 @@ int main(void) {
   halInit();
   chSysInit();
 
+  sdStart(&SD1, NULL);
+  sdStart(&SDS, &softserial_config);
+
+//chThdCreateStatic(waTdGPS, sizeof(waTdGPS), NORMALPRIO, tdGPS, NULL);
+//chThdCreateStatic(waTdMon, sizeof(waTdMon), HIGHPRIO, tdMon, NULL);
+//chThdCreateStatic(waTdLCD, sizeof(waTdLCD), DRIVERPRIO, tdLCD, NULL);
+//chThdCreateStatic(waTdLED, sizeof(waTdLED), DRIVERPRIO, tdLED, NULL);
+//chprintf((BaseSequentialStream *) &SDS, "IDLE Thread\r\n");
+//chThdSetPriority(IDLEPRIO);
+#if 0
   /* This is now the idle thread loop, you may perform here a low priority
      task but you must never try to sleep or wait in this loop. Note that
      this tasks runs at the lowest priority level so any instruction added
      here will be executed after all other tasks have been started.*/
+#endif
   while (true) {
+    signed char x;
+
+    x = sdGet(&SDS);
+    chprintf((BaseSequentialStream *)&SDS, "%c", x);
+
+    chThdSleepMilliseconds(2);
   }
 }

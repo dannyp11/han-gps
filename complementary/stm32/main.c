@@ -20,10 +20,10 @@
 
 #include "ch.h"
 #include "hal.h"
-#include "test.h"
+// #include "test.h"
 
-#include "shell.h"
 #include "chprintf.h"
+#include "shell.h"
 
 #include "usbcfg.h"
 
@@ -31,8 +31,8 @@
 /* Command line related.                                                     */
 /*===========================================================================*/
 
-#define SHELL_WA_SIZE   THD_WORKING_AREA_SIZE(2048)
-#define TEST_WA_SIZE    THD_WORKING_AREA_SIZE(256)
+#define SHELL_WA_SIZE THD_WORKING_AREA_SIZE(2048)
+// #define TEST_WA_SIZE    THD_WORKING_AREA_SIZE(256)
 
 static void cmd_mem(BaseSequentialStream *chp, int argc, char *argv[]) {
   size_t n, size;
@@ -68,24 +68,26 @@ static void cmd_threads(BaseSequentialStream *chp, int argc, char *argv[]) {
   } while (tp != NULL);
 }
 
-static void cmd_test(BaseSequentialStream *chp, int argc, char *argv[]) {
-  thread_t *tp;
+// static void cmd_test(BaseSequentialStream *chp, int argc, char *argv[]) {
+//   thread_t *tp;
 
-  (void)argv;
-  if (argc > 0) {
-    chprintf(chp, "Usage: test\r\n");
-    return;
-  }
-  tp = chThdCreateFromHeap(NULL, TEST_WA_SIZE, chThdGetPriorityX(),
-                           TestThread, chp);
-  if (tp == NULL) {
-    chprintf(chp, "out of memory\r\n");
-    return;
-  }
-  chThdWait(tp);
-}
+//   (void)argv;
+//   if (argc > 0) {
+//     chprintf(chp, "Usage: test\r\n");
+//     return;
+//   }
+//   tp = chThdCreateFromHeap(NULL, TEST_WA_SIZE, chThdGetPriorityX(),
+//                            TestThread, chp);
+//   if (tp == NULL) {
+//     chprintf(chp, "out of memory\r\n");
+//     return;
+//   }
+//   chThdWait(tp);
+// }
 
 #define debug(...) chprintf(chp, __VA_ARGS__)
+#define debugU(...) chprintf((BaseSequentialStream *)&SDU1, __VA_ARGS__)
+#define debugUC(b) chnPutTimeout((BaseChannel *)&SDU1, b, TIME_IMMEDIATE)
 
 /*
  * Command to monitor I2C
@@ -108,23 +110,21 @@ static void cmd_i2c_monitor(BaseSequentialStream *chp, int argc, char *argv[]) {
     rx_data[i] = 0;
   }
 
-
   for (i = 0; i < count; ++i) {
     int i2c_addr;
 
-    i2c_addr = atoi((const char*) argv[i]);
+    i2c_addr = atoi((const char *)argv[i]);
     i2cAcquireBus(&I2CD1);
     status = i2cMasterReceiveTimeout(&I2CD1, i2c_addr, rx_data, 16, tmo);
     i2cReleaseBus(&I2CD1);
 
-    if (status == MSG_RESET){
+    if (status == MSG_RESET) {
       errors = i2cGetErrors(&I2CD1);
       chprintf(chp, "Error %d\r\n", errors);
       osalDbgCheck(I2C_ACK_FAILURE == errors);
-    }
-    else {
+    } else {
       for (i = 0; i < 16; ++i) {
-      	chprintf(chp, "0x%02X", rx_data[i]);
+        chprintf(chp, "0x%02X", rx_data[i]);
       }
       chprintf(chp, "\r\n");
     }
@@ -134,8 +134,10 @@ static void cmd_i2c_monitor(BaseSequentialStream *chp, int argc, char *argv[]) {
 static uint8_t pipeByte(BaseChannel *chp1, BaseChannel *chp2) {
   int8_t b;
   b = chnGetTimeout(chp1, TIME_IMMEDIATE);
-  if (b != STM_RESET && b != STM_TIMEOUT) {
-    chnPutTimeout(chp2, b, TIME_IMMEDIATE);
+  if (b != Q_RESET && b != Q_TIMEOUT) {
+    debugU("Received %c\r\n",b);
+    chnPutTimeout(chp2, b, TIME_INFINITE);
+    debugU("Transmitted %c\r\n",b);
   }
   /* ETX.*/
   if (b == 0x03) {
@@ -144,7 +146,6 @@ static uint8_t pipeByte(BaseChannel *chp1, BaseChannel *chp2) {
   return 0;
 }
 
-static void tdSD1toSDU1(void *arg);
 /**
  * @brief This function makes the board act as a TTL-USB dongle
  *
@@ -152,80 +153,76 @@ static void tdSD1toSDU1(void *arg);
  */
 static void cmd_serial_console(BaseSequentialStream *chp, int argc, char *argv[]) {
   int baud;
-  SerialConfig sd1cfg = {9600,0,0,0};
+  eventmask_t evt;
+  const eventmask_t RX_USB = EVENT_MASK(1);
+  const eventmask_t RX_SD1 = EVENT_MASK(2);
+  SerialConfig sd1cfg = {9600, 0, 0, 0};
   BaseChannel *chp1 = (BaseChannel *)&SD1;
   BaseChannel *chpu = (BaseChannel *)&SDU1;
+  event_listener_t elU2S;
+  event_listener_t elS2U;
+  signed char cbuf;
 
   /*thread_t *pRead;*/
 
   if (argc == 0) {
     baud = 9600;
-  }
-  else if (argc == 1) {
+  } else if (argc == 1) {
     baud = atoi(argv[0]);
-  }
-  else {
+  } else {
     chprintf(chp, "Usage: serial [BAUD]\r\n");
     chprintf(chp, "    PA9 is TX, PA10 is RX.\r\n");
+    return;
   }
 
   chprintf(chp, "[Serial Console] BAUD set to %d\r\n", baud);
   sd1cfg.speed = baud;
   sdStart(&SD1, &sd1cfg);
 
-  /*pRead = chThdCreateFromHeap(NULL, THD_WORKING_AREA_SIZE(128), NORMALPRIO, tdSD1toSDU1, NULL);*/
-  while (1) {
-    /* Computer to device. Exit if ^C pressed.*/
-    if (pipeByte(chpu, chp1)) break;
-    /* Device to computer. Device cannot break communication.*/
+  while(1) {
+    if (pipeByte(chpu, chp1)) return;
     pipeByte(chp1, chpu);
-
   }
-}
+
+//   chEvtRegisterMaskWithFlags((event_source_t *)chnGetEventSource(&SDU1),
+//                              &elU2S, RX_USB, CHN_INPUT_AVAILABLE);
+//   chEvtRegisterMaskWithFlags((event_source_t *)chnGetEventSource(&SD1),
+//                              &elS2U, RX_SD1, CHN_INPUT_AVAILABLE);
+
+//   while (1) {
+//     evt = chEvtWaitAny(RX_USB | RX_SD1);
+//     if (evt & RX_USB) {
+//       chEvtGetAndClearFlags(&elU2S);
+//       do {
+//         cbuf = chnGetTimeout(chpu, TIME_IMMEDIATE);
+//         chnPutTimeout(chp1, cbuf, TIME_IMMEDIATE);
+//       } while (cbuf != Q_TIMEOUT && cbuf != Q_RESET);
+//     } 
+//     if (evt & RX_SD1) {
+//       chEvtGetAndClearFlags(&elS2U);
+//       do {
+//         cbuf = chnGetTimeout(chp1, TIME_IMMEDIATE);
+//         chnPutTimeout(chpu, cbuf, TIME_IMMEDIATE);
+//       } while (cbuf != Q_TIMEOUT && cbuf != Q_RESET);
+//     }
+//   }
+ }
 
 static const ShellCommand commands[] = {
-  {"mem", cmd_mem},
-  {"threads", cmd_threads},
-  {"test", cmd_test},
-  {"i2c_monitor", cmd_i2c_monitor},
-  {"serial", cmd_serial_console},
-  {NULL, NULL}
-};
+    {"mem", cmd_mem},
+    {"threads", cmd_threads},
+    // {"test", cmd_test},
+    {"i2c_monitor", cmd_i2c_monitor},
+    {"serial", cmd_serial_console},
+    {NULL, NULL}};
 
 static const ShellConfig shell_cfg1 = {
-  (BaseSequentialStream *)&SDU1,
-  commands
-};
+    (BaseSequentialStream *)&SDU1,
+    commands};
 
 /*===========================================================================*/
 /* Generic code.                                                             */
 /*===========================================================================*/
-
-static void tdSD1toSDU1(void * args) {
-  event_listener_t elSD1;
-  eventmask_t flags;
-
-  static int8_t charbuf;
-
-  (void) args;
-  chEvtRegister(/*(event_source_t *)*/chnGetEventSource(&SD1), &elSD1, 1);
-  chprintf((BaseSequentialStream *)&SDU1, "[Serial Console] Spawned SD1 -> SDU1 thread\r\n");
-  while (true) {
-    chEvtWaitOne(EVENT_MASK(1));
-    chSysLock();
-    flags = chEvtGetAndClearFlags(&elSD1);
-    chSysUnlock();
-
-    if (flags & CHN_INPUT_AVAILABLE) {
-      do {
-        charbuf = chnGetTimeout(&SD1, TIME_IMMEDIATE);
-        if (charbuf != Q_TIMEOUT) {
-          chnPutTimeout(&SDU1, charbuf, TIME_IMMEDIATE);
-        }
-      } while(charbuf != Q_TIMEOUT);
-    }
-  }
-}
 
 /*
  * Red LED blinker thread, times are in milliseconds.
@@ -253,7 +250,6 @@ static const I2CConfig i2cfg1 = {
     400000,
     FAST_DUTY_CYCLE_2,
 };
-
 
 /*
  * Application entry point.
@@ -312,8 +308,8 @@ int main(void) {
     if (!shelltp && (SDU1.config->usbp->state == USB_ACTIVE))
       shelltp = shellCreate(&shell_cfg1, SHELL_WA_SIZE, NORMALPRIO);
     else if (chThdTerminatedX(shelltp)) {
-      chThdRelease(shelltp);    /* Recovers memory of the previous shell.   */
-      shelltp = NULL;           /* Triggers spawning of a new shell.        */
+      chThdRelease(shelltp); /* Recovers memory of the previous shell.   */
+      shelltp = NULL;        /* Triggers spawning of a new shell.        */
     }
     chThdSleepMilliseconds(1000);
   }

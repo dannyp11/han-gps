@@ -1,0 +1,7 @@
+{
+    "version": "0.1.0",
+    "command": "cl",
+    "isShellCommand": true,
+    "showOutput": "always",
+    "args": ["-g", "main.c", "gpsParser.c", "parser.c"]
+}
