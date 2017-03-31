@@ -7,7 +7,7 @@
 const SerialConfig softserial_config = {
   UBRR(4800), /* No use, just a placeholder.*/
   USART_CHAR_SIZE_8,
-  192,
+  96,
   (1 << CS21) /* Divide 8.*/
 };
 #elif defined(BOARD_USE_UNO)
@@ -17,8 +17,8 @@ const SerialConfig softserial_config = {
 const SerialConfig softserial_config = {
   UBRR(4800), /* No use, just a placeholder.*/
   USART_CHAR_SIZE_8,
-  52, 
-  (1 << CS22) /* Divide 64.*/
+  208, 
+  (1 << CS21) /* Divide 8.*/
 };
 #else
 #endif
