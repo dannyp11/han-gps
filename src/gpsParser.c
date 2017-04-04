@@ -5,15 +5,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-/*
- * Longitude/Latitude are in dddmm.mmmm format. Therefore, the minutes
- * need to divide by 10000
- */
-typedef struct {
-  int32_t degree;
-  int32_t minute;
-} deg_min_t;
-
 static deg_min_t longitude = {INVALID_GPS_DATA, INVALID_GPS_DATA};
 static deg_min_t latitude = {INVALID_GPS_DATA, INVALID_GPS_DATA};
 

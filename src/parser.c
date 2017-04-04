@@ -94,6 +94,7 @@ failure:
 
 MATCH_CHAR_FUNC(Comma, ',');
 MATCH_CHAR_FUNC(Dollar, '$');
+MATCH_CHAR_FUNC(Asteroid, '*');
 MATCH_CHAR_FUNC(CR, '\r');
 MATCH_CHAR_FUNC(LF, '\n');
 MATCH_FUNC(UpperCase) {
@@ -106,4 +107,17 @@ MATCH_FUNC(Digit) {
 
 MATCH_FUNC(Decimal) {
   return match_Digit(c, i) || c == '.';
+}
+
+PARSE_FUNC(DigitWithComma) {
+    int8_t *p = write_back;
+    buf[length - 1] = '\0';
+    *p = atoi(buf);
+    return PARSE_SUCCESS;
+}
+
+PARSE_FUNC(Digit) {
+    int8_t *p = write_back;
+    *p = atoi(buf);
+    return PARSE_SUCCESS;
 }

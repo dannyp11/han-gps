@@ -58,6 +58,7 @@ MATCH_FUNC(name) {                                  \
 
 extern MATCH_FUNC(Comma);
 extern MATCH_FUNC(Dollar);
+extern MATCH_FUNC(Asteroid);
 extern MATCH_FUNC(CR);
 extern MATCH_FUNC(LF);
 
@@ -92,6 +93,8 @@ typedef parse_result_t (*parse_func_t)(char *, parserstate_t, writeback_t);
 #define PARSE_FUNC(name) parse_result_t parse_##name(char *buf, uint8_t length, void *write_back)
 
 PARSE_FUNC(uint16);
+PARSE_FUNC(Digit);
+PARSE_FUNC(DigitWithComma);
 
 typedef struct {
   match_func_t matcher;

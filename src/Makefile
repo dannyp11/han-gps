@@ -106,6 +106,7 @@ SRC = $(KERNSRC) \
 	  LED_ll.c \
 	  led.c \
 	  i2cconf.c \
+	  xbeeParser.c \
       main.c
 
 # List C++ source files here. (C dependencies are automatically generated.)
