@@ -3,14 +3,14 @@
 #include "gpsParser.h"
 #include <stdlib.h>
 
-static thread_t *callbackThdX = NULL;
+static mailbox_t *mailbox = NULL;
 static int8_t msgIDX = INVALID_XBEE_DATA;
 static deg_min_t longitudeX = {INVALID_XBEE_DATA, INVALID_XBEE_DATA};
 static deg_min_t latitudeX = {INVALID_XBEE_DATA, INVALID_XBEE_DATA};
 static int8_t msgTypeX = INVALID_XBEE_DATA;
 
-void xbeeSetCallbackThread(thread_t *td) {
-    callbackThdX = td;
+void xbeeSetCallbackThread(mailbox_t *mb) {
+    mailbox = mb;
 }
 
 int8_t xbeeGetID() {
@@ -43,7 +43,7 @@ MATCH_FUNC(MsgID) {
 
 PARSE_FUNC(XbeeFinalize) {
     /* If there is a callback, then fire an event.*/
-    if (callbackThdX != NULL) {
+    if (mailbox != NULL) {
 
     }
     return PARSE_SUCCESS;
