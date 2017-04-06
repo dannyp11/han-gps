@@ -56,7 +56,7 @@ void stepParser(msg_t c,
   // debug("\"\r\n");
   //debug("|%d,%d:%c,%d,\"%s\".\r\n", *parserState, *i, c, match_result, (char*)buf);
 
-  //debug("|%d,%d:%c,%d.", parserState, i, c, match_result);
+  info("|%d,%d:%c,%d.\r\n", *parserState, *i, c, match_result);
   switch (match_result) {
   case MATCH_PARTIAL:
     /* Increment counter current matcher.*/

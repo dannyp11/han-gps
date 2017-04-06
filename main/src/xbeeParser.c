@@ -11,6 +11,7 @@ static deg_min_t latitudeX = {INVALID_XBEE_DATA, INVALID_XBEE_DATA};
 static int8_t msgTypeX = INVALID_XBEE_DATA;
 
 void xbeeSetCallback(mailbox_t *mb, memory_pool_t *mp) {
+  info("XBee Set Callback\r\n");
   mailbox = mb;
   pool = mp;
 }
@@ -32,9 +33,9 @@ int8_t xbeeGetMessage() {
 }
 
 MATCH_FUNC(MsgID) {
-  if (i <= 2 && isdigit(c)) {
+  if (i < 2 && isdigit(c)) {
     return MATCH_PARTIAL;
-  } else if (i == 3 && c == ',') {
+  } else if (i == 2 && c == ',') {
     return MATCH_SUCCESS;
   } else {
     return MATCH_FAILED;
@@ -44,24 +45,30 @@ MATCH_FUNC(MsgID) {
 PARSE_FUNC(XbeeFinalize) {
   msg_t r;
   peer_message_t *p;
+  info("Xbee Finalize\r\n");
+  // info("Longitude Deg: %D, Longitude Min: %D", longitudeX.degree, longitudeX.minute);
   /* If there is a callback, then fire an event.*/
   if (mailbox != NULL && pool != NULL) {
     p = chPoolAlloc(pool);
     /* If allocation is successful.*/
     if (p != NULL) {
-      r = chMBPost(mailbox, (msg_t)p, TIME_IMMEDIATE);
+      info("XBee Finalize size=%d p=%d\r\n", sizeof(p), p);
       p->peerID = peerIDX;
       p->longitude = longitudeX;
       p->latitude = latitudeX;
       p->msgID = msgTypeX;
+      r = chMBPost(mailbox, (msg_t)p, TIME_IMMEDIATE);
     }
   }
   if (p == NULL) {
+    info("Xbee Finalize Failed\r\n");
     return PARSE_FAILED;
   } else if (r != MSG_OK) {
     chPoolFree(pool, p);
+    info("Xbee Finalize Failed\r\n");
     return PARSE_FAILED;
   } else {
+    info("Xbee Finalize Succeeded\r\n");
     return PARSE_SUCCESS;
   }
 }

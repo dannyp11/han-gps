@@ -50,6 +50,7 @@ int main(void) {
   chSysInit();
 
   sdStart(&SD1, NULL);
+  info("SD1 Started\r\n");
   sdStart(&SDS, &softserial_config);
 
   // chThdCreateStatic(waTdGPS, sizeof(waTdGPS), NORMALPRIO, tdGPS, NULL);
@@ -57,24 +58,27 @@ int main(void) {
   // chThdCreateStatic(waTdLED, sizeof(waTdLED), DRIVERPRIO, tdLED, NULL);
   chThdCreateStatic(waTdXBee, sizeof(waTdXBee), NORMALPRIO, tdXBee, NULL);
 
+  chThdSleepSeconds(1);
   while (true) {
-    peer_message_t *p;
+    msg_t p;
     peer_message_t peer;
-    // signed char x;
+    // // signed char x;
 
     /* Receive a message.*/
-    chMBFetch(&xbeeMailbox, (msg_t *)p, TIME_INFINITE);
-    /* Copy it.*/
-    peer = *p;
+    chMBFetch(&xbeeMailbox, &p, TIME_INFINITE);
+    peer = *((peer_message_t*) p);
+    chThdSleepSeconds(1);
+    info("Main size=%d p=%d\r\n", sizeof(p), (peer_message_t*)p);
+    info("Main Peer ID: %d\r\n", peer.peerID);
+    info("Main Longitude Degree: %D\r\n", peer.longitude.degree);
+    info("Main Longitude Minute: %D\r\n", peer.longitude.minute);
+    info("Main Latitude Degree: %D\r\n", peer.latitude.degree);
+    info("Main Latitude Minute: %D\r\n", peer.latitude.minute);
+    info("Main Msg ID: %d\r\n", peer.msgID);
     /* Free the message.*/
-    chPoolFree(&xbeeMemoryPool, p);
-    debug("XBee Peer ID: %d\r\n", peer.peerID);
-    debug("XBee Longitude Degree: %D\r\n", peer.longitude.degree);
-    debug("XBee Longitude Minute: %D\r\n", peer.longitude.minute);
-    debug("XBee Latitude Degree: %D\r\n", peer.latitude.degree);
-    debug("XBee Latitude Minute: %D\r\n", peer.latitude.minute);
-    debug("XBee Msg ID: %d\r\n", peer.msgID);
+    chThdSleepSeconds(1);
+    chPoolFree(&xbeeMemoryPool, (peer_message_t*)p);
 
-    //chThdSleepSeconds(1);
+    chThdSleepSeconds(1);
   }
 }

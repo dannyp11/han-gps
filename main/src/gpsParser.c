@@ -57,8 +57,8 @@ PARSE_FUNC(DegMin) {
   //debug("[Parse_DegMin] sizeof(degree)=%d\r\n", sizeof(deg));
   degreeF = atof(buf) * 10000.f;
   deg = degreeF;  
-  //debug("[Parse_DegMin] buf=%s, length=%d, degreeF=%.3f, degree=%D\r\n", buf, length, degreeF, deg);
-  //debug("[Parse_DegMin] degree=%D\r\n", deg);
+  // info("[Parse_DegMin] buf=%s, length=%d, degreeF=%.3f, deg=%D\r\n", buf, length, degreeF, deg);
+  // info("[Parse_DegMin] minute=%D, degree=%D\r\n", deg % 1000000L, deg / 1000000L);
   p->minute = (deg % 1000000L);
   p->degree = (deg / 1000000L);
   return PARSE_SUCCESS;
