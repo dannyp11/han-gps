@@ -52,18 +52,11 @@ int main(void) {
   sdStart(&SD1, NULL);
   sdStart(&SDS, &softserial_config);
 
-  //chThdCreateStatic(waTdGPS, sizeof(waTdGPS), NORMALPRIO, tdGPS, NULL);
+  // chThdCreateStatic(waTdGPS, sizeof(waTdGPS), NORMALPRIO, tdGPS, NULL);
+  // chThdCreateStatic(waTdLCD, sizeof(waTdLCD), DRIVERPRIO, tdLCD, NULL);
+  // chThdCreateStatic(waTdLED, sizeof(waTdLED), DRIVERPRIO, tdLED, NULL);
   chThdCreateStatic(waTdXBee, sizeof(waTdXBee), NORMALPRIO, tdXBee, NULL);
-//chThdCreateStatic(waTdLCD, sizeof(waTdLCD), DRIVERPRIO, tdLCD, NULL);
-//chThdCreateStatic(waTdLED, sizeof(waTdLED), DRIVERPRIO, tdLED, NULL);
-//chprintf((BaseSequentialStream *) &SDS, "IDLE Thread\r\n");
-//chThdSetPriority(IDLEPRIO);
-#if 0
-  /* This is now the idle thread loop, you may perform here a low priority
-     task but you must never try to sleep or wait in this loop. Note that
-     this tasks runs at the lowest priority level so any instruction added
-     here will be executed after all other tasks have been started.*/
-#endif
+
   while (true) {
     peer_message_t *p;
     peer_message_t peer;
