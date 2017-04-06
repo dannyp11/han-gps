@@ -7,6 +7,13 @@
 
 #define INVALID_XBEE_DATA -1
 
+typedef struct {
+    int8_t peerID;
+    deg_min_t longitude;
+    deg_min_t latitude;
+    int8_t msgID;
+} peer_message_t;
+
 void xbeeStepParser(msg_t token);
 
 /**
