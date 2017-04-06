@@ -25,7 +25,7 @@ THD_WORKING_AREA(waTdXBee, XBEE_WA_SIZE);
 THD_FUNCTION(tdXBee, arg) {
   (void)arg;
   event_listener_t elXBeeData;
-  info("XBee Thread Spawned\r\n");
+  info_xbee("XBee Thread Spawned\r\n");
   xbee_init();
 
   chEvtRegisterMaskWithFlags(pXBEEEvt, &elXBeeData, EVENT_MASK(1),
@@ -33,7 +33,7 @@ THD_FUNCTION(tdXBee, arg) {
 
   while (true) {
     if (chEvtWaitOne(EVENT_MASK(1))) {
-      //debug("XBee Evt\r\n");
+      //debug_xbee("XBee Evt\r\n");
       chEvtGetAndClearFlags(&elXBeeData);
       iterateChannel(pXBEEChn, xbeeStepParser);
     }
