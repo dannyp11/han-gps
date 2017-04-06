@@ -21,8 +21,8 @@
 #include "hal.h"
 #include "lcd.h"
 #include "led.h"
-#include "xbee.h"
 #include "softserialcfg.h"
+#include "xbee.h"
 
 #define DRIVERPRIO HIGHPRIO
 
@@ -52,8 +52,8 @@ int main(void) {
   sdStart(&SD1, NULL);
   sdStart(&SDS, &softserial_config);
 
-//chThdCreateStatic(waTdGPS, sizeof(waTdGPS), NORMALPRIO, tdGPS, NULL);
-chThdCreateStatic(waTdXBee, sizeof(waTdXBee), NORMALPRIO, tdXBee, NULL);
+  //chThdCreateStatic(waTdGPS, sizeof(waTdGPS), NORMALPRIO, tdGPS, NULL);
+  chThdCreateStatic(waTdXBee, sizeof(waTdXBee), NORMALPRIO, tdXBee, NULL);
 //chThdCreateStatic(waTdLCD, sizeof(waTdLCD), DRIVERPRIO, tdLCD, NULL);
 //chThdCreateStatic(waTdLED, sizeof(waTdLED), DRIVERPRIO, tdLED, NULL);
 //chprintf((BaseSequentialStream *) &SDS, "IDLE Thread\r\n");
@@ -65,16 +65,23 @@ chThdCreateStatic(waTdXBee, sizeof(waTdXBee), NORMALPRIO, tdXBee, NULL);
      here will be executed after all other tasks have been started.*/
 #endif
   while (true) {
+    peer_message_t *p;
+    peer_message_t peer;
     // signed char x;
 
-    // x = sdGet(&SDS);
-    // chprintf((BaseSequentialStream *)&SDS, "%c", x);
-    debug("XBee Peer ID: %d\r\n", xbeeGetID());
-    debug("XBee Longitude Degree: %D\r\n", xbeeGetLongitude().degree);
-    debug("XBee Longitude Minute: %D\r\n", xbeeGetLongitude().minute);
-    debug("XBee Latitude Degree: %D\r\n", xbeeGetLatitude().degree);
-    debug("XBee Latitude Minute: %D\r\n", xbeeGetLatitude().minute);
-    debug("XBee Msg ID: %d\r\n", xbeeGetMessage());
-    chThdSleepSeconds(1);
+    /* Receive a message.*/
+    chMBFetch(&xbeeMailbox, (msg_t *)p, TIME_INFINITE);
+    /* Copy it.*/
+    peer = *p;
+    /* Free the message.*/
+    chPoolFree(&xbeeMemoryPool, p);
+    debug("XBee Peer ID: %d\r\n", peer.peerID);
+    debug("XBee Longitude Degree: %D\r\n", peer.longitude.degree);
+    debug("XBee Longitude Minute: %D\r\n", peer.longitude.minute);
+    debug("XBee Latitude Degree: %D\r\n", peer.latitude.degree);
+    debug("XBee Latitude Minute: %D\r\n", peer.latitude.minute);
+    debug("XBee Msg ID: %d\r\n", peer.msgID);
+
+    //chThdSleepSeconds(1);
   }
 }

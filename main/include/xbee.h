@@ -4,13 +4,14 @@
 #include "hal.h"
 #include "xbeeParser.h"
 
-#define XBEE_WA_SIZE 128
-
+/* These are means to exchange information with main algorithm.*/
 #define XBEE_MAILBOX_SIZE 4
+#define XBEE_FIFO_SIZE 4
 extern mailbox_t xbeeMailbox;
 extern msg_t xbeeMailboxBuf[XBEE_MAILBOX_SIZE];
 extern memory_pool_t xbeeMemoryPool;
 
+#define XBEE_WA_SIZE 128
 extern THD_WORKING_AREA(waTdXBee, XBEE_WA_SIZE);
 extern THD_FUNCTION(tdXBee, arg);
 

@@ -7,7 +7,7 @@
 MAILBOX_DECL(xbeeMailbox, xbeeMailboxBuf,sizeof(msg_t) * XBEE_MAILBOX_SIZE);
 msg_t xbeeMailboxBuf[XBEE_MAILBOX_SIZE];
 
-MEMORYPOOL_DECL(xbeeMemoryPool, XBEE_MAILBOX_SIZE*sizeof(peer_message_t),NULL);
+MEMORYPOOL_DECL(xbeeMemoryPool, XBEE_FIFO_SIZE*sizeof(peer_message_t),NULL);
 
 void xbee_init(void) {
   sdStart(&SD1, NULL);
