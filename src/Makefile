@@ -101,7 +101,6 @@ SRC = $(KERNSRC) \
 	  gps.c \
 	  gpsParser.c \
 	  parser.c \
-	  monitor.c \
 	  LCD_ll.c \
 	  lcd.c \
 	  LED_ll.c \

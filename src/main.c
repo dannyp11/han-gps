@@ -22,7 +22,6 @@
 #include "lcd.h"
 #include "led.h"
 #include "xbee.h"
-#include "monitor.h"
 #include "softserialcfg.h"
 
 #define DRIVERPRIO HIGHPRIO
@@ -71,7 +70,12 @@ chThdCreateStatic(waTdGPS, sizeof(waTdXBee), NORMALPRIO, tdGPS, NULL);
 
     // x = sdGet(&SDS);
     // chprintf((BaseSequentialStream *)&SDS, "%c", x);
-
+    debug("XBee Peer ID: %d\r\n", xbeeGetID());
+    debug("XBee Longitude Degree: %D\r\n", xbeeGetLongitude().degree);
+    debug("XBee Longitude Minute: %D\r\n", xbeeGetLongitude().minute);
+    debug("XBee Latitude Degree: %D\r\n", xbeeGetLatitude().degree);
+    debug("XBee Latitude Minute: %D\r\n", xbeeGetLatitude().minute);
+    debug("XBee Msg ID: %d\r\n", xbeeGetMessage());
     chThdSleepSeconds(1);
   }
 }
