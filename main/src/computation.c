@@ -15,10 +15,10 @@ THD_FUNCTION(tdComp, arg) {
     peer = *((peer_message_t *)p);
     chThdSleepSeconds(1);
     info_computation("Peer ID: %d\r\n", peer.peerID);
-    info_computation("Longitude Deg: %D\r\n", peer.longitude.degree);
-    info_computation("Longitude Min: %D\r\n", peer.longitude.minute);
-    info_computation("Latitude Deg: %D\r\n", peer.latitude.degree);
-    info_computation("Latitude Min: %D\r\n", peer.latitude.minute);
+    info_computation("Longitude Deg: %d\r\n", peer.longitude.degree);
+    info_computation("Longitude Min: %.3f\r\n", peer.longitude.minute);
+    info_computation("Latitude Deg: %d\r\n", peer.latitude.degree);
+    info_computation("Latitude Min: %.3f\r\n", peer.latitude.minute);
     info_computation("Msg ID: %d\r\n", peer.msgID);
     /* Free the message.*/
     chThdSleepSeconds(1);

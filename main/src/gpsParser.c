@@ -49,18 +49,20 @@ MATCH_ANY(Rest2, 15);
 PARSE_FUNC(DegMin) {
   deg_min_t *p = write_back;
   float degreeF;
-  int32_t deg;
+  //int32_t deg;
   /* Remove the comma.*/
   buf[length - 1] = '\0';
 
   //debug_gps("[Parse_DegMin] buf=%s, length=%d, degreeF=%.3f, degree=%d, sizeof(degree)=%d\r\n", buf, length, degreeF, deg, sizeof(deg));
   //debug_gps("[Parse_DegMin] sizeof(degree)=%d\r\n", sizeof(deg));
-  degreeF = atof(buf) * 10000.f;
-  deg = degreeF;  
+  degreeF = atof(buf);
+  p->minute = fmod(degreeF, 100.f);
+  p->degree = degreeF / 100.f;
+  //deg = degreeF;  
   // info_gps("[Parse_DegMin] buf=%s, length=%d, degreeF=%.3f, deg=%D\r\n", buf, length, degreeF, deg);
   // info_gps("[Parse_DegMin] minute=%D, degree=%D\r\n", deg % 1000000L, deg / 1000000L);
-  p->minute = (deg % 1000000L);
-  p->degree = (deg / 1000000L);
+  // p->minute = (deg % 1000000L);
+  // p->degree = (deg / 1000000L);
   return PARSE_SUCCESS;
 }
 
@@ -98,18 +100,18 @@ void gpsStepParser(msg_t c) {
   stepParser(c, gpsParser, gpsParseCleanup, gpsBuf, 16, &gpsParserState, &gpsCnt);
 }
 
-int32_t getGPSLongitudeDeg() {
+int16_t getGPSLongitudeDeg() {
   return longitude.degree;
 }
 
-int32_t getGPSLongitudeMin() {
+float getGPSLongitudeMin() {
   return longitude.minute;
 }
 
-int32_t getGPSLatitudeDeg() {
+int16_t getGPSLatitudeDeg() {
   return latitude.degree;
 }
 
-int32_t getGPSLatitudeMin() {
+float getGPSLatitudeMin() {
   return latitude.minute;
 }

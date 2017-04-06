@@ -11,8 +11,8 @@
  * need to divide by 10000
  */
 typedef struct {
-  int32_t degree;
-  int32_t minute;
+  int16_t degree;
+  float minute;
 } deg_min_t;
 
 extern MATCH_FUNC(DegMin);
@@ -20,10 +20,10 @@ extern PARSE_FUNC(DegMin);
 
 #define INVALID_GPS_DATA -1
 
-int32_t getGPSLongitudeDeg(void);
-int32_t getGPSLongitudeMin(void);
-int32_t getGPSLatitudeDeg(void);
-int32_t getGPSLatitudeMin(void);
+int16_t getGPSLongitudeDeg(void);
+float getGPSLongitudeMin(void);
+int16_t getGPSLatitudeDeg(void);
+float getGPSLatitudeMin(void);
 
 void gpsStepParser(msg_t token);
 
