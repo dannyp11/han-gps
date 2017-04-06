@@ -45,18 +45,18 @@ void stepParser(msg_t c,
   /* Save the byte.*/
   buf[*i] = c;
   buf[*i + 1] = '\0';
-  // debug("\"");
+  // debug_parser("\"");
   // for (j = 0; j < bufsize; ++j) {
-  //   debug("%c", buf[j]);
+  //   debug_parser("%c", buf[j]);
   // }
-  // debug(",");
+  // debug_parser(",");
   // for (j = 0; j < bufsize; ++j) {
-  //   debug("\\%02x", buf[j]);
+  //   debug_parser("\\%02x", buf[j]);
   // }
-  // debug("\"\r\n");
-  //debug("|%d,%d:%c,%d,\"%s\".\r\n", *parserState, *i, c, match_result, (char*)buf);
+  // debug_parser("\"\r\n");
+  //debug_parser("|%d,%d:%c,%d,\"%s\".\r\n", *parserState, *i, c, match_result, (char*)buf);
 
-  info("|%d,%d:%c,%d.\r\n", *parserState, *i, c, match_result);
+  info_parser("|%d,%d:%c,%d.\r\n", *parserState, *i, c, match_result);
   switch (match_result) {
   case MATCH_PARTIAL:
     /* Increment counter current matcher.*/

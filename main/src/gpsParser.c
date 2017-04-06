@@ -53,12 +53,12 @@ PARSE_FUNC(DegMin) {
   /* Remove the comma.*/
   buf[length - 1] = '\0';
 
-  //debug("[Parse_DegMin] buf=%s, length=%d, degreeF=%.3f, degree=%d, sizeof(degree)=%d\r\n", buf, length, degreeF, deg, sizeof(deg));
-  //debug("[Parse_DegMin] sizeof(degree)=%d\r\n", sizeof(deg));
+  //debug_gps("[Parse_DegMin] buf=%s, length=%d, degreeF=%.3f, degree=%d, sizeof(degree)=%d\r\n", buf, length, degreeF, deg, sizeof(deg));
+  //debug_gps("[Parse_DegMin] sizeof(degree)=%d\r\n", sizeof(deg));
   degreeF = atof(buf) * 10000.f;
   deg = degreeF;  
-  // info("[Parse_DegMin] buf=%s, length=%d, degreeF=%.3f, deg=%D\r\n", buf, length, degreeF, deg);
-  // info("[Parse_DegMin] minute=%D, degree=%D\r\n", deg % 1000000L, deg / 1000000L);
+  // info_gps("[Parse_DegMin] buf=%s, length=%d, degreeF=%.3f, deg=%D\r\n", buf, length, degreeF, deg);
+  // info_gps("[Parse_DegMin] minute=%D, degree=%D\r\n", deg % 1000000L, deg / 1000000L);
   p->minute = (deg % 1000000L);
   p->degree = (deg / 1000000L);
   return PARSE_SUCCESS;

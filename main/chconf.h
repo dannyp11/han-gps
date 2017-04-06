@@ -427,6 +427,10 @@
  */
 #define CH_DBG_THREADS_PROFILING            FALSE
 
+#define DEBUG_PARSER  TRUE
+#define DEBUG_XBEE    TRUE
+#define DEBUG_GPS     TRUE
+
 #define CHPRINTF_USE_FLOAT TRUE
 
 /** @} */
