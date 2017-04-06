@@ -21,6 +21,7 @@
 #include "hal.h"
 #include "lcd.h"
 #include "led.h"
+#include "xbee.h"
 #include "monitor.h"
 #include "softserialcfg.h"
 
@@ -53,6 +54,7 @@ int main(void) {
   sdStart(&SDS, &softserial_config);
 
 //chThdCreateStatic(waTdGPS, sizeof(waTdGPS), NORMALPRIO, tdGPS, NULL);
+chThdCreateStatic(waTdGPS, sizeof(waTdXBee), NORMALPRIO, tdGPS, NULL);
 //chThdCreateStatic(waTdMon, sizeof(waTdMon), HIGHPRIO, tdMon, NULL);
 //chThdCreateStatic(waTdLCD, sizeof(waTdLCD), DRIVERPRIO, tdLCD, NULL);
 //chThdCreateStatic(waTdLED, sizeof(waTdLED), DRIVERPRIO, tdLED, NULL);
@@ -65,11 +67,11 @@ int main(void) {
      here will be executed after all other tasks have been started.*/
 #endif
   while (true) {
-    signed char x;
+    // signed char x;
 
-    x = sdGet(&SDS);
-    chprintf((BaseSequentialStream *)&SDS, "%c", x);
+    // x = sdGet(&SDS);
+    // chprintf((BaseSequentialStream *)&SDS, "%c", x);
 
-    chThdSleepMilliseconds(2);
+    chThdSleepSeconds(1);
   }
 }

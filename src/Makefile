@@ -96,6 +96,7 @@ SRC = $(KERNSRC) \
       $(TESTSRC) \
 	  $(CHIBIOS)/os/hal/lib/streams/memstreams.c \
 	  $(CHIBIOS)/os/hal/lib/streams/chprintf.c \
+	  functional.c \
 	  softserialcfg.c \
 	  gps.c \
 	  gpsParser.c \
@@ -107,6 +108,7 @@ SRC = $(KERNSRC) \
 	  led.c \
 	  i2cconf.c \
 	  xbeeParser.c \
+	  xbee.c \
       main.c
 
 # List C++ source files here. (C dependencies are automatically generated.)

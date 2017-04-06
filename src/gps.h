@@ -11,8 +11,7 @@
 extern THD_WORKING_AREA(waTdGPS, GPS_WA_SIZE);
 extern THD_FUNCTION(tdGPS, arg);
 
-/* TODO: DEBUG ONLY!*/
-#define pGPS_SD (SerialDriver *) &SD1
+#define pGPS_SD (SerialDriver *) &SDS
 #define pGPSChs (BaseSequentialStream *)pGPS_SD
 #define pGPSChn (BaseChannel *)pGPS_SD
 #define pGPSEvt (event_source_t *) chnGetEventSource(pGPS_SD)
