@@ -96,18 +96,18 @@ SRC = $(KERNSRC) \
       $(TESTSRC) \
 	  $(CHIBIOS)/os/hal/lib/streams/memstreams.c \
 	  $(CHIBIOS)/os/hal/lib/streams/chprintf.c \
-	  functional.c \
-	  softserialcfg.c \
-	  gps.c \
-	  gpsParser.c \
-	  parser.c \
-	  LCD_ll.c \
-	  lcd.c \
-	  LED_ll.c \
-	  led.c \
-	  i2cconf.c \
-	  xbeeParser.c \
-	  xbee.c \
+	  src/functional.c \
+	  src/softserialcfg.c \
+	  src/gps.c \
+	  src/gpsParser.c \
+	  src/parser.c \
+	  src/LCD_ll.c \
+	  src/lcd.c \
+	  src/LED_ll.c \
+	  src/led.c \
+	  src/i2cconf.c \
+	  src/xbeeParser.c \
+	  src/xbee.c \
       main.c
 
 # List C++ source files here. (C dependencies are automatically generated.)
@@ -141,7 +141,8 @@ EXTRAINCDIRS = $(PORTINC) $(KERNINC) $(TESTINC) \
                $(HALINC) $(OSALINC) $(PLATFORMINC) \
                $(BOARDINC) \
 			   $(CHIBIOS)/os/hal/lib/streams \
-			   $(CHIBIOS)/os/various
+			   $(CHIBIOS)/os/various \
+			   include
 
 # Compiler flag to set the C Standard level.
 #     c89   = "ANSI" C
