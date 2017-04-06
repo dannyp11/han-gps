@@ -4,13 +4,15 @@
 #include <stdlib.h>
 
 static mailbox_t *mailbox = NULL;
+static memory_pool_t *pool = NULL;
 static int8_t msgIDX = INVALID_XBEE_DATA;
 static deg_min_t longitudeX = {INVALID_XBEE_DATA, INVALID_XBEE_DATA};
 static deg_min_t latitudeX = {INVALID_XBEE_DATA, INVALID_XBEE_DATA};
 static int8_t msgTypeX = INVALID_XBEE_DATA;
 
-void xbeeSetCallbackThread(mailbox_t *mb) {
+void xbeeSetCallback(mailbox_t *mb, memory_pool_t *mp) {
     mailbox = mb;
+    pool = mp;
 }
 
 int8_t xbeeGetID() {
