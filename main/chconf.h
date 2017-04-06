@@ -130,7 +130,7 @@
  * @note    This is not related to the compiler optimization options.
  * @note    The default is @p TRUE.
  */
-#define CH_CFG_OPTIMIZE_SPEED               TRUE
+#define CH_CFG_OPTIMIZE_SPEED               FALSE
 
 /** @} */
 
@@ -427,9 +427,10 @@
  */
 #define CH_DBG_THREADS_PROFILING            FALSE
 
-#define DEBUG_PARSER  TRUE
-#define DEBUG_XBEE    TRUE
-#define DEBUG_GPS     TRUE
+#define DEBUG_COMPUTATION TRUE
+#define DEBUG_PARSER      FALSE
+#define DEBUG_XBEE        FALSE
+#define DEBUG_GPS         FALSE
 
 #define CHPRINTF_USE_FLOAT TRUE
 

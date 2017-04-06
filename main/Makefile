@@ -108,6 +108,7 @@ SRC = $(KERNSRC) \
 	  src/i2cconf.c \
 	  src/xbeeParser.c \
 	  src/xbee.c \
+	  src/computation.c \
       main.c
 
 # List C++ source files here. (C dependencies are automatically generated.)
@@ -409,7 +410,7 @@ ALL_CPPFLAGS = -mmcu=$(MCU) -I. -x c++ $(CPPFLAGS) $(GENDEPFLAGS)
 ALL_ASFLAGS = -mmcu=$(MCU) -I. -x assembler-with-cpp $(ASFLAGS)
 
 # Default target.
-all: begin gccversion build sizebefore sizeafter end
+all: begin sizebefore gccversion build  sizeafter end
 
 # Change the build target to build a HEX file or a library.
 build: elf hex bin eep lss sym

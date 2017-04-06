@@ -23,6 +23,7 @@
 #include "led.h"
 #include "softserialcfg.h"
 #include "xbee.h"
+#include "computation.h"
 
 #define DRIVERPRIO HIGHPRIO
 
@@ -50,35 +51,16 @@ int main(void) {
   chSysInit();
 
   sdStart(&SD1, NULL);
-  info("SD1 Started\r\n");
   sdStart(&SDS, &softserial_config);
 
   // chThdCreateStatic(waTdGPS, sizeof(waTdGPS), NORMALPRIO, tdGPS, NULL);
   // chThdCreateStatic(waTdLCD, sizeof(waTdLCD), DRIVERPRIO, tdLCD, NULL);
   // chThdCreateStatic(waTdLED, sizeof(waTdLED), DRIVERPRIO, tdLED, NULL);
   chThdCreateStatic(waTdXBee, sizeof(waTdXBee), NORMALPRIO, tdXBee, NULL);
+  chThdCreateStatic(waTdComp, sizeof(waTdComp), NORMALPRIO, tdComp, NULL);
 
   chThdSleepSeconds(1);
   while (true) {
-    msg_t p;
-    peer_message_t peer;
-    // // signed char x;
-
-    /* Receive a message.*/
-    chMBFetch(&xbeeMailbox, &p, TIME_INFINITE);
-    peer = *((peer_message_t*) p);
-    chThdSleepSeconds(1);
-    info("Main size=%d p=%d\r\n", sizeof(p), (peer_message_t*)p);
-    info("Main Peer ID: %d\r\n", peer.peerID);
-    info("Main Longitude Degree: %D\r\n", peer.longitude.degree);
-    info("Main Longitude Minute: %D\r\n", peer.longitude.minute);
-    info("Main Latitude Degree: %D\r\n", peer.latitude.degree);
-    info("Main Latitude Minute: %D\r\n", peer.latitude.minute);
-    info("Main Msg ID: %d\r\n", peer.msgID);
-    /* Free the message.*/
-    chThdSleepSeconds(1);
-    chPoolFree(&xbeeMemoryPool, (peer_message_t*)p);
-
     chThdSleepSeconds(1);
   }
 }
