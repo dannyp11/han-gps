@@ -53,8 +53,7 @@ int main(void) {
   sdStart(&SDS, &softserial_config);
 
 //chThdCreateStatic(waTdGPS, sizeof(waTdGPS), NORMALPRIO, tdGPS, NULL);
-chThdCreateStatic(waTdGPS, sizeof(waTdXBee), NORMALPRIO, tdGPS, NULL);
-//chThdCreateStatic(waTdMon, sizeof(waTdMon), HIGHPRIO, tdMon, NULL);
+chThdCreateStatic(waTdXBee, sizeof(waTdXBee), NORMALPRIO, tdXBee, NULL);
 //chThdCreateStatic(waTdLCD, sizeof(waTdLCD), DRIVERPRIO, tdLCD, NULL);
 //chThdCreateStatic(waTdLED, sizeof(waTdLED), DRIVERPRIO, tdLED, NULL);
 //chprintf((BaseSequentialStream *) &SDS, "IDLE Thread\r\n");

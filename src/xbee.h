@@ -7,7 +7,7 @@
 #define XBEE_WA_SIZE 128
 
 extern THD_WORKING_AREA(waTdXBee, XBEE_WA_SIZE);
-extern THD_FUNCTION(tdXBEE, arg);
+extern THD_FUNCTION(tdXBee, arg);
 
 #define pXBEE_SD (SerialDriver *) &SD1
 #define pXBEEChs (BaseSequentialStream *)pXBEE_SD

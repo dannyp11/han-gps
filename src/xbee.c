@@ -11,7 +11,7 @@ void xbee_init(void) {
 }
 
 THD_WORKING_AREA(waTdXBee, XBEE_WA_SIZE);
-THD_FUNCTION(tdXBEE, arg) {
+THD_FUNCTION(tdXBee, arg) {
   (void)arg;
   event_listener_t elXBeeData;
   xbee_init();
