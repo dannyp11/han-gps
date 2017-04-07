@@ -4,6 +4,13 @@
 
 #include <math.h>
 
+float distance(float lo1, float la1, float lo2, float la2) {
+  float a = pow(sin((la1 - la2) / 2.f), 2.f) + cos(la1) * cos(la2) * pow(sin((lo1 - la2) / 2.f), 2.f);
+  float c = 2 * atan2(sqrt(a), sqrt(1-a));
+  float d = 6378137 * c;
+  return d;
+}
+
 void compute(const peer_message_t *p) {
 }
 
