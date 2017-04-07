@@ -6,8 +6,8 @@
 static mailbox_t *mailbox = NULL;
 static memory_pool_t *pool = NULL;
 static int8_t peerIDX = INVALID_XBEE_DATA;
-static deg_min_t longitudeX = {INVALID_XBEE_DATA, INVALID_XBEE_DATA};
-static deg_min_t latitudeX = {INVALID_XBEE_DATA, INVALID_XBEE_DATA};
+static deg_min_t longitudeX = INVALID_XBEE_DATA;
+static deg_min_t latitudeX = INVALID_XBEE_DATA;
 static int8_t msgTypeX = INVALID_XBEE_DATA;
 
 void xbeeSetCallback(mailbox_t *mb, memory_pool_t *mp) {
@@ -93,10 +93,8 @@ parser_t xbeeParser(parserstate_t parserState) {
 }
 
 void xbeeParserCleanup(void) {
-  longitudeX.degree = INVALID_XBEE_DATA;
-  longitudeX.minute = INVALID_XBEE_DATA;
-  latitudeX.degree = INVALID_XBEE_DATA;
-  latitudeX.minute = INVALID_XBEE_DATA;
+  longitudeX = INVALID_XBEE_DATA;
+  latitudeX = INVALID_XBEE_DATA;
   peerIDX = INVALID_XBEE_DATA;
   msgTypeX = INVALID_XBEE_DATA;
 }

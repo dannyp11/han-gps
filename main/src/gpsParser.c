@@ -5,8 +5,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-static deg_min_t longitude = {INVALID_GPS_DATA, INVALID_GPS_DATA};
-static deg_min_t latitude = {INVALID_GPS_DATA, INVALID_GPS_DATA};
+static deg_min_t longitude = INVALID_GPS_DATA;
+static deg_min_t latitude = INVALID_GPS_DATA;
 
 MATCH_FUNC(GGA) {
   if (i < 2 && c == 'G') {
@@ -48,29 +48,23 @@ MATCH_ANY(Rest2, 15);
  */
 PARSE_FUNC(DegMin) {
   deg_min_t *p = write_back;
-  float degreeF;
+  float degree, minute;
   //int32_t deg;
   /* Remove the comma.*/
   buf[length - 1] = '\0';
 
-  //debug_gps("[Parse_DegMin] buf=%s, length=%d, degreeF=%.3f, degree=%d, sizeof(degree)=%d\r\n", buf, length, degreeF, deg, sizeof(deg));
-  //debug_gps("[Parse_DegMin] sizeof(degree)=%d\r\n", sizeof(deg));
-  degreeF = atof(buf);
-  p->minute = fmod(degreeF, 100.f);
-  p->degree = degreeF / 100.f;
-  //deg = degreeF;  
-  // info_gps("[Parse_DegMin] buf=%s, length=%d, degreeF=%.3f, deg=%D\r\n", buf, length, degreeF, deg);
-  // info_gps("[Parse_DegMin] minute=%D, degree=%D\r\n", deg % 1000000L, deg / 1000000L);
-  // p->minute = (deg % 1000000L);
-  // p->degree = (deg / 1000000L);
+  degree = atof(buf);
+  minute = fmod(degree, 100.f);
+  degree = truncf(degree / 100.f);
+  debug_parser("d=%.f, m=%.4f\r\n", degree, minute);
+  *p = degree * M_PI / 180.f;
+  *p += minute * M_PI / 10800.f;
   return PARSE_SUCCESS;
 }
 
 void gpsParseCleanup(void) {
-  longitude.degree = INVALID_GPS_DATA;
-  longitude.minute = INVALID_GPS_DATA;
-  latitude.degree = INVALID_GPS_DATA;
-  latitude.minute = INVALID_GPS_DATA;
+  longitude = INVALID_GPS_DATA;
+  latitude = INVALID_GPS_DATA;
 }
 
 parser_t gpsParser(parserstate_t parserState) {
@@ -100,18 +94,10 @@ void gpsStepParser(msg_t c) {
   stepParser(c, gpsParser, gpsParseCleanup, gpsBuf, 16, &gpsParserState, &gpsCnt);
 }
 
-int16_t getGPSLongitudeDeg() {
-  return longitude.degree;
+float getGPSLongitude() {
+  return longitude;
 }
 
-float getGPSLongitudeMin() {
-  return longitude.minute;
-}
-
-int16_t getGPSLatitudeDeg() {
-  return latitude.degree;
-}
-
-float getGPSLatitudeMin() {
-  return latitude.minute;
+float getGPSLatitude() {
+  return latitude;
 }
