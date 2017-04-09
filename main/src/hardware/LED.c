@@ -1,20 +1,23 @@
-//#include <avr/io.h>
-//#include <util/delay.h>
+#include <avr/io.h>
+#include "LED.h"
 
-#include "LED_ll.h"
+#define SER_PORT    PORTD
+#define SER_PIN     5
+#define RCLK_PORT PORTD
+#define RCLK_PIN  6
+#define SRCLK_PORT PORTD
+#define SRCLK_PIN  4
 
-#define SER_low()  palClearPad(SER_PORT, SER_PIN)
-#define SER_high() palSetPad(SER_PORT, SER_PIN)
-#define RCLK_low()   palClearPad(RCLK_PORT, RCLK_PIN)
-#define RCLK_high() palSetPad(RCLK_PORT, RCLK_PIN)
-#define SRCLK_low()  palClearPad(SRCLK_PORT, SRCLK_PIN)
-#define SRCLK_high() palSetPad(SRCLK_PORT, SRCLK_PIN)
+#define SER_low()  SER_PORT&=~_BV(SER_PIN)
+#define SER_high() SER_PORT|=_BV(SER_PIN)
+#define RCLK_low()  RCLK_PORT&=~_BV(RCLK_PIN)
+#define RCLK_high() RCLK_PORT|=_BV(RCLK_PIN)
+#define SRCLK_low()  SRCLK_PORT&=~_BV(SRCLK_PIN)
+#define SRCLK_high() SRCLK_PORT|=_BV(SRCLK_PIN)
 
 void LEDinit (void) {
-    //DDRD  |= 0b01110000; //1 = output, 0 = input
-    palWriteGroup(IOPORT4, 0b01110000, 0, 0b10001111);
-    palSetGroupMode(IOPORT4, 0b01110000, 0, PAL_MODE_OUTPUT_PUSHPULL);
-    //PORTD &= 0b10001111;
+    DDRD  |= 0b01110000; //1 = output, 0 = input
+    PORTD &= 0b10001111;
 }
 
 void output_led_state(unsigned int __led_state) {
@@ -28,7 +31,7 @@ void output_led_state(unsigned int __led_state) {
       else   
          SER_low();
  
- 
+
       SRCLK_high();
       SRCLK_low();
    }
@@ -74,7 +77,6 @@ void LEDwest(void) {
 void LEDnorthwest(void) {
 	output_led_state(0b01000000);
 }
-
 
 
 

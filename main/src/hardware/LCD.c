@@ -172,11 +172,7 @@ void LCDInit()
 	i2c_init(BDIV);             // Initialize the I2C port
 	mSleepms(200);
 
-	LCDSendCommand(CLEARSCREEN);
-	LCDSendCommand(CURSORHOME);
-	LCDSendCommand(CURSOROFF);
-	LCDSetContrast(40);
-	LCDSetBrightness(8);
+	LCDReset();
 }
 
 uint8_t LCDPrint(const char *msg)
@@ -195,6 +191,15 @@ uint8_t LCDPrint(const char *msg)
 		}
 	}
 	return status;
+}
+
+void LCDReset()
+{
+	LCDSendCommand(CLEARSCREEN);
+	LCDSendCommand(CURSORHOME);
+	LCDSendCommand(CURSOROFF);
+	LCDSetContrast(40);
+	LCDSetBrightness(8);
 }
 // End LCD APIs -------------------------------------------------------------
 

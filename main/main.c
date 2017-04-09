@@ -1,84 +1,181 @@
-/*
-    ChibiOS - Copyright (C) 2006..2015 Giovanni Di Sirio
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
-*/
-
+// chibios includes here
 #include "ch.h"
 #include "chprintf.h"
-#include "debug.h"
-#include "gps.h"
 #include "hal.h"
-#include "lcd.h"
-#include "led.h"
-#include "softserialcfg.h"
-#include "xbee.h"
 
+// HW includes (avr, lcd, gps, etc.) here
+#include <avr/io.h>
+#include "LCD.h"
+#include "LED.h"
+
+// SW includes (modules, algorithm, etc.) here
+#include <stdlib.h>
+#include <stdio.h>
+
+/*
+ * ChibiOS config
+ */
 #define DRIVERPRIO HIGHPRIO
 
 /*
- * Threads static table, one entry per thread. The number of entries must
- * match NIL_CFG_NUM_THREADS.
+ * Global variables here, pls don't use static
  */
-/*THD_TABLE_BEGIN
-  THD_TABLE_ENTRY(waTdGPS, "GPS", tdGPS, NULL)
-THD_TABLE_END*/
+char msg[20];
+int i;
+
+/*
+ * Other helper functions
+ * Pls create module if these functions are too big, for structure control purpose
+ */
+#define LCD_WA_SIZE 128
+#define BUFF_LEN LCD_LINE_LEN + 1
+void lcd_demo(void)
+{
+	static char buffer[BUFF_LEN];
+
+	LCDSendCommand(CURSOROFF);
+	LCDSendCommand(SHOWFIRMWARE);
+
+	LCDSetCursor(2, 0);
+	LCDPrint("LCD:D.Pham,OS:R.Dong");
+	LCDSetCursor(3, 0);
+	chsnprintf(buffer, BUFF_LEN, "Version: %s", __DATE__);
+	LCDPrint(buffer);
+
+	char i;
+	for (i = 0; i < 5; ++i)
+	{
+		LCDSetCursor(4, 0);
+		chsnprintf(buffer, BUFF_LEN, "Demo in %d seconds...", 5 - i);
+		LCDPrint(buffer);
+		chThdSleepMilliseconds(1000);
+	}
+	LCDReset();
+
+	/*
+	 * brightness
+	 */
+	LCDPrint("Changing brightness");
+	for (i = 1; i <= 8; ++i)
+	{
+		LCDSetCursor(3, 0);
+		chsnprintf(buffer, BUFF_LEN, "Level: %d", (int) i);
+		LCDPrint(buffer);
+		LCDSetBrightness(i);
+		chThdSleepMilliseconds(500);
+	}
+	LCDReset();
+
+	/*
+	 * contrast
+	 */
+	LCDPrint("Changing contrast");
+	for (i = 1; i <= 50; ++i)
+	{
+		LCDSetCursor(3, 0);
+		chsnprintf(buffer, BUFF_LEN, "Level: %d", (int) i);
+		LCDPrint(buffer);
+		LCDSetContrast(i);
+		chThdSleepMilliseconds(50);
+	}
+	LCDReset();
+
+	/*
+	 * Turn on and off
+	 */
+	char *blinking_msg = "..Blinking Srceen...";
+	LCDPrint(blinking_msg);
+	LCDSetCursor(2, 0);
+	LCDPrint(blinking_msg);
+	LCDSetCursor(3, 0);
+	LCDPrint(blinking_msg);
+	LCDSetCursor(4, 0);
+	LCDPrint(blinking_msg);
+	for (i = 1; i <= 5; ++i)
+	{
+		LCDSendCommand(LCDOFF);
+		chThdSleepMilliseconds(500);
+		LCDSendCommand(LCDON);
+		chThdSleepMilliseconds(500);
+	}
+	LCDReset();
+
+	/*
+	 * Move cursor
+	 */
+	LCDPrint("Move Cursor");
+	chThdSleepMilliseconds(2000);
+	LCDSendCommand(CLEARSCREEN);
+	LCDSendCommand(CURSORON);
+	char j;
+	for (i = 1; i <= 4; ++i)
+	{
+		for (j = 0; j < 20; ++j)
+		{
+			LCDSetCursor(i, j);
+			chThdSleepMilliseconds(100);
+		}
+	}
+	LCDReset();
+
+	LCDSetCursor(2, 5);
+	LCDPrint("Done demo");
+}
+
+THD_WORKING_AREA(waTdLCD, LCD_WA_SIZE);
+THD_FUNCTION(tdLCD, arg)
+{
+	(void) arg;
+	while (true)
+	{
+		snprintf(msg, 20, "i = %d", i);
+		LCDSetCursor(2,0);
+		LCDPrint(msg);
+	}
+}
 
 /*
  * Application entry point.
  */
-int main(void) {
+int main(void)
+{
+	/*
+	 * System initializations.
+	 * - HAL initialization, this also initializes the configured device drivers
+	 *   and performs the board-specific initializations.
+	 * - Kernel initialization, the main() function becomes a thread and the
+	 *   RTOS is active.
+	 */
+	halInit();
+	chSysInit();
 
-  /*
-   * System initializations.
-   * - HAL initialization, this also initializes the configured device drivers
-   *   and performs the board-specific initializations.
-   * - Kernel initialization, the main() function becomes a thread and the
-   *   RTOS is active.
-   */
-  halInit();
-  chSysInit();
+	/*
+	 * Init all modules here
+	 * initialization shouldn't go into thread since it's only called once
+	 */
+	LCDInit();
+	LEDinit();
 
-  sdStart(&SD1, NULL);
-  info("SD1 Started\r\n");
-  sdStart(&SDS, &softserial_config);
+	/*
+	 * Inits all global variables here
+	 */
+	i = 0;
+	snprintf(msg, 20, "hi");
+	LCDPrint(msg);
 
-  // chThdCreateStatic(waTdGPS, sizeof(waTdGPS), NORMALPRIO, tdGPS, NULL);
-  // chThdCreateStatic(waTdLCD, sizeof(waTdLCD), DRIVERPRIO, tdLCD, NULL);
-  // chThdCreateStatic(waTdLED, sizeof(waTdLED), DRIVERPRIO, tdLED, NULL);
-  chThdCreateStatic(waTdXBee, sizeof(waTdXBee), NORMALPRIO, tdXBee, NULL);
+	/*
+	 * Run all threads
+	 */
+	chThdCreateStatic(waTdLCD, sizeof(waTdLCD), DRIVERPRIO, tdLCD, NULL);
 
-  chThdSleepSeconds(1);
-  while (true) {
-    msg_t p;
-    peer_message_t peer;
-    // // signed char x;
+	chThdSleepSeconds(1);
+	while (true)
+	{
+		++i;
 
-    /* Receive a message.*/
-    chMBFetch(&xbeeMailbox, &p, TIME_INFINITE);
-    peer = *((peer_message_t*) p);
-    chThdSleepSeconds(1);
-    info("Main size=%d p=%d\r\n", sizeof(p), (peer_message_t*)p);
-    info("Main Peer ID: %d\r\n", peer.peerID);
-    info("Main Longitude Degree: %D\r\n", peer.longitude.degree);
-    info("Main Longitude Minute: %D\r\n", peer.longitude.minute);
-    info("Main Latitude Degree: %D\r\n", peer.latitude.degree);
-    info("Main Latitude Minute: %D\r\n", peer.latitude.minute);
-    info("Main Msg ID: %d\r\n", peer.msgID);
-    /* Free the message.*/
-    chThdSleepSeconds(1);
-    chPoolFree(&xbeeMemoryPool, (peer_message_t*)p);
-
-    chThdSleepSeconds(1);
-  }
+		LEDall();
+		chThdSleepMilliseconds(500);
+		LEDclear();
+		chThdSleepMilliseconds(500);
+	}
 }

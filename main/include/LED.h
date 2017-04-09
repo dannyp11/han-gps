@@ -3,24 +3,7 @@
  */
 
 #ifndef LED_H_
-#define LED_H_
-
-#include <hal.h>
-
-#define SER_PORT    IOPORT4
-#define SER_PIN     5
-#define RCLK_PORT IOPORT4
-#define RCLK_PIN  6
-#define SRCLK_PORT IOPORT4
-#define SRCLK_PIN  4
- 
-// #define SER_low()  SER_PORT&=~_BV(SER_PIN)
-// #define SER_high() SER_PORT|=_BV(SER_PIN)
-// #define RCLK_low()  RCLK_PORT&=~_BV(RCLK_PIN)
-// #define RCLK_high() RCLK_PORT|=_BV(RCLK_PIN)
-// #define SRCLK_low()  SRCLK_PORT&=~_BV(SRCLK_PIN)
-// #define SRCLK_high() SRCLK_PORT|=_BV(SRCLK_PIN)
-
+#define LED_H_ 
 //Define functions
 //===============================================
 

@@ -5,9 +5,9 @@
 #ifndef LCD_H_
 #define LCD_H_
 
-// #ifndef FOSC
-// #define FOSC 7372800            // Clock frequency = Oscillator freq.
-// #endif
+#ifndef FOSC
+#define FOSC 7372800            // Clock frequency = Oscillator freq.
+#endif
 
 #define LCD_LINE_LEN 20 // max length of each line
 
@@ -29,7 +29,11 @@ enum LCDCommand
  */
 void LCDInit(void);
 
-void LCDClear(void);
+/*
+ * This will clearscreen, turnoff cursor,
+ * move cursor to home, set default brightness & contrast
+ */
+void LCDReset(void);
 
 /*
  * LCDPrint - write char array to the LCD over the I2C bus
