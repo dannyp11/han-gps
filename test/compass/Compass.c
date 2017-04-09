@@ -1,5 +1,6 @@
 #include <avr/io.h>
 #include <util/delay.h>
+#include <math.h>
 
 #include "Compass.h"
 #include "../lcd-i2c/LCD.h"
@@ -8,14 +9,25 @@
 // Find divisors for the UART0 and I2C baud rates
 #define BDIV (FOSC / 100000 - 16) / 2 + 1    // Puts I2C rate just below 100kHz
 void Compassi2c_init(uint8_t bdiv);
-uint8_t Compassi2c_io(uint8_t device_addr, uint8_t *ap, uint16_t an, uint8_t *wp,
-		uint16_t wn, uint8_t *rp, uint16_t rn);
+uint8_t Compassi2c_io(uint8_t device_addr, uint8_t *ap, uint16_t an,
+		uint8_t *wp, uint16_t wn, uint8_t *rp, uint16_t rn);
 
 #define COMPASS_ADDR  0x3d
+
+#define TRUE_N	-23.0
+#define TRUE_S	-107.0
+#define TRUE_W	-68.0
+#define TRUE_E	-.0
+#define TRUE_NW	-40.0
+#define TRUE_NE	-40.0
+#define TRUE_SW	-40.0
+#define TRUE_SE	-40.0
+
 
 void CompassInit()
 {
 	LCDInit();
+	SerialDebugInit();
 	LCDPrint("Testing Compass");
 
 	/*
@@ -33,28 +45,56 @@ void CompassInit()
 	uint8_t result[6];
 	Compassi2c_io(COMPASS_ADDR, cmd, 1, 0, 0, result, 1);
 
-	LCDSetCursor(2,0);
-	char msg[20];
-	snprintf(msg, 20, "res %d", result[0]);
-	LCDPrint(msg);
+	LCDSetCursor(2, 0);
+	char msgLCD[20];
+	snprintf(msgLCD, 20, "res %d", result[0]);
+	LCDPrint(msgLCD);
+//	SerialDebugPrint(msg);
 
-	while(1)
+	cmd[0] = 0x00;
+	cmd[1] = 0x90;
+	Compassi2c_io(COMPASS_ADDR, cmd, 2, 0, 0, 0, 0);
+
+	char msg[80];
+	while (1)
 	{
 		cmd[0] = 0x03;
 		Compassi2c_io(COMPASS_ADDR, cmd, 1, 0, 0, result, 6);
 
-		LCDSetCursor(3,0);
-		snprintf(msg, 20, "%4d %4d %4d", result[0], result[1], result[2]);
-		LCDPrint(msg);
+//		LCDSetCursor(3,0);
+//		snprintf(msg, 20, "%4d %4d %4d", result[0], result[1], result[2]);
+//		LCDPrint(msg);
+//
+//		LCDSetCursor(4,0);
+//		snprintf(msg, 20, "%4d %4d %4d", result[3], result[4], result[5]);
+//		LCDPrint(msg);
 
-		LCDSetCursor(4,0);
-		snprintf(msg, 20, "%4d %4d %4d", result[3], result[4], result[5]);
-		LCDPrint(msg);
+		int16_t x = (int16_t)( ((int16_t)result[0]<<8) | result[1] );
+		int16_t z = (int16_t)( ((int16_t)result[2]<<8 )| result[3] );
+		int16_t y = (int16_t)( ((int16_t)result[4]<<8) | result[5] );
+
+		float X = x / 980.0;
+		float Y = y / 980.0;
+		float Z = z / 1100.0;
+		float heading = atan2(Y, X)*180.0/3.1415926;
+		if (heading < 0) heading += 360.0;
+
+		snprintf(msgLCD, 20, "%4d %4d %4d", x, y, z);
+
+
+		snprintf(msg, 80, "mag %4.3f %4.3f %4.3f %f", X, Y, Z, heading);
+		SerialDebugPrint(msg);
+
+		cmd[0] = 0x31;
+		Compassi2c_io(COMPASS_ADDR, cmd, 1, 0, 0, result, 2);
+		int16_t temp = (result[0] << 8) | result[1];
+		temp = temp >> 4;
+		snprintf(msg, 80, "temp %4u %4u %4d\n", result[0], result[1], temp/8);
+//		SerialDebugPrint(msg);
 
 		_delay_ms(200);
 	}
 }
-
 
 /*
  i2c_io - write and read bytes to a slave I2C device
@@ -115,8 +155,8 @@ void CompassInit()
  i2c_io(0xD0, abuf, 1, NULL, 0, rbuf, 20);
  */
 
-uint8_t Compassi2c_io(uint8_t device_addr, uint8_t *ap, uint16_t an, uint8_t *wp,
-		uint16_t wn, uint8_t *rp, uint16_t rn)
+uint8_t Compassi2c_io(uint8_t device_addr, uint8_t *ap, uint16_t an,
+		uint8_t *wp, uint16_t wn, uint8_t *rp, uint16_t rn)
 {
 	uint8_t status, send_stop;
 	uint8_t wrote, start_stat;
@@ -229,6 +269,8 @@ uint8_t Compassi2c_io(uint8_t device_addr, uint8_t *ap, uint16_t an, uint8_t *wp
 			if (status != 0x50)             // Check that data received OK
 				return (status);
 			*rp++ = TWDR;                   // Read the data
+
+			_delay_us(50);
 		}
 
 		// Read the last byte
