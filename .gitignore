@@ -24,3 +24,4 @@ Debug/
 *.idb
 *.tlog
 .vs/
+*~*
