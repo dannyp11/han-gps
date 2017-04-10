@@ -11,6 +11,7 @@
 // SW includes (modules, algorithm, etc.) here
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 /*
  * ChibiOS config

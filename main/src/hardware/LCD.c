@@ -6,20 +6,23 @@
  */
 
 #include <avr/io.h>
-#include <util/delay.h>
 #include <compat/twi.h>
 
 #include <stdio.h>
 #include <string.h>
 
 #ifndef NOCHIBI
-#include "ch.h"
-#include "hal.h"
+#include <hal.h>
+#else
+#include <util/delay.h>
 #endif
 
 #include "LCD.h"
 
 // Find divisors for the UART0 and I2C baud rates
+#ifndef FOSC
+#define FOSC 7372800            // Clock frequency = Oscillator freq.
+#endif
 #define BDIV (FOSC / 100000 - 16) / 2 + 1    // Puts I2C rate just below 100kHz
 
 /* Address of the LCD on the I2C bus */
@@ -47,7 +50,7 @@ uint8_t i2c_io(uint8_t, uint8_t *, uint16_t, uint8_t *, uint16_t, uint8_t *,
  * LCD APIs here
  */
 // Start LCD APIs -------------------------------------------------------------
-uint8_t LCDSendCommand(enum LCDCommand command)
+uint8_t LCDSendCommand(LCDCommand command)
 {
 	uint8_t status;
 	uint8_t cmd[2];
