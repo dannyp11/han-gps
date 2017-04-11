@@ -9,7 +9,7 @@
 #if DEBUG_GPS || DEBUG_PARSER
 #define GPS_WA_SIZE 128
 #else 
-#define GPS_WA_SIZE 64
+#define GPS_WA_SIZE 128
 #endif
 
 extern THD_WORKING_AREA(waTdGPS, GPS_WA_SIZE);

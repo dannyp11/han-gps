@@ -427,7 +427,7 @@
  */
 #define CH_DBG_THREADS_PROFILING            FALSE
 
-#define DEBUG_COMPUTATION TRUE
+#define DEBUG_COMPUTATION FALSE
 #define DEBUG_PARSER      FALSE
 #define DEBUG_XBEE        FALSE
 #define DEBUG_GPS         FALSE
