@@ -156,7 +156,7 @@
  *
  * @note    The default is @p TRUE.
  */
-#define CH_CFG_USE_REGISTRY                 TRUE
+#define CH_CFG_USE_REGISTRY                 FALSE
 
 /**
  * @brief   Threads synchronization APIs.
@@ -165,7 +165,7 @@
  *
  * @note    The default is @p TRUE.
  */
-#define CH_CFG_USE_WAITEXIT                 TRUE
+#define CH_CFG_USE_WAITEXIT                 FALSE
 
 /**
  * @brief   Semaphores APIs.
@@ -193,7 +193,7 @@
  * @note    The default is @p TRUE.
  * @note    Requires @p CH_CFG_USE_SEMAPHORES.
  */
-#define CH_USE_SEMSW                        TRUE
+#define CH_USE_SEMSW                        FALSE
 
 /**
  * @brief   Mutexes APIs.
@@ -201,7 +201,7 @@
  *
  * @note    The default is @p TRUE.
  */
-#define CH_CFG_USE_MUTEXES                  TRUE
+#define CH_CFG_USE_MUTEXES                  FALSE
 
 /**
  * @brief   Enables recursive behavior on mutexes.
@@ -373,7 +373,7 @@
  *
  * @note    The default is @p FALSE.
  */
-#define CH_DBG_ENABLE_CHECKS                TRUE
+#define CH_DBG_ENABLE_CHECKS                FALSE
 
 /**
  * @brief   Debug option, consistency checks.
@@ -383,7 +383,7 @@
  *
  * @note    The default is @p FALSE.
  */
-#define CH_DBG_ENABLE_ASSERTS               TRUE
+#define CH_DBG_ENABLE_ASSERTS               FALSE
 
 /**
  * @brief   Debug option, trace buffer.
@@ -414,7 +414,7 @@
  *
  * @note    The default is @p FALSE.
  */
-#define CH_DBG_FILL_THREADS                 TRUE
+#define CH_DBG_FILL_THREADS                 FALSE
 
 /**
  * @brief   Debug option, threads profiling.
