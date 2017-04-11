@@ -22,7 +22,7 @@
 /*
  * ChibiOS config
  */
-#define DRIVERPRIO HIGHPRIO
+#define INTERACTIVEPRIO HIGHPRIO
 
 /*
  * Global variables here, pls don't use static
@@ -66,8 +66,9 @@ int main(void) {
   g_friendID = 1;
 
   sdStart(&SD1, NULL);
-  //info("SD1 Started\r\n");
   sdStart(&SDS, &softserial_config);
+  info("SD1 Started\r\n");
+  info("SDS Started\r\n");
 
   /*
 	 * Init all modules here
@@ -82,7 +83,7 @@ int main(void) {
 	 */
   // gps thread
   // xbee thread
-  chThdCreateStatic(waTdUI, sizeof(waTdUI), NORMALPRIO, tdUI, NULL);
+  chThdCreateStatic(waTdUI, sizeof(waTdUI), INTERACTIVEPRIO, tdUI, NULL);
   chThdCreateStatic(waTdParser, sizeof(waTdParser), NORMALPRIO, tdParser, NULL);
   chThdCreateStatic(waTdComp, sizeof(waTdComp), NORMALPRIO, tdComp, NULL);
 

@@ -11,6 +11,8 @@
 #include <stdint.h>
 #include "ch.h"
 #include "Compass.h"
+#include "computationThread.h"
+
 /*
  * This will take care of photocell, LCD, LED
  * buttons, and menu navigation
@@ -39,7 +41,7 @@ void UIAlertToFriend(uint8_t friendID);
 /*
  * Show alert info from neighbor
  */
-void UIAlertFromFriend(uint8_t friendID, uint8_t friendLat, uint8_t friendLon);
+void UIAlertFromFriend(alert_message_t *alerts, int8_t max_peers);
 
 /*
  * This loops forever, should put in thread

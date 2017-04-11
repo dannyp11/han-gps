@@ -6,8 +6,6 @@
 
 #include <math.h>
 
-#define MAX_PEERS 8
-
 extern uint8_t g_myID;
 
 typedef struct {
@@ -94,6 +92,10 @@ THD_FUNCTION(tdComp, arg) {
   while (true) {
     msg_t p;
 
+    /* First, update own position.*/
+    params.longitudes[g_myID] = getGPSLongitude();
+    params.latitudes[g_myID] = getGPSLatitude();
+
     /* If a new message is received, compute immediately.*/
     if (chMBFetch(&xbeeMailbox, &p, TIME_IMMEDIATE) == MSG_OK) {
       /* Update state.*/
@@ -130,7 +132,5 @@ THD_FUNCTION(tdComp, arg) {
     else {
       compute();
     }
-
-    /* Compute and alert.*/
   }
 }

@@ -11,6 +11,8 @@
 
 #define ALERT_NONE -1
 
+#define MAX_PEERS 8
+
 typedef struct {
     int16_t bearing;
     int16_t distance;
