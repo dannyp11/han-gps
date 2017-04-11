@@ -9,6 +9,7 @@
 #define UITHREAD_H_
 
 #include <stdint.h>
+#include "ch.h"
 #include "Compass.h"
 /*
  * This will take care of photocell, LCD, LED
