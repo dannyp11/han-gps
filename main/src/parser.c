@@ -27,7 +27,6 @@ void stepParser(msg_t c,
                 size_t bufsize,
                 parserstate_t *parserState,
                 parserstate_t *i) {
-  uint8_t j = 0;
   /* The current parser.*/
   parser_t p = parserTable(*parserState);
   /* The current matcher.*/
@@ -45,17 +44,19 @@ void stepParser(msg_t c,
   /* Save the byte.*/
   buf[*i] = c;
   buf[*i + 1] = '\0';
-  // debug_parser("\"");
-  // for (j = 0; j < bufsize; ++j) {
-  //   debug_parser("%c", buf[j]);
-  // }
-  // debug_parser(",");
-  // for (j = 0; j < bufsize; ++j) {
-  //   debug_parser("\\%02x", buf[j]);
-  // }
-  // debug_parser("\"\r\n");
-  //debug_parser("|%d,%d:%c,%d,\"%s\".\r\n", *parserState, *i, c, match_result, (char*)buf);
-
+  {
+    // uint8_t j = 0;
+    // debug_parser("\"");
+    // for (j = 0; j < bufsize; ++j) {
+    //   debug_parser("%c", buf[j]);
+    // }
+    // debug_parser(",");
+    // for (j = 0; j < bufsize; ++j) {
+    //   debug_parser("\\%02x", buf[j]);
+    // }
+    // debug_parser("\"\r\n");
+    //debug_parser("|%d,%d:%c,%d,\"%s\".\r\n", *parserState, *i, c, match_result, (char*)buf);
+  }
   info_parser("|%d,%d:%c,%d.\r\n", *parserState, *i, c, match_result);
   switch (match_result) {
   case MATCH_PARTIAL:
@@ -110,14 +111,14 @@ MATCH_FUNC(Decimal) {
 }
 
 PARSE_FUNC(DigitWithComma) {
-    int8_t *p = write_back;
-    buf[length - 1] = '\0';
-    *p = atoi(buf);
-    return PARSE_SUCCESS;
+  int8_t *p = write_back;
+  buf[length - 1] = '\0';
+  *p = atoi(buf);
+  return PARSE_SUCCESS;
 }
 
 PARSE_FUNC(Digit) {
-    int8_t *p = write_back;
-    *p = atoi(buf);
-    return PARSE_SUCCESS;
+  int8_t *p = write_back;
+  *p = atoi(buf);
+  return PARSE_SUCCESS;
 }

@@ -96,18 +96,9 @@ SRC = $(KERNSRC) \
       $(TESTSRC) \
 	  $(CHIBIOS)/os/hal/lib/streams/memstreams.c \
 	  $(CHIBIOS)/os/hal/lib/streams/chprintf.c \
-	  src/functional.c \
-	  src/softserialcfg.c \
-	  src/gps.c \
-	  src/gpsParser.c \
-	  src/parser.c \
-	  src/LCD_ll.c \
-	  src/lcd.c \
-	  src/LED_ll.c \
-	  src/led.c \
-	  src/i2cconf.c \
-	  src/xbeeParser.c \
-	  src/xbee.c \
+	  $(wildcard src/hardware/*.c) \
+  	  $(wildcard src/thread/*.c) \
+  	  $(wildcard src/*.c) \
       main.c
 
 # List C++ source files here. (C dependencies are automatically generated.)
@@ -191,6 +182,7 @@ CFLAGS += $(CSTANDARD)
 #CFLAGS += -mrelax
 CFLAGS += -fdata-sections
 CFLAGS += -ffunction-sections
+CFLAGS += -Wl,-u,vfprintf -lprintf_flt # for printf floats
 
 #---------------- Compiler Options C++ ----------------
 #  -g*:          generate debugging information
@@ -239,7 +231,7 @@ PRINTF_LIB_MIN = -Wl,-u,vfprintf -lprintf_min
 PRINTF_LIB_FLOAT = -Wl,-u,vfprintf -lprintf_flt
 
 # If this is left blank, then it will use the Standard printf version.
-PRINTF_LIB = $(PRINTF_LIB_MIN)
+PRINTF_LIB =
 #PRINTF_LIB = $(PRINTF_LIB_MIN)
 #PRINTF_LIB = $(PRINTF_LIB_FLOAT)
 
@@ -409,7 +401,7 @@ ALL_CPPFLAGS = -mmcu=$(MCU) -I. -x c++ $(CPPFLAGS) $(GENDEPFLAGS)
 ALL_ASFLAGS = -mmcu=$(MCU) -I. -x assembler-with-cpp $(ASFLAGS)
 
 # Default target.
-all: begin gccversion build sizebefore sizeafter end
+all: begin sizebefore gccversion build  sizeafter end
 
 # Change the build target to build a HEX file or a library.
 build: elf hex bin eep lss sym

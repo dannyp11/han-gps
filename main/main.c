@@ -1,84 +1,97 @@
-/*
-    ChibiOS - Copyright (C) 2006..2015 Giovanni Di Sirio
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
-*/
-
+// chibios includes here
 #include "ch.h"
 #include "chprintf.h"
 #include "debug.h"
-#include "gps.h"
 #include "hal.h"
-#include "lcd.h"
-#include "led.h"
+
+// HW includes (avr, lcd, gps, etc.) here
+// Note: don't include lcd, led, buttons, encoder,
+// 		photocell since they are in UIThread
+#include "Compass.h"
+#include "computationThread.h"
+#include "parserThread.h"
+#include <avr/io.h>
+
+// SW includes (modules, algorithm, etc.) here
+#include "UIThread.h"
 #include "softserialcfg.h"
-#include "xbee.h"
-
-#define DRIVERPRIO HIGHPRIO
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 /*
- * Threads static table, one entry per thread. The number of entries must
- * match NIL_CFG_NUM_THREADS.
+ * ChibiOS config
  */
-/*THD_TABLE_BEGIN
-  THD_TABLE_ENTRY(waTdGPS, "GPS", tdGPS, NULL)
-THD_TABLE_END*/
+#define INTERACTIVEPRIO HIGHPRIO
 
 /*
- * Application entry point.
+ * Global variables here, pls don't use static
+ * g_ stands for global
+ * g_my : this device
+ * g_friend : the other device
+ */
+uint8_t g_myID, g_friendID;
+uint8_t g_myLatitude, g_myLongtitude; // change to your type
+uint8_t g_friendLatitude, g_friendLongtitude;
+CompassDirection g_myCompassDirection, g_friendCompassDirection;
+CompassDirection g_friendCardinalDirection;
+uint8_t g_myMessageCode, g_friendMessageCode; // send/rcv message code
+
+/*
+ * Main code here
  */
 int main(void) {
-
   /*
-   * System initializations.
-   * - HAL initialization, this also initializes the configured device drivers
-   *   and performs the board-specific initializations.
-   * - Kernel initialization, the main() function becomes a thread and the
-   *   RTOS is active.
-   */
+	 * System initializations.
+	 * - HAL initialization, this also initializes the configured device drivers
+	 *   and performs the board-specific initializations.
+	 * - Kernel initialization, the main() function becomes a thread and the
+	 *   RTOS is active.
+	 */
   halInit();
   chSysInit();
 
+  /*
+	 * Inits all global variables here
+	 */
+  g_myID = 0;
+  g_myLatitude = 1;
+  g_myLongtitude = 2;
+  g_myCompassDirection = NORTH;
+  g_myMessageCode = 0;
+  g_friendMessageCode = 0;
+  g_friendCompassDirection = SOUTH;
+  g_friendLatitude = 3;
+  g_friendLongtitude = 4;
+  g_friendID = 1;
+
   sdStart(&SD1, NULL);
-  info("SD1 Started\r\n");
   sdStart(&SDS, &softserial_config);
+  info("SD1 Started\r\n");
+  info("SDS Started\r\n");
 
-  // chThdCreateStatic(waTdGPS, sizeof(waTdGPS), NORMALPRIO, tdGPS, NULL);
-  // chThdCreateStatic(waTdLCD, sizeof(waTdLCD), DRIVERPRIO, tdLCD, NULL);
-  // chThdCreateStatic(waTdLED, sizeof(waTdLED), DRIVERPRIO, tdLED, NULL);
-  chThdCreateStatic(waTdXBee, sizeof(waTdXBee), NORMALPRIO, tdXBee, NULL);
+  /*
+	 * Init all modules here
+	 * initialization shouldn't go into thread since it's only called once
+	 */
+  // gps
+  // xbee
+  // buzzer
 
-  chThdSleepSeconds(1);
+  /*
+	 * Run all threads
+	 */
+  // gps thread
+  // xbee thread
+  chThdCreateStatic(waTdUI, sizeof(waTdUI), INTERACTIVEPRIO, tdUI, NULL);
+  chThdCreateStatic(waTdParser, sizeof(waTdParser), NORMALPRIO, tdParser, NULL);
+  chThdCreateStatic(waTdComp, sizeof(waTdComp), NORMALPRIO, tdComp, NULL);
+
+  /*
+	 * main thread, main logic here
+	 * all code that has no delay (such as calculation, ...) should be here
+	 */
   while (true) {
-    msg_t p;
-    peer_message_t peer;
-    // // signed char x;
-
-    /* Receive a message.*/
-    chMBFetch(&xbeeMailbox, &p, TIME_INFINITE);
-    peer = *((peer_message_t*) p);
-    chThdSleepSeconds(1);
-    info("Main size=%d p=%d\r\n", sizeof(p), (peer_message_t*)p);
-    info("Main Peer ID: %d\r\n", peer.peerID);
-    info("Main Longitude Degree: %D\r\n", peer.longitude.degree);
-    info("Main Longitude Minute: %D\r\n", peer.longitude.minute);
-    info("Main Latitude Degree: %D\r\n", peer.latitude.degree);
-    info("Main Latitude Minute: %D\r\n", peer.latitude.minute);
-    info("Main Msg ID: %d\r\n", peer.msgID);
-    /* Free the message.*/
-    chThdSleepSeconds(1);
-    chPoolFree(&xbeeMemoryPool, (peer_message_t*)p);
-
     chThdSleepSeconds(1);
   }
 }

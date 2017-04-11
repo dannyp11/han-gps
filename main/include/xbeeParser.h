@@ -7,6 +7,7 @@
 
 #define INVALID_XBEE_DATA -1
 
+#define PEERID_NONE -1
 typedef struct {
     int8_t peerID;
     deg_min_t longitude;
