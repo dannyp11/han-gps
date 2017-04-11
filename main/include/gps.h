@@ -6,7 +6,11 @@
 #include "softserialcfg.h"
 #include "chprintf.h"
 
+#if DEBUG_GPS || DEBUG_PARSER
 #define GPS_WA_SIZE 128
+#else 
+#define GPS_WA_SIZE 64
+#endif
 
 extern THD_WORKING_AREA(waTdGPS, GPS_WA_SIZE);
 extern THD_FUNCTION(tdGPS, arg);
