@@ -1,99 +1,158 @@
 #include <avr/io.h>
-#include <util/delay.h>
 #include <math.h>
+#include <stdlib.h>
 
 #include "Compass.h"
-#include "../lcd-i2c/LCD.h"
-#include "../serial-port/SerialDebug.h"
 
 // Find divisors for the UART0 and I2C baud rates
+#ifndef FOSC
+#define FOSC 7372800            // Clock frequency = Oscillator freq.
+#endif
 #define BDIV (FOSC / 100000 - 16) / 2 + 1    // Puts I2C rate just below 100kHz
+
 void Compassi2c_init(uint8_t bdiv);
 uint8_t Compassi2c_io(uint8_t device_addr, uint8_t *ap, uint16_t an,
 		uint8_t *wp, uint16_t wn, uint8_t *rp, uint16_t rn);
 
 #define COMPASS_ADDR  0x3d
 
-#define TRUE_N	-23.0
-#define TRUE_S	-107.0
-#define TRUE_W	-68.0
-#define TRUE_E	-.0
-#define TRUE_NW	-40.0
-#define TRUE_NE	-40.0
-#define TRUE_SW	-40.0
-#define TRUE_SE	-40.0
+/*
+ * Calibrated values
+ */
+#define	CALIBRATED_OFFSET -60.0
+#define TRUE_S	180.0
+#define TRUE_W	270.0
+#define TRUE_E	90.0
+#define TRUE_NW	315.0
+#define TRUE_NE	45.0
+#define TRUE_SW	225.0
+#define TRUE_SE	135.0
+#define TOLERANCE	22.0
 
+/*
+ * Private Variables
+ */
+static int16_t x, y, z;
+static float mHeader;
+static uint8_t result[6];
+static uint8_t cmd[2];
+
+uint8_t CompassGetDirectionText(char * buffer, CompassDirection direction)
+{
+	uint8_t retVal = 0;
+
+	switch (direction)
+	{
+	case NORTH:
+	{
+		snprintf(buffer, 6, "North");
+		retVal = 5;
+	}
+		break;
+	case EAST:
+	{
+		snprintf(buffer, 5, "East");
+		retVal = 4;
+	}
+		break;
+	case SOUTH:
+	{
+		snprintf(buffer, 6, "South");
+		retVal = 5;
+	}
+		break;
+	case WEST:
+	{
+		snprintf(buffer, 5, "West");
+		retVal = 4;
+	}
+		break;
+	case NORTHEAST:
+	{
+		snprintf(buffer, 10, "NorthEast");
+		retVal = 9;
+	}
+		break;
+	case NORTHWEST:
+	{
+		snprintf(buffer, 10, "NorthWest");
+		retVal = 9;
+	}
+		break;
+	case SOUTHEAST:
+	{
+		snprintf(buffer, 10, "SouthEast");
+		retVal = 9;
+	}
+		break;
+	case SOUTHWEST:
+	{
+		snprintf(buffer, 10, "SouthWest");
+		retVal = 9;
+	}
+		break;
+	default:
+		break;
+	}
+
+	return retVal;
+}
+
+float CompassGetAngle()
+{
+	cmd[0] = 0x03;
+	Compassi2c_io(COMPASS_ADDR, cmd, 1, 0, 0, result, 6);
+
+	x = (int16_t) (((int16_t) result[0] << 8) | result[1]);
+	z = (int16_t) (((int16_t) result[2] << 8) | result[3]);
+	y = (int16_t) (((int16_t) result[4] << 8) | result[5]);
+
+	mHeader = atan2(x, y) * 180.0 / M_PI + CALIBRATED_OFFSET;
+	if (mHeader < 0)
+		mHeader += 360.0;
+
+	return mHeader;
+}
+
+CompassDirection CompassGetDirection()
+{
+	CompassDirection retVal = NORTH;
+
+	CompassGetAngle();
+
+	if (abs(mHeader - TRUE_S) < TOLERANCE)
+		retVal = SOUTH;
+	else if (abs(mHeader - TRUE_W) < TOLERANCE)
+		retVal = WEST;
+	else if (abs(mHeader - TRUE_E) < TOLERANCE)
+		retVal = EAST;
+	else if (abs(mHeader - TRUE_SW) < TOLERANCE)
+		retVal = SOUTHWEST;
+	else if (abs(mHeader - TRUE_SE) < TOLERANCE)
+		retVal = SOUTHEAST;
+	else if (abs(mHeader - TRUE_NE) < TOLERANCE)
+		retVal = NORTHEAST;
+	else if (abs(mHeader - TRUE_NW) < TOLERANCE)
+		retVal = NORTHWEST;
+
+	return retVal;
+}
 
 void CompassInit()
 {
-	LCDInit();
-	SerialDebugInit();
-	LCDPrint("Testing Compass");
-
 	/*
 	 * Compass stuff
 	 */
 	Compassi2c_init(BDIV);
-
-	uint8_t cmd[2];
 
 	cmd[0] = 0x02;
 	cmd[1] = 0x00;
 
 	Compassi2c_io(COMPASS_ADDR, cmd, 2, 0, 0, 0, 0);
 
-	uint8_t result[6];
-	Compassi2c_io(COMPASS_ADDR, cmd, 1, 0, 0, result, 1);
-
-	LCDSetCursor(2, 0);
-	char msgLCD[20];
-	snprintf(msgLCD, 20, "res %d", result[0]);
-	LCDPrint(msgLCD);
-//	SerialDebugPrint(msg);
-
 	cmd[0] = 0x00;
 	cmd[1] = 0x90;
 	Compassi2c_io(COMPASS_ADDR, cmd, 2, 0, 0, 0, 0);
-
-	char msg[80];
-	while (1)
-	{
-		cmd[0] = 0x03;
-		Compassi2c_io(COMPASS_ADDR, cmd, 1, 0, 0, result, 6);
-
-//		LCDSetCursor(3,0);
-//		snprintf(msg, 20, "%4d %4d %4d", result[0], result[1], result[2]);
-//		LCDPrint(msg);
-//
-//		LCDSetCursor(4,0);
-//		snprintf(msg, 20, "%4d %4d %4d", result[3], result[4], result[5]);
-//		LCDPrint(msg);
-
-		int16_t x = (int16_t)( ((int16_t)result[0]<<8) | result[1] );
-		int16_t z = (int16_t)( ((int16_t)result[2]<<8 )| result[3] );
-		int16_t y = (int16_t)( ((int16_t)result[4]<<8) | result[5] );
-
-		float X = x / 980.0;
-		float Y = y / 980.0;
-		float Z = z / 1100.0;
-		float heading = atan2(Y, X)*180.0/3.1415926;
-		if (heading < 0) heading += 360.0;
-
-		snprintf(msgLCD, 20, "%4d %4d %4d", x, y, z);
-
-
-		snprintf(msg, 80, "mag %4.3f %4.3f %4.3f %f", X, Y, Z, heading);
-		SerialDebugPrint(msg);
-
-		cmd[0] = 0x31;
-		Compassi2c_io(COMPASS_ADDR, cmd, 1, 0, 0, result, 2);
-		int16_t temp = (result[0] << 8) | result[1];
-		temp = temp >> 4;
-		snprintf(msg, 80, "temp %4u %4u %4d\n", result[0], result[1], temp/8);
-//		SerialDebugPrint(msg);
-
-		_delay_ms(200);
-	}
 }
 
 /*
@@ -205,7 +264,6 @@ uint8_t Compassi2c_io(uint8_t device_addr, uint8_t *ap, uint16_t an,
 				// Send STOP condition
 				return (status);             // Otherwise just return the status
 			}
-			_delay_us(50);
 		}
 
 		// Write "wn" data bytes to the slave device
@@ -269,8 +327,6 @@ uint8_t Compassi2c_io(uint8_t device_addr, uint8_t *ap, uint16_t an,
 			if (status != 0x50)             // Check that data received OK
 				return (status);
 			*rp++ = TWDR;                   // Read the data
-
-			_delay_us(50);
 		}
 
 		// Read the last byte

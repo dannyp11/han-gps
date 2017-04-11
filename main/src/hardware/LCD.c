@@ -13,6 +13,7 @@
 
 #ifndef NOCHIBI
 #include <hal.h>
+#include "i2cconf.h"
 #else
 #include <util/delay.h>
 #endif
@@ -24,9 +25,6 @@
 #define FOSC 7372800            // Clock frequency = Oscillator freq.
 #endif
 #define BDIV (FOSC / 100000 - 16) / 2 + 1    // Puts I2C rate just below 100kHz
-
-/* Address of the LCD on the I2C bus */
-#define LCD_ADDR  0x50
 
 /*
  * Low level codes here
@@ -41,10 +39,22 @@ uint8_t i2c_io(uint8_t, uint8_t *, uint16_t, uint8_t *, uint16_t, uint8_t *,
 #ifdef NOCHIBI
 #define mSleepms(ms) _delay_ms(ms);
 #define mSleepus(us) _delay_us(us);
+#define LCD_ADDR  0x50
 #else
+#define LCD_ADDR  0x28
 #define mSleepms(ms) chThdSleepMilliseconds(ms);
 #define mSleepus(us) chThdSleepMicroseconds(us);
 #endif
+
+static uint8_t mI2Cio(uint8_t device_addr, uint8_t *wp,
+		uint16_t wn, uint8_t *rp, uint16_t rn)
+{
+#ifdef NOCHIBI
+	return i2c_io(device_addr, wp, wn, NULL, 0, rp, rn);
+#else
+	return i2cMasterTransmitTimeout(&I2CD1, device_addr, wp, wn, rp, rn, TIME_INFINITE);
+#endif
+}
 
 /*
  * LCD APIs here
@@ -61,49 +71,49 @@ uint8_t LCDSendCommand(LCDCommand command)
 	case LCDON:
 	{
 		cmd[1] = 0x41;
-		status = i2c_io(LCD_ADDR, cmd, 2, NULL, 0, NULL, 0);
+		status = mI2Cio(LCD_ADDR, cmd, 2, NULL, 0);
 		mSleepus(150);
 	}
 		break;
 	case LCDOFF:
 	{
 		cmd[1] = 0x42;
-		status = i2c_io(LCD_ADDR, cmd, 2, NULL, 0, NULL, 0);
+		status = mI2Cio(LCD_ADDR, cmd, 2, NULL, 0);
 		mSleepus(150);
 	}
 		break;
 	case CLEARSCREEN:
 	{
 		cmd[1] = 0x51;
-		status = i2c_io(LCD_ADDR, cmd, 2, NULL, 0, NULL, 0);
+		status = mI2Cio(LCD_ADDR, cmd, 2, NULL, 0);
 		mSleepms(150);
 	}
 		break;
 	case CURSORHOME:
 	{
 		cmd[1] = 0x46;
-		status = i2c_io(LCD_ADDR, cmd, 2, NULL, 0, NULL, 0);
+		status = mI2Cio(LCD_ADDR, cmd, 2, NULL, 0);
 		mSleepms(2);
 	}
 		break;
 	case CURSORON:
 	{
 		cmd[1] = 0x4b;
-		status = i2c_io(LCD_ADDR, cmd, 2, NULL, 0, NULL, 0);
+		status = mI2Cio(LCD_ADDR, cmd, 2, NULL, 0);
 		mSleepus(150);
 	}
 		break;
 	case CURSOROFF:
 	{
 		cmd[1] = 0x4c;
-		status = i2c_io(LCD_ADDR, cmd, 2, NULL, 0, NULL, 0);
+		status = mI2Cio(LCD_ADDR, cmd, 2, NULL, 0);
 		mSleepus(150);
 	}
 		break;
 	case SHOWFIRMWARE:
 	{
 		cmd[1] = 0x70;
-		status = i2c_io(LCD_ADDR, cmd, 2, NULL, 0, NULL, 0);
+		status = mI2Cio(LCD_ADDR, cmd, 2, NULL, 0);
 		mSleepms(5);
 	}
 		break;
@@ -123,7 +133,7 @@ uint8_t LCDSetBrightness(char level)
 	cmd[0] = 0xfe;
 	cmd[1] = 0x53;
 	cmd[2] = level;
-	status = i2c_io(LCD_ADDR, cmd, 3, NULL, 0, NULL, 0);
+	status = mI2Cio(LCD_ADDR, cmd, 3, NULL, 0);
 	mSleepus(100);
 
 	return status;
@@ -137,7 +147,7 @@ uint8_t LCDSetContrast(char level)
 	cmd[0] = 0xfe;
 	cmd[1] = 0x52;
 	cmd[2] = level;
-	status = i2c_io(LCD_ADDR, cmd, 3, NULL, 0, NULL, 0);
+	status = mI2Cio(LCD_ADDR, cmd, 3, NULL, 0);
 	mSleepms(50);
 
 	return status;
@@ -164,7 +174,7 @@ uint8_t LCDSetCursor(char line, char position)
 	cmd[0] = 0xfe;
 	cmd[1] = 0x45;
 	cmd[2] = col + position;
-	status = i2c_io(LCD_ADDR, cmd, 3, NULL, 0, NULL, 0);
+	status = mI2Cio(LCD_ADDR, cmd, 3, NULL, 0);
 	mSleepus(150);
 
 	return status;
@@ -172,8 +182,13 @@ uint8_t LCDSetCursor(char line, char position)
 
 void LCDInit()
 {
+#ifdef NOCHIBI
 	i2c_init(BDIV);             // Initialize the I2C port
 	mSleepms(200);
+#else
+	i2cStart(&I2CD1, &i2c_config);
+	chThdSleepMilliseconds(200);
+#endif
 
 	LCDReset();
 }
@@ -186,7 +201,7 @@ uint8_t LCDPrint(const char *msg)
 	char len = strlen(msg);
 	for (i = 0; i < (uint8_t) len; ++i)
 	{
-		status = i2c_io(LCD_ADDR, (uint8_t *) &msg[i], 1, NULL, 0, NULL, 0);
+		status = mI2Cio(LCD_ADDR, (uint8_t *) &msg[i], 1, NULL, 0);
 		mSleepus(150);
 		if (status)
 		{

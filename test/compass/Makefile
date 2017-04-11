@@ -1,7 +1,7 @@
 DEVICE     = atmega328p
 CLOCK      = 7372800
 PROGRAMMER = -c usbtiny -P usb
-OBJECTS    = ../lcd-i2c/LCD.o Compass2.o compass-test.o ../serial-port/SerialDebug.o ../led/LED.o
+OBJECTS    = ../lcd-i2c/LCD.o Compass.o compass-test.o ../serial-port/SerialDebug.o ../led/LED.o
 FUSES      = -U hfuse:w:0xd9:m -U lfuse:w:0xe0:m
 FLAGS      = -DNOCHIBI=1 -Wl,-u,vfprintf -lprintf_flt
 

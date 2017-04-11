@@ -4,14 +4,16 @@
 #include "hal.h"
 
 // HW includes (avr, lcd, gps, etc.) here
+// Note: don't include lcd, led, buttons, encoder,
+// 		photocell since they are in UIThread
 #include <avr/io.h>
-#include "LCD.h"
-#include "LED.h"
+#include "Compass.h"
 
 // SW includes (modules, algorithm, etc.) here
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include "UIThread.h"
 
 /*
  * ChibiOS config
@@ -20,123 +22,35 @@
 
 /*
  * Global variables here, pls don't use static
+ * g_ stands for global
+ * g_my : this device
+ * g_friend : the other device
  */
-char msg[20];
-int i;
+uint8_t g_myID, g_friendID;
+uint8_t g_myLatitude, g_myLongtitude; // change to your type
+uint8_t g_friendLatitude, g_friendLongtitude;
+CompassDirection g_myCompassDirection, g_friendCompassDirection;
+CompassDirection g_friendCardinalDirection;
+uint8_t g_myMessageCode, g_friendMessageCode; // send/rcv message code
 
 /*
  * Other helper functions
  * Pls create module if these functions are too big, for structure control purpose
  */
-#define LCD_WA_SIZE 128
-#define BUFF_LEN LCD_LINE_LEN + 1
-void lcd_demo(void)
+#define UI_WA_SIZE 128
+THD_WORKING_AREA(waTdUI, UI_WA_SIZE);
+THD_FUNCTION(tdUI, arg)
 {
-	static char buffer[BUFF_LEN];
-
-	LCDSendCommand(CURSOROFF);
-	LCDSendCommand(SHOWFIRMWARE);
-
-	LCDSetCursor(2, 0);
-	LCDPrint("LCD:D.Pham,OS:R.Dong");
-	LCDSetCursor(3, 0);
-	chsnprintf(buffer, BUFF_LEN, "Version: %s", __DATE__);
-	LCDPrint(buffer);
-
-	char i;
-	for (i = 0; i < 5; ++i)
+	while (1)
 	{
-		LCDSetCursor(4, 0);
-		chsnprintf(buffer, BUFF_LEN, "Demo in %d seconds...", 5 - i);
-		LCDPrint(buffer);
-		chThdSleepMilliseconds(1000);
-	}
-	LCDReset();
-
-	/*
-	 * brightness
-	 */
-	LCDPrint("Changing brightness");
-	for (i = 1; i <= 8; ++i)
-	{
-		LCDSetCursor(3, 0);
-		chsnprintf(buffer, BUFF_LEN, "Level: %d", (int) i);
-		LCDPrint(buffer);
-		LCDSetBrightness(i);
-		chThdSleepMilliseconds(500);
-	}
-	LCDReset();
-
-	/*
-	 * contrast
-	 */
-	LCDPrint("Changing contrast");
-	for (i = 1; i <= 50; ++i)
-	{
-		LCDSetCursor(3, 0);
-		chsnprintf(buffer, BUFF_LEN, "Level: %d", (int) i);
-		LCDPrint(buffer);
-		LCDSetContrast(i);
-		chThdSleepMilliseconds(50);
-	}
-	LCDReset();
-
-	/*
-	 * Turn on and off
-	 */
-	char *blinking_msg = "..Blinking Srceen...";
-	LCDPrint(blinking_msg);
-	LCDSetCursor(2, 0);
-	LCDPrint(blinking_msg);
-	LCDSetCursor(3, 0);
-	LCDPrint(blinking_msg);
-	LCDSetCursor(4, 0);
-	LCDPrint(blinking_msg);
-	for (i = 1; i <= 5; ++i)
-	{
-		LCDSendCommand(LCDOFF);
-		chThdSleepMilliseconds(500);
-		LCDSendCommand(LCDON);
-		chThdSleepMilliseconds(500);
-	}
-	LCDReset();
-
-	/*
-	 * Move cursor
-	 */
-	LCDPrint("Move Cursor");
-	chThdSleepMilliseconds(2000);
-	LCDSendCommand(CLEARSCREEN);
-	LCDSendCommand(CURSORON);
-	char j;
-	for (i = 1; i <= 4; ++i)
-	{
-		for (j = 0; j < 20; ++j)
-		{
-			LCDSetCursor(i, j);
-			chThdSleepMilliseconds(100);
-		}
-	}
-	LCDReset();
-
-	LCDSetCursor(2, 5);
-	LCDPrint("Done demo");
-}
-
-THD_WORKING_AREA(waTdLCD, LCD_WA_SIZE);
-THD_FUNCTION(tdLCD, arg)
-{
-	(void) arg;
-	while (true)
-	{
-		snprintf(msg, 20, "i = %d", i);
-		LCDSetCursor(2,0);
-		LCDPrint(msg);
+		UILoop();
+		g_myCompassDirection = CompassGetDirection();
+		chThdSleepMicroseconds(100);
 	}
 }
 
 /*
- * Application entry point.
+ * Main code here
  */
 int main(void)
 {
@@ -151,32 +65,48 @@ int main(void)
 	chSysInit();
 
 	/*
+	 * Inits all global variables here
+	 */
+	g_myID = 0;
+	g_myLatitude = 1;
+	g_myLongtitude = 2;
+	g_myCompassDirection = NORTH;
+	g_myMessageCode = 0;
+	g_friendMessageCode = 0;
+	g_friendCompassDirection = SOUTH;
+	g_friendLatitude = 3;
+	g_friendLongtitude = 4;
+	g_friendID = 1;
+
+	/*
 	 * Init all modules here
 	 * initialization shouldn't go into thread since it's only called once
 	 */
-	LCDInit();
-	LEDinit();
-
-	/*
-	 * Inits all global variables here
-	 */
-	i = 0;
-	snprintf(msg, 20, "hi");
-	LCDPrint(msg);
+	UIInit();
+	// gps
+	// xbee
+	// buzzer
 
 	/*
 	 * Run all threads
 	 */
-	chThdCreateStatic(waTdLCD, sizeof(waTdLCD), DRIVERPRIO, tdLCD, NULL);
+	chThdCreateStatic(waTdUI, sizeof(waTdUI), NORMALPRIO, tdUI, NULL);
+	// gps thread
+	// xbee thread
 
+	/*
+	 * main thread, main logic here
+	 * all code that has no delay (such as calculation, ...) should be here
+	 */
 	chThdSleepSeconds(1);
 	while (true)
 	{
-		++i;
+		// get friend's info from xbee
+		// calculate friend's cardinal direction
+		// calculate friend's distance
 
-		LEDall();
-		chThdSleepMilliseconds(500);
-		LEDclear();
-		chThdSleepMilliseconds(500);
+		// if get alert message from/to friend, call UIAlertToFriend
+
+		chThdSleepSeconds(1);
 	}
 }

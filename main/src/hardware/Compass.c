@@ -1,6 +1,12 @@
 #include <avr/io.h>
 #include <math.h>
 #include <stdlib.h>
+#include <stdio.h>
+
+#ifndef NOCHIBI
+#include <hal.h>
+#include "i2cconf.h"
+#endif
 
 #include "Compass.h"
 
@@ -14,19 +20,33 @@ void Compassi2c_init(uint8_t bdiv);
 uint8_t Compassi2c_io(uint8_t device_addr, uint8_t *ap, uint16_t an,
 		uint8_t *wp, uint16_t wn, uint8_t *rp, uint16_t rn);
 
+#ifdef NOCHIBI
 #define COMPASS_ADDR  0x3d
+#else
+#define COMPASS_ADDR  0x1e
+#endif
+
+static uint8_t mI2Cio(uint8_t device_addr, uint8_t *wp,
+		uint16_t wn, uint8_t *rp, uint16_t rn)
+{
+#ifdef NOCHIBI
+	return Compassi2c_io(device_addr, wp, wn, NULL, 0, rp, rn);
+#else
+	return i2cMasterTransmitTimeout(&I2CD1, device_addr, wp, wn, rp, rn, 2);
+#endif
+}
 
 /*
  * Calibrated values
  */
-#define TRUE_N	333.0
-#define TRUE_S	196.0
-#define TRUE_W	257.0
-#define TRUE_E	135.0
-#define TRUE_NW	282.0
-#define TRUE_NE	80.0
-#define TRUE_SW	232.0
-#define TRUE_SE	156.0
+#define	CALIBRATED_OFFSET -60.0
+#define TRUE_S	180.0
+#define TRUE_W	270.0
+#define TRUE_E	90.0
+#define TRUE_NW	315.0
+#define TRUE_NE	45.0
+#define TRUE_SW	225.0
+#define TRUE_SE	135.0
 #define TOLERANCE	22.0
 
 /*
@@ -101,13 +121,13 @@ uint8_t CompassGetDirectionText(char * buffer, CompassDirection direction)
 float CompassGetAngle()
 {
 	cmd[0] = 0x03;
-	Compassi2c_io(COMPASS_ADDR, cmd, 1, 0, 0, result, 6);
+	mI2Cio(COMPASS_ADDR, cmd, 1, result, 6);
 
 	x = (int16_t) (((int16_t) result[0] << 8) | result[1]);
 	z = (int16_t) (((int16_t) result[2] << 8) | result[3]);
 	y = (int16_t) (((int16_t) result[4] << 8) | result[5]);
 
-	mHeader = atan2(x, y) * 180.0 / M_PI;
+	mHeader = atan2(x, y) * 180.0 / M_PI + CALIBRATED_OFFSET;
 	if (mHeader < 0)
 		mHeader += 360.0;
 
@@ -143,16 +163,18 @@ void CompassInit()
 	/*
 	 * Compass stuff
 	 */
+#ifdef NOCHIBI
 	Compassi2c_init(BDIV);
+#endif
 
 	cmd[0] = 0x02;
 	cmd[1] = 0x00;
 
-	Compassi2c_io(COMPASS_ADDR, cmd, 2, 0, 0, 0, 0);
+	mI2Cio(COMPASS_ADDR, cmd, 2, 0, 0);
 
 	cmd[0] = 0x00;
 	cmd[1] = 0x90;
-	Compassi2c_io(COMPASS_ADDR, cmd, 2, 0, 0, 0, 0);
+	mI2Cio(COMPASS_ADDR, cmd, 2, 0, 0);
 }
 
 /*
