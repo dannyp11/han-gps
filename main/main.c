@@ -9,8 +9,7 @@
 // 		photocell since they are in UIThread
 #include "Compass.h"
 #include "computation.h"
-#include "gps.h"
-#include "xbee.h"
+#include "parserThread.h"
 #include <avr/io.h>
 
 // SW includes (modules, algorithm, etc.) here
@@ -81,11 +80,10 @@ int main(void) {
   /*
 	 * Run all threads
 	 */
-  // chThdCreateStatic(waTdUI, sizeof(waTdUI), NORMALPRIO, tdUI, NULL);
   // gps thread
   // xbee thread
-  chThdCreateStatic(waTdGPS, sizeof(waTdGPS), NORMALPRIO, tdGPS, NULL);
-  chThdCreateStatic(waTdXBee, sizeof(waTdXBee), NORMALPRIO, tdXBee, NULL);
+  chThdCreateStatic(waTdUI, sizeof(waTdUI), NORMALPRIO, tdUI, NULL);
+  chThdCreateStatic(waTdParser, sizeof(waTdParser), NORMALPRIO, tdParser, NULL);
   chThdCreateStatic(waTdComp, sizeof(waTdComp), NORMALPRIO, tdComp, NULL);
 
   /*

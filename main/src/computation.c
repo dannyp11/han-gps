@@ -1,6 +1,8 @@
 #include "computation.h"
 #include "gpsParser.h"
-#include "xbee.h"
+#include "xbeeParser.h"
+
+#include "parserThread.h"
 
 #include <math.h>
 
