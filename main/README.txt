@@ -11,3 +11,9 @@
 	- 4/9/17 : Dat 	- created main folder & readme 
 			- integrated lcd, lec, photocell, UI, compass, buttons, rotary encoder
 	- 4/10/17 : Dat - merged with current master
+	- 4/11/17 : Rongcui 
+		- Implemented, but did not test core alorithm, naive version
+		- Merged XBee and GPS thread into Parser thread
+		- Reduced memory usage to ~1.5kB
+		- Interfaced with UI thread
+		- Changed Soft Serial to use TIM1. Not tested.

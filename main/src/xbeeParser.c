@@ -6,12 +6,12 @@
 static mailbox_t *mailbox = NULL;
 static memory_pool_t *pool = NULL;
 static int8_t peerIDX = INVALID_XBEE_DATA;
-static deg_min_t longitudeX = {INVALID_XBEE_DATA, INVALID_XBEE_DATA};
-static deg_min_t latitudeX = {INVALID_XBEE_DATA, INVALID_XBEE_DATA};
+static deg_min_t longitudeX = INVALID_XBEE_DATA;
+static deg_min_t latitudeX = INVALID_XBEE_DATA;
 static int8_t msgTypeX = INVALID_XBEE_DATA;
 
 void xbeeSetCallback(mailbox_t *mb, memory_pool_t *mp) {
-  info("XBee Set Callback\r\n");
+  info_xbee("XBee Set Callback\r\n");
   mailbox = mb;
   pool = mp;
 }
@@ -45,14 +45,14 @@ MATCH_FUNC(MsgID) {
 PARSE_FUNC(XbeeFinalize) {
   msg_t r;
   peer_message_t *p;
-  info("Xbee Finalize\r\n");
-  // info("Longitude Deg: %D, Longitude Min: %D", longitudeX.degree, longitudeX.minute);
+  info_xbee("Xbee Finalize\r\n");
+  // info_xbee("Longitude Deg: %D, Longitude Min: %D", longitudeX.degree, longitudeX.minute);
   /* If there is a callback, then fire an event.*/
   if (mailbox != NULL && pool != NULL) {
     p = chPoolAlloc(pool);
     /* If allocation is successful.*/
     if (p != NULL) {
-      info("XBee Finalize size=%d p=%d\r\n", sizeof(p), p);
+      info_xbee("XBee Finalize size=%d p=%d\r\n", sizeof(p), p);
       p->peerID = peerIDX;
       p->longitude = longitudeX;
       p->latitude = latitudeX;
@@ -61,14 +61,14 @@ PARSE_FUNC(XbeeFinalize) {
     }
   }
   if (p == NULL) {
-    info("Xbee Finalize Failed\r\n");
+    info_xbee("Xbee Finalize Failed\r\n");
     return PARSE_FAILED;
   } else if (r != MSG_OK) {
     chPoolFree(pool, p);
-    info("Xbee Finalize Failed\r\n");
+    info_xbee("Xbee Finalize Failed\r\n");
     return PARSE_FAILED;
   } else {
-    info("Xbee Finalize Succeeded\r\n");
+    info_xbee("Xbee Finalize Succeeded\r\n");
     return PARSE_SUCCESS;
   }
 }
@@ -93,10 +93,8 @@ parser_t xbeeParser(parserstate_t parserState) {
 }
 
 void xbeeParserCleanup(void) {
-  longitudeX.degree = INVALID_XBEE_DATA;
-  longitudeX.minute = INVALID_XBEE_DATA;
-  latitudeX.degree = INVALID_XBEE_DATA;
-  latitudeX.minute = INVALID_XBEE_DATA;
+  longitudeX = INVALID_XBEE_DATA;
+  latitudeX = INVALID_XBEE_DATA;
   peerIDX = INVALID_XBEE_DATA;
   msgTypeX = INVALID_XBEE_DATA;
 }
