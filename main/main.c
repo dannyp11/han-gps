@@ -67,7 +67,7 @@ int main(void) {
   g_friendID = 1;
 
   sdStart(&SD1, NULL);
-  info("SD1 Started\r\n");
+  //info("SD1 Started\r\n");
   sdStart(&SDS, &softserial_config);
 
   /*
