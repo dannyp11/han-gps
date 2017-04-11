@@ -39,22 +39,6 @@ CompassDirection g_friendCardinalDirection;
 uint8_t g_myMessageCode, g_friendMessageCode; // send/rcv message code
 
 /*
- * Threads static table, one entry per thread. The number of entries must
- * match NIL_CFG_NUM_THREADS.
- */
-
-/*THD_TABLE_BEGIN
- THD_TABLE_ENTRY(waTdGPS, "GPS", tdGPS, NULL)
- THD_TABLE_END*/
-
-/*
- * Other helper functions
- * Pls create module if these functions are too big, for structure control purpose
- */
-
-
-
-/*
  * Main code here
  */
 int main(void) {
@@ -110,7 +94,6 @@ int main(void) {
 	 * main thread, main logic here
 	 * all code that has no delay (such as calculation, ...) should be here
 	 */
-  chThdSleepSeconds(1);
   while (true) {
     chThdSleepSeconds(1);
   }
