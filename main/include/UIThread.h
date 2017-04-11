@@ -45,4 +45,8 @@ void UIAlertFromFriend(uint8_t friendID, uint8_t friendLat, uint8_t friendLon);
  */
 void UILoop(void);
 
+#define UI_WA_SIZE 128
+extern THD_WORKING_AREA(waTdUI, UI_WA_SIZE);
+extern THD_FUNCTION(tdUI, arg);
+
 #endif /* UITHREAD_H_ */

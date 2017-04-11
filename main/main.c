@@ -52,15 +52,7 @@ uint8_t g_myMessageCode, g_friendMessageCode; // send/rcv message code
  * Pls create module if these functions are too big, for structure control purpose
  */
 
-#define UI_WA_SIZE 128
-THD_WORKING_AREA(waTdUI, UI_WA_SIZE);
-THD_FUNCTION(tdUI, arg) {
-  while (1) {
-    UILoop();
-    g_myCompassDirection = CompassGetDirection();
-    chThdSleepMicroseconds(100);
-  }
-}
+
 
 /*
  * Main code here
@@ -98,7 +90,6 @@ int main(void) {
 	 * Init all modules here
 	 * initialization shouldn't go into thread since it's only called once
 	 */
-  UIInit();
   // gps
   // xbee
   // buzzer

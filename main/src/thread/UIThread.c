@@ -94,3 +94,14 @@ void UIAlertFromFriend(uint8_t friendID, uint8_t friendLat, uint8_t friendLon)
 {
 
 }
+
+THD_WORKING_AREA(waTdUI, UI_WA_SIZE);
+THD_FUNCTION(tdUI, arg) {
+	  UIInit();
+
+  while (1) {
+    UILoop();
+    g_myCompassDirection = CompassGetDirection();
+    chThdSleepMicroseconds(100);
+  }
+}
