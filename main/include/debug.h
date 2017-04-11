@@ -4,7 +4,7 @@
 #include "hal.h"
 #include "chprintf.h"
 
-#ifdef USE_DEBUG
+#if defined(USE_DEBUG) && DEBUG_INFO
 #define debug(...) \
 chprintf((BaseSequentialStream *)&SD1, __VA_ARGS__)
 #define info(...) \
