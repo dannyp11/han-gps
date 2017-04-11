@@ -8,7 +8,7 @@
 // Note: don't include lcd, led, buttons, encoder,
 // 		photocell since they are in UIThread
 #include "Compass.h"
-#include "computation.h"
+#include "computationThread.h"
 #include "parserThread.h"
 #include <avr/io.h>
 

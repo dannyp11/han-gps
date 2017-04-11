@@ -1,4 +1,4 @@
-#include "computation.h"
+#include "computationThread.h"
 #include "gpsParser.h"
 #include "xbeeParser.h"
 
@@ -8,15 +8,16 @@
 
 #define MAX_PEERS 8
 
+extern uint8_t g_myID;
+
 typedef struct {
-  int8_t my_id;
   float longitudes[MAX_PEERS];
   float latitudes[MAX_PEERS];
   float alert_distance;
 } snapshot_param_t;
 
 static snapshot_param_t params;
-static alert_message_t alerts[MAX_PEERS];
+alert_message_t alerts[MAX_PEERS];
 
 float distance(float lo1, float la1, float lo2, float la2) {
   float a = pow(sin((la1 - la2) / 2.f), 2.f) + cos(la1) * cos(la2) * pow(sin((lo1 - la2) / 2.f), 2.f);
@@ -52,17 +53,17 @@ void compute(void) {
     /* If someone is too far away, alert.*/
     if (min_dist > params.alert_distance) {
       /* If this device is too far away, point to the closest peer.*/
-      if (i == params.my_id) {
+      if (i == g_myID) {
         float br = bearing(params.longitudes[i], params.latitudes[i],
                            params.longitudes[j], params.latitudes[j]);
-        alerts[params.my_id].bearing = br * 360 / M_PI;
-        alerts[params.my_id].distance = min_dist;
+        alerts[g_myID].bearing = br * 360 / M_PI;
+        alerts[g_myID].distance = min_dist;
       }
       /* If another device is too far away, point from this device to that one.*/
       else {
-        float br = bearing(params.longitudes[params.my_id], params.latitudes[params.my_id],
+        float br = bearing(params.longitudes[g_myID], params.latitudes[g_myID],
                            params.longitudes[i], params.latitudes[i]);
-        float d = distance(params.longitudes[params.my_id], params.latitudes[params.my_id],
+        float d = distance(params.longitudes[g_myID], params.latitudes[g_myID],
                            params.longitudes[i], params.latitudes[i]);
         alerts[i].bearing = br * 360 / M_PI;
         alerts[i].distance = d;
