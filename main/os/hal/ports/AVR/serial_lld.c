@@ -93,6 +93,7 @@ SerialDriver SDS;
 #define TIMSKx TIMSK0
 #define OCIExA OCIE0A
 #define OCIExB OCIE0B
+#define USARTS_TIM_vect TIMER0_COMPA_vect
 #elif AVR_SDS_USE_TIMER == 1
 #define TCNTx TCNT1
 #define TCCRxA TCCR1A
@@ -102,6 +103,7 @@ SerialDriver SDS;
 #define TIMSKx TIMSK1
 #define OCIExA OCIE1A
 #define OCIExB OCIE1B
+#define USARTS_TIM_vect TIMER1_COMPA_vect
 #elif AVR_SDS_USE_TIMER == 2
 #define TCNTx TCNT2
 #define TCCRxA TCCR2A
@@ -111,6 +113,7 @@ SerialDriver SDS;
 #define TIMSKx TIMSK2
 #define OCIExA OCIE2A
 #define OCIExB OCIE2B
+#define USARTS_TIM_vect TIMER2_COMPA_vect
 #else
 #error "You must specify AVR_SDS_USE_TIMER as 0, 1, or 2."
 #endif
@@ -150,7 +153,7 @@ static const SerialConfig default_config = {
     UBRR(SERIAL_DEFAULT_BITRATE),
     USART_CHAR_SIZE_8,
     96,
-    (1 << CS21)};
+    (1 << 1)};
 
 /**
  * @brief SDS Timer clock control value
@@ -333,9 +336,16 @@ static void usartS_init(const SerialConfig *config) {
   EICRA &= ~(1 << ISC00);
   EIMSK |= 1 << 0;
 #endif
-  /* Timer 2 CTC mode.*/
+/* Timer CTC mode.*/
+#if AVR_SDS_USE_TIMER == 0
+#elif AVR_SDS_USE_TIMER == 1
+  TCCRxB |= 1 << WGM12;
+  TCCRxB &= ~(1 << WGM13);
+  TCCRxA &= ~((1 << WGM11) | (1 << WGM10));
+#elif AVR_SDS_USE_TIMER == 2
   TCCRxA |= 1 << WGM21;
   TCCRxA &= ~((1 << WGM22) | (1 << WGM20));
+#endif
   /* Save the timer clock input.*/
   sds_rx_TCCRxB_div = config->sc_tccrxb_div;
   /* Default to be 8 bit.*/
@@ -482,7 +492,7 @@ OSAL_IRQ_HANDLER(AVR_SDS_RX_VECT) {
  *
  * @isr
  */
-OSAL_IRQ_HANDLER(TIMER2_COMPA_vect) {
+OSAL_IRQ_HANDLER(USARTS_TIM_vect) {
   /* Data byte.*/
 
   OSAL_IRQ_PROLOGUE();

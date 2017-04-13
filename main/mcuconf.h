@@ -58,7 +58,7 @@
 /*
  * GPT driver system settings.
  */
-#define AVR_GPT_USE_TIM1                   FALSE
+#define AVR_GPT_USE_TIM1                   TRUE
 #define AVR_GPT_USE_TIM2                   TRUE
 #define AVR_GPT_USE_TIM3                   FALSE
 #define AVR_GPT_USE_TIM4                   FALSE

@@ -67,8 +67,6 @@ int main(void) {
 
   sdStart(&SD1, NULL);
   sdStart(&SDS, &softserial_config);
-  info("SD1 Started\r\n");
-  info("SDS Started\r\n");
 
   /*
 	 * Init all modules here
@@ -83,15 +81,16 @@ int main(void) {
 	 */
   // gps thread
   // xbee thread
-  chThdCreateStatic(waTdUI, sizeof(waTdUI), INTERACTIVEPRIO, tdUI, NULL);
-  chThdCreateStatic(waTdParser, sizeof(waTdParser), NORMALPRIO, tdParser, NULL);
-  chThdCreateStatic(waTdComp, sizeof(waTdComp), NORMALPRIO, tdComp, NULL);
+  //chThdCreateStatic(waTdUI, sizeof(waTdUI), INTERACTIVEPRIO, tdUI, NULL);
+  //chThdCreateStatic(waTdParser, sizeof(waTdParser), NORMALPRIO, tdParser, NULL);
+  //chThdCreateStatic(waTdComp, sizeof(waTdComp), NORMALPRIO, tdComp, NULL);
 
   /*
 	 * main thread, main logic here
 	 * all code that has no delay (such as calculation, ...) should be here
 	 */
   while (true) {
+    chprintf((BaseSequentialStream*)&SDS,"USARTS from Main\r\n");
     chThdSleepSeconds(1);
   }
 }
