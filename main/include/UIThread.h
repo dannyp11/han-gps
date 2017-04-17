@@ -17,15 +17,8 @@
  * This will take care of photocell, LCD, LED
  * buttons, and menu navigation
  */
-
-/*
- * Main global variables
- */
-extern uint8_t g_myID, g_friendID;
-extern uint8_t g_myLatitude, g_myLongtitude;
-extern CompassDirection g_myCompassDirection, g_friendCompassDirection;
-extern CompassDirection g_friendCardinalDirection;
-extern uint8_t g_myMessageCode, g_friendMessageCode;
+extern uint8_t g_myID;
+extern float g_myCompassAngle;
 
 /*
  * Call this before using
@@ -35,18 +28,26 @@ void UIInit(void);
 
 /*
  * Show alert info to neighbor
+ * called when gps figures out that it's too far from closest friend
  */
-void UIAlertToFriend(uint8_t friendID);
+void UIAlertToFriends(void);
 
 /*
  * Show alert info from neighbor
  */
-void UIAlertFromFriend(alert_message_t *alerts, int8_t max_peers);
+void UIAlertFromFriend(CompassDirection direction, uint8_t friendId, uint16_t distance);
 
 /*
  * This loops forever, should put in thread
  */
 void UILoop(void);
+
+/*
+ * Setters & getters
+ */
+void UIUpdateMyPosition(float lat, float lon);
+void UIUpdateFriendInfo(uint8_t id, float lat, float lon, CompassDirection cardinalDirection);
+float UIGetMyCompassAngle(void);
 
 #define UI_WA_SIZE 128
 extern THD_WORKING_AREA(waTdUI, UI_WA_SIZE);

@@ -1,9 +1,10 @@
 #include <avr/io.h>
-#include <util/delay.h>
-
 #include "buzzer.h"
 
-void ioinit (void) {
+#define BUZZ_off()  BUZZ_PORT&=~_BV(BUZZ_PIN)
+#define BUZZ_on() BUZZ_PORT|=_BV(BUZZ_PIN)
+
+void buzzerInit (void) {
     DDRD  |= 0b00001000; //1 = output, 0 = input
     PORTD &= 0b11110111;
 }

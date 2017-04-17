@@ -31,6 +31,11 @@ void CompassInit(void);
 CompassDirection CompassGetDirection(void);
 
 /*
+ * convert from angle to direction
+ */
+CompassDirection CompassConvertToDirection(float angle);
+
+/*
  * Helper for converting CompassDirection to text
  * print the text to buffer, make sure buffer is at least 10 length
  * return strlen of the printed buffer
