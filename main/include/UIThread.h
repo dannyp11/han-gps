@@ -9,7 +9,10 @@
 #define UITHREAD_H_
 
 #include <stdint.h>
+#include "ch.h"
 #include "Compass.h"
+#include "computationThread.h"
+
 /*
  * This will take care of photocell, LCD, LED
  * buttons, and menu navigation
@@ -38,11 +41,15 @@ void UIAlertToFriend(uint8_t friendID);
 /*
  * Show alert info from neighbor
  */
-void UIAlertFromFriend(uint8_t friendID, uint8_t friendLat, uint8_t friendLon);
+void UIAlertFromFriend(alert_message_t *alerts, int8_t max_peers);
 
 /*
  * This loops forever, should put in thread
  */
 void UILoop(void);
+
+#define UI_WA_SIZE 128
+extern THD_WORKING_AREA(waTdUI, UI_WA_SIZE);
+extern THD_FUNCTION(tdUI, arg);
 
 #endif /* UITHREAD_H_ */

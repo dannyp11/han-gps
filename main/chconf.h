@@ -96,7 +96,7 @@
  *          provide the @p __heap_base__ and @p __heap_end__ symbols.
  * @note    Requires @p CH_CFG_USE_MEMCORE.
  */
-#define CH_CFG_MEMCORE_SIZE                 128
+#define CH_CFG_MEMCORE_SIZE                 64
 
 /**
  * @brief   Idle thread automatic spawn suppression.
@@ -130,7 +130,7 @@
  * @note    This is not related to the compiler optimization options.
  * @note    The default is @p TRUE.
  */
-#define CH_CFG_OPTIMIZE_SPEED               TRUE
+#define CH_CFG_OPTIMIZE_SPEED               FALSE
 
 /** @} */
 
@@ -156,7 +156,7 @@
  *
  * @note    The default is @p TRUE.
  */
-#define CH_CFG_USE_REGISTRY                 TRUE
+#define CH_CFG_USE_REGISTRY                 FALSE
 
 /**
  * @brief   Threads synchronization APIs.
@@ -165,7 +165,7 @@
  *
  * @note    The default is @p TRUE.
  */
-#define CH_CFG_USE_WAITEXIT                 TRUE
+#define CH_CFG_USE_WAITEXIT                 FALSE
 
 /**
  * @brief   Semaphores APIs.
@@ -193,7 +193,7 @@
  * @note    The default is @p TRUE.
  * @note    Requires @p CH_CFG_USE_SEMAPHORES.
  */
-#define CH_USE_SEMSW                        TRUE
+#define CH_USE_SEMSW                        FALSE
 
 /**
  * @brief   Mutexes APIs.
@@ -201,7 +201,7 @@
  *
  * @note    The default is @p TRUE.
  */
-#define CH_CFG_USE_MUTEXES                  TRUE
+#define CH_CFG_USE_MUTEXES                  FALSE
 
 /**
  * @brief   Enables recursive behavior on mutexes.
@@ -373,7 +373,7 @@
  *
  * @note    The default is @p FALSE.
  */
-#define CH_DBG_ENABLE_CHECKS                TRUE
+#define CH_DBG_ENABLE_CHECKS                FALSE
 
 /**
  * @brief   Debug option, consistency checks.
@@ -383,7 +383,7 @@
  *
  * @note    The default is @p FALSE.
  */
-#define CH_DBG_ENABLE_ASSERTS               TRUE
+#define CH_DBG_ENABLE_ASSERTS               FALSE
 
 /**
  * @brief   Debug option, trace buffer.
@@ -414,7 +414,7 @@
  *
  * @note    The default is @p FALSE.
  */
-#define CH_DBG_FILL_THREADS                 TRUE
+#define CH_DBG_FILL_THREADS                 FALSE
 
 /**
  * @brief   Debug option, threads profiling.
@@ -427,9 +427,11 @@
  */
 #define CH_DBG_THREADS_PROFILING            FALSE
 
-#define DEBUG_PARSER  TRUE
-#define DEBUG_XBEE    TRUE
-#define DEBUG_GPS     TRUE
+#define DEBUG_INFO        FALSE
+#define DEBUG_COMPUTATION FALSE
+#define DEBUG_PARSER      FALSE
+#define DEBUG_XBEE        FALSE
+#define DEBUG_GPS         FALSE
 
 #define CHPRINTF_USE_FLOAT TRUE
 

@@ -28,7 +28,7 @@
 /*
  * ADC driver system settings.
  */
-#define AVR_ADC_USE_ADC1                   TRUE
+#define AVR_ADC_USE_ADC1                   FALSE
 
 /*
  * CAN driver system settings.
@@ -71,6 +71,7 @@
 #define AVR_SERIAL_USE_USART1              FALSE
 #define AVR_SERIAL_USE_USARTS              TRUE
 #define AVR_SDS_USE_INT0                   TRUE
+#define AVR_SDS_USE_TIMER                   1
 
 /*
  * I2C driver system settings.

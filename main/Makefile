@@ -43,7 +43,7 @@
 MCU = atmega328p
 
 # Chosen board. Either BOARD_USE_UNO or BOARD_USE_CUSTOM
- BOARD_CHOSEN = BOARD_USE_CUSTOM
+BOARD_CHOSEN = BOARD_USE_CUSTOM
 #BOARD_CHOSEN = BOARD_USE_UNO
 
 # Processor frequency.
@@ -231,7 +231,7 @@ PRINTF_LIB_MIN = -Wl,-u,vfprintf -lprintf_min
 PRINTF_LIB_FLOAT = -Wl,-u,vfprintf -lprintf_flt
 
 # If this is left blank, then it will use the Standard printf version.
-PRINTF_LIB = $(PRINTF_LIB_MIN)
+PRINTF_LIB =
 #PRINTF_LIB = $(PRINTF_LIB_MIN)
 #PRINTF_LIB = $(PRINTF_LIB_FLOAT)
 
@@ -401,7 +401,7 @@ ALL_CPPFLAGS = -mmcu=$(MCU) -I. -x c++ $(CPPFLAGS) $(GENDEPFLAGS)
 ALL_ASFLAGS = -mmcu=$(MCU) -I. -x assembler-with-cpp $(ASFLAGS)
 
 # Default target.
-all: begin gccversion build sizebefore sizeafter end
+all: begin sizebefore gccversion build  sizeafter end
 
 # Change the build target to build a HEX file or a library.
 build: elf hex bin eep lss sym
