@@ -6,6 +6,7 @@
 #ifndef NOCHIBI
 #include <hal.h>
 #include "i2cconf.h"
+#include "chprintf.h"
 #endif
 
 #include "Compass.h"
@@ -26,8 +27,8 @@ uint8_t Compassi2c_io(uint8_t device_addr, uint8_t *ap, uint16_t an,
 #define COMPASS_ADDR  0x1e
 #endif
 
-static uint8_t mI2Cio(uint8_t device_addr, uint8_t *wp,
-		uint16_t wn, uint8_t *rp, uint16_t rn)
+static uint8_t mI2Cio(uint8_t device_addr, uint8_t *wp, uint16_t wn,
+		uint8_t *rp, uint16_t rn)
 {
 #ifdef NOCHIBI
 	return Compassi2c_io(device_addr, wp, wn, NULL, 0, rp, rn);
@@ -65,49 +66,49 @@ uint8_t CompassGetDirectionText(char * buffer, CompassDirection direction)
 	{
 	case NORTH:
 	{
-		snprintf(buffer, 6, "North");
+		chsnprintf(buffer, 6, "North");
 		retVal = 5;
 	}
 		break;
 	case EAST:
 	{
-		snprintf(buffer, 5, "East");
+		chsnprintf(buffer, 5, "East");
 		retVal = 4;
 	}
 		break;
 	case SOUTH:
 	{
-		snprintf(buffer, 6, "South");
+		chsnprintf(buffer, 6, "South");
 		retVal = 5;
 	}
 		break;
 	case WEST:
 	{
-		snprintf(buffer, 5, "West");
+		chsnprintf(buffer, 5, "West");
 		retVal = 4;
 	}
 		break;
 	case NORTHEAST:
 	{
-		snprintf(buffer, 10, "NorthEast");
+		chsnprintf(buffer, 10, "NorthEast");
 		retVal = 9;
 	}
 		break;
 	case NORTHWEST:
 	{
-		snprintf(buffer, 10, "NorthWest");
+		chsnprintf(buffer, 10, "NorthWest");
 		retVal = 9;
 	}
 		break;
 	case SOUTHEAST:
 	{
-		snprintf(buffer, 10, "SouthEast");
+		chsnprintf(buffer, 10, "SouthEast");
 		retVal = 9;
 	}
 		break;
 	case SOUTHWEST:
 	{
-		snprintf(buffer, 10, "SouthWest");
+		chsnprintf(buffer, 10, "SouthWest");
 		retVal = 9;
 	}
 		break;
@@ -136,23 +137,27 @@ float CompassGetAngle()
 
 CompassDirection CompassGetDirection()
 {
+	CompassGetAngle();
+	return CompassConvertToDirection(mHeader);
+}
+
+CompassDirection CompassConvertToDirection(float angle)
+{
 	CompassDirection retVal = NORTH;
 
-	CompassGetAngle();
-
-	if (abs(mHeader - TRUE_S) < TOLERANCE)
+	if (abs(angle - TRUE_S) < TOLERANCE)
 		retVal = SOUTH;
-	else if (abs(mHeader - TRUE_W) < TOLERANCE)
+	else if (abs(angle - TRUE_W) < TOLERANCE)
 		retVal = WEST;
-	else if (abs(mHeader - TRUE_E) < TOLERANCE)
+	else if (abs(angle - TRUE_E) < TOLERANCE)
 		retVal = EAST;
-	else if (abs(mHeader - TRUE_SW) < TOLERANCE)
+	else if (abs(angle - TRUE_SW) < TOLERANCE)
 		retVal = SOUTHWEST;
-	else if (abs(mHeader - TRUE_SE) < TOLERANCE)
+	else if (abs(angle - TRUE_SE) < TOLERANCE)
 		retVal = SOUTHEAST;
-	else if (abs(mHeader - TRUE_NE) < TOLERANCE)
+	else if (abs(angle - TRUE_NE) < TOLERANCE)
 		retVal = NORTHEAST;
-	else if (abs(mHeader - TRUE_NW) < TOLERANCE)
+	else if (abs(angle - TRUE_NW) < TOLERANCE)
 		retVal = NORTHWEST;
 
 	return retVal;
