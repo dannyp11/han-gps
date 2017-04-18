@@ -31,7 +31,7 @@
  * g_friend : the other device
  */
 uint8_t g_myID, g_friendID;
-uint8_t g_myLatitude, g_myLongtitude; // change to your type
+float g_myLatitude, g_myLongitude; // change to your type
 uint8_t g_friendLatitude, g_friendLongtitude;
 CompassDirection g_myCompassDirection, g_friendCompassDirection;
 CompassDirection g_friendCardinalDirection;
@@ -56,7 +56,7 @@ int main(void) {
 	 */
   g_myID = 0;
   g_myLatitude = 1;
-  g_myLongtitude = 2;
+  g_myLongitude = 2;
   g_myCompassDirection = NORTH;
   g_myMessageCode = 0;
   g_friendMessageCode = 0;
@@ -82,16 +82,21 @@ int main(void) {
 	 */
   // gps thread
   // xbee thread
-  // chThdCreateStatic(waTdUI, sizeof(waTdUI), INTERACTIVEPRIO, tdUI, NULL);
-  chThdCreateStatic(waTdParser, sizeof(waTdParser), NORMALPRIO, tdParser, NULL);
-  chThdCreateStatic(waTdComp, sizeof(waTdComp), NORMALPRIO, tdComp, NULL);
+  chThdCreateStatic(waTdUI, sizeof(waTdUI), INTERACTIVEPRIO, tdUI, NULL);
+  //chThdCreateStatic(waTdParser, sizeof(waTdParser), NORMALPRIO, tdParser, NULL);
+  //chThdCreateStatic(waTdComp, sizeof(waTdComp), NORMALPRIO, tdComp, NULL);
 
   /*
 	 * main thread, main logic here
 	 * all code that has no delay (such as calculation, ...) should be here
 	 */
   while (true) {
+    #include "LCD.h"
     // chprintf((BaseSequentialStream*)&SDS,"USARTS from Main\r\n");
+  //   char testbuf[21];
+  //   	chsnprintf(testbuf, 21, "Test        ", g_myID);
+	// LCDSetCursor(1, 0);
+	// LCDPrint(testbuf);
     chThdSleepSeconds(1);
   }
 }

@@ -6,6 +6,7 @@
 #ifndef NOCHIBI
 #include <hal.h>
 #include "i2cconf.h"
+#include "chprintf.h"
 #endif
 
 #include "Compass.h"
@@ -65,49 +66,49 @@ uint8_t CompassGetDirectionText(char * buffer, CompassDirection direction)
 	{
 	case NORTH:
 	{
-		snprintf(buffer, 6, "North");
+		chsnprintf(buffer, 6, "North");
 		retVal = 5;
 	}
 		break;
 	case EAST:
 	{
-		snprintf(buffer, 5, "East");
+		chsnprintf(buffer, 5, "East");
 		retVal = 4;
 	}
 		break;
 	case SOUTH:
 	{
-		snprintf(buffer, 6, "South");
+		chsnprintf(buffer, 6, "South");
 		retVal = 5;
 	}
 		break;
 	case WEST:
 	{
-		snprintf(buffer, 5, "West");
+		chsnprintf(buffer, 5, "West");
 		retVal = 4;
 	}
 		break;
 	case NORTHEAST:
 	{
-		snprintf(buffer, 10, "NorthEast");
+		chsnprintf(buffer, 10, "NorthEast");
 		retVal = 9;
 	}
 		break;
 	case NORTHWEST:
 	{
-		snprintf(buffer, 10, "NorthWest");
+		chsnprintf(buffer, 10, "NorthWest");
 		retVal = 9;
 	}
 		break;
 	case SOUTHEAST:
 	{
-		snprintf(buffer, 10, "SouthEast");
+		chsnprintf(buffer, 10, "SouthEast");
 		retVal = 9;
 	}
 		break;
 	case SOUTHWEST:
 	{
-		snprintf(buffer, 10, "SouthWest");
+		chsnprintf(buffer, 10, "SouthWest");
 		retVal = 9;
 	}
 		break;

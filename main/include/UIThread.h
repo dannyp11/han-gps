@@ -22,7 +22,7 @@
  * Main global variables
  */
 extern uint8_t g_myID, g_friendID;
-extern uint8_t g_myLatitude, g_myLongtitude;
+extern float g_myLatitude, g_myLongitude;
 extern CompassDirection g_myCompassDirection, g_friendCompassDirection;
 extern CompassDirection g_friendCardinalDirection;
 extern uint8_t g_myMessageCode, g_friendMessageCode;

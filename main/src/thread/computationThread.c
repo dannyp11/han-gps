@@ -7,6 +7,8 @@
 #include <math.h>
 
 extern uint8_t g_myID;
+extern float g_myLongitude;
+extern float g_myLatitude;
 
 typedef struct {
   float longitudes[MAX_PEERS];
@@ -94,7 +96,9 @@ THD_FUNCTION(tdComp, arg) {
 
     /* First, update own position.*/
     params.longitudes[g_myID] = getGPSLongitude();
+    g_myLongitude = params.longitudes[g_myID] * 180.f / M_PI;
     params.latitudes[g_myID] = getGPSLatitude();
+    g_myLatitude = params.latitudes[g_myID] * 180.f / M_PI;
 
     /* If a new message is received, compute immediately.*/
     if (chMBFetch(&xbeeMailbox, &p, TIME_IMMEDIATE) == MSG_OK) {
@@ -111,6 +115,7 @@ THD_FUNCTION(tdComp, arg) {
 
         /* Debug information.*/
         {
+          #include "LCD.h"
           float degree = truncf(peer.longitude * 180.f / M_PI);
           float minute = (peer.longitude - (degree * M_PI / 180.f)) * 10800.f / M_PI;
           info_computation("Peer ID: %d\r\n", peer.peerID);

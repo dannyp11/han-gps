@@ -76,12 +76,12 @@ void UILoop(void)
 	LCDSetCursor(1, 0);
 	LCDPrint(UIMsg);
 
-	chsnprintf(UIMsg, 21, "La %d Lo %d      ", g_myLatitude, g_myLongtitude);
+	chsnprintf(UIMsg, 21, "La %.3f Lo %.3f      ", g_myLatitude, g_myLongitude);
 	LCDSetCursor(2, 0);
 	LCDPrint(UIMsg);
 
 	CompassGetDirectionText(_compassDirection, g_myCompassDirection);
-	chsnprintf(UIMsg, 21, "Compass: %s       ", _compassDirection);
+	chsnprintf(UIMsg, 21, "Compass: %.3f       ", _compassDirection);
 	LCDSetCursor(3, 0);
 	LCDPrint(UIMsg);
 
