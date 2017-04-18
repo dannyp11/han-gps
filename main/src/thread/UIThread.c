@@ -12,6 +12,8 @@
 #include "RotaryEncoder.h"
 #include "Compass.h"
 #include "computationThread.h"
+
+#include "chprintf.h"
 	
 #include <stdio.h>
 #include <avr/interrupt.h>
@@ -70,16 +72,16 @@ void UIInit(void)
 
 void UILoop(void)
 {
-	snprintf(UIMsg, 21, "My ID %d        ", g_myID);
+	chsnprintf(UIMsg, 21, "My ID %d        ", g_myID);
 	LCDSetCursor(1, 0);
 	LCDPrint(UIMsg);
 
-	snprintf(UIMsg, 21, "La %d Lo %d      ", g_myLatitude, g_myLongtitude);
+	chsnprintf(UIMsg, 21, "La %d Lo %d      ", g_myLatitude, g_myLongtitude);
 	LCDSetCursor(2, 0);
 	LCDPrint(UIMsg);
 
 	CompassGetDirectionText(_compassDirection, g_myCompassDirection);
-	snprintf(UIMsg, 21, "Compass: %s       ", _compassDirection);
+	chsnprintf(UIMsg, 21, "Compass: %s       ", _compassDirection);
 	LCDSetCursor(3, 0);
 	LCDPrint(UIMsg);
 
@@ -98,7 +100,6 @@ void UIAlertFromFriend(alert_message_t *alerts, int8_t max_peers)
 
 THD_WORKING_AREA(waTdUI, UI_WA_SIZE);
 THD_FUNCTION(tdUI, arg) {
-	  UIInit();
 
   while (1) {
     UILoop();
