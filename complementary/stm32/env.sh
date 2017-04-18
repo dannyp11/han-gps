@@ -1,0 +1,1 @@
+export CHIBIOS=../../ChibiOS-src
