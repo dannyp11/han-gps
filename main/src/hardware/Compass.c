@@ -27,8 +27,8 @@ uint8_t Compassi2c_io(uint8_t device_addr, uint8_t *ap, uint16_t an,
 #define COMPASS_ADDR  0x1e
 #endif
 
-static uint8_t mI2Cio(uint8_t device_addr, uint8_t *wp,
-		uint16_t wn, uint8_t *rp, uint16_t rn)
+static uint8_t mI2Cio(uint8_t device_addr, uint8_t *wp, uint16_t wn,
+		uint8_t *rp, uint16_t rn)
 {
 #ifdef NOCHIBI
 	return Compassi2c_io(device_addr, wp, wn, NULL, 0, rp, rn);
@@ -137,23 +137,27 @@ float CompassGetAngle()
 
 CompassDirection CompassGetDirection()
 {
+	CompassGetAngle();
+	return CompassConvertToDirection(mHeader);
+}
+
+CompassDirection CompassConvertToDirection(float angle)
+{
 	CompassDirection retVal = NORTH;
 
-	CompassGetAngle();
-
-	if (abs(mHeader - TRUE_S) < TOLERANCE)
+	if (abs(angle - TRUE_S) < TOLERANCE)
 		retVal = SOUTH;
-	else if (abs(mHeader - TRUE_W) < TOLERANCE)
+	else if (abs(angle - TRUE_W) < TOLERANCE)
 		retVal = WEST;
-	else if (abs(mHeader - TRUE_E) < TOLERANCE)
+	else if (abs(angle - TRUE_E) < TOLERANCE)
 		retVal = EAST;
-	else if (abs(mHeader - TRUE_SW) < TOLERANCE)
+	else if (abs(angle - TRUE_SW) < TOLERANCE)
 		retVal = SOUTHWEST;
-	else if (abs(mHeader - TRUE_SE) < TOLERANCE)
+	else if (abs(angle - TRUE_SE) < TOLERANCE)
 		retVal = SOUTHEAST;
-	else if (abs(mHeader - TRUE_NE) < TOLERANCE)
+	else if (abs(angle - TRUE_NE) < TOLERANCE)
 		retVal = NORTHEAST;
-	else if (abs(mHeader - TRUE_NW) < TOLERANCE)
+	else if (abs(angle - TRUE_NW) < TOLERANCE)
 		retVal = NORTHWEST;
 
 	return retVal;

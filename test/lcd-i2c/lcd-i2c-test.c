@@ -47,7 +47,7 @@ int main(void)
 		LCDSetBrightness(i);
 		_delay_ms(500);
 	}
-	LCDInit();
+	LCDReset();
 
 	/*
 	 * contrast
@@ -61,7 +61,7 @@ int main(void)
 		LCDSetContrast(i);
 		_delay_ms(50);
 	}
-	LCDInit();
+	LCDReset();
 
 	/*
 	 * Turn on and off
@@ -81,7 +81,7 @@ int main(void)
 		LCDSendCommand(LCDON);
 		_delay_ms(500);
 	}
-	LCDInit();
+	LCDReset();
 
 	/*
 	 * Move cursor
@@ -99,7 +99,7 @@ int main(void)
 			_delay_ms(100);
 		}
 	}
-	LCDInit();
+	LCDReset();
 
 	LCDSetCursor(2, 5);
 	LCDPrint("Done demo");

@@ -5,13 +5,9 @@
 #ifndef LCD_H_
 #define LCD_H_
 
-#ifndef FOSC
-#define FOSC 7372800            // Clock frequency = Oscillator freq.
-#endif
-
 #define LCD_LINE_LEN 20 // max length of each line
 
-enum LCDCommand
+typedef enum _LCDCommand
 {
 	LCDON, // on off - doesn't affect backlight brightness
 	LCDOFF,
@@ -21,13 +17,19 @@ enum LCDCommand
 	CURSOROFF,
 	SHOWFIRMWARE,
 	NUMBER_OF_COMMANDS
-};
+} LCDCommand;
 
 /*
  * Call this function to initialize the LCD
  * This also calls CLEARSCREEN command and set cursor off at home
  */
-void LCDInit();
+void LCDInit(void);
+
+/*
+ * This will clearscreen, turnoff cursor,
+ * move cursor to home, set default brightness & contrast
+ */
+void LCDReset(void);
 
 /*
  * LCDPrint - write char array to the LCD over the I2C bus
@@ -39,7 +41,7 @@ uint8_t LCDPrint(const char* msg);
 /*
  * Pretty straightforward: send command in the LCDCommand enum above
  */
-uint8_t LCDSendCommand(enum LCDCommand command);
+uint8_t LCDSendCommand(LCDCommand command);
 
 /*
  * Set brightness of the LCD, level can be 1 to 8, default is 8

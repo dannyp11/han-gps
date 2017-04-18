@@ -7,7 +7,6 @@
 // HW includes (avr, lcd, gps, etc.) here
 // Note: don't include lcd, led, buttons, encoder,
 // 		photocell since they are in UIThread
-#include "Compass.h"
 #include "computationThread.h"
 #include "parserThread.h"
 #include <avr/io.h>
@@ -30,73 +29,56 @@
  * g_my : this device
  * g_friend : the other device
  */
-uint8_t g_myID, g_friendID;
-float g_myLatitude, g_myLongitude; // change to your type
-uint8_t g_friendLatitude, g_friendLongtitude;
-CompassDirection g_myCompassDirection, g_friendCompassDirection;
-CompassDirection g_friendCardinalDirection;
-uint8_t g_myMessageCode, g_friendMessageCode; // send/rcv message code
+
+uint8_t g_myID;
+float g_myCompassAngle;
 
 /*
  * Main code here
  */
-int main(void) {
-  /*
+int main(void)
+{
+	/*
 	 * System initializations.
 	 * - HAL initialization, this also initializes the configured device drivers
 	 *   and performs the board-specific initializations.
 	 * - Kernel initialization, the main() function becomes a thread and the
 	 *   RTOS is active.
 	 */
-  halInit();
-  chSysInit();
+	halInit();
+	chSysInit();
 
-  /*
+	/*
 	 * Inits all global variables here
 	 */
-  g_myID = 0;
-  g_myLatitude = 1;
-  g_myLongitude = 2;
-  g_myCompassDirection = NORTH;
-  g_myMessageCode = 0;
-  g_friendMessageCode = 0;
-  g_friendCompassDirection = SOUTH;
-  g_friendLatitude = 3;
-  g_friendLongtitude = 4;
-  g_friendID = 1;
 
-  sdStart(&SD1, NULL);
-  sdStart(&SDS, &softserial_config);
-  UIInit();
+	g_myID = 0;
+	g_myCompassAngle = 180.0f;
 
-  /*
+	sdStart(&SD1, NULL);
+//	sdStart(&SDS, &softserial_config);
+	info("SD1 Started\r\n"); info("SDS Started\r\n");
+
+	/*
 	 * Init all modules here
 	 * initialization shouldn't go into thread since it's only called once
 	 */
-  // gps
-  // xbee
-  // buzzer
+	UIInit();
 
-  /*
+	/*
 	 * Run all threads
 	 */
-  // gps thread
-  // xbee thread
-  chThdCreateStatic(waTdUI, sizeof(waTdUI), INTERACTIVEPRIO, tdUI, NULL);
-  chThdCreateStatic(waTdParser, sizeof(waTdParser), NORMALPRIO, tdParser, NULL);
-  chThdCreateStatic(waTdComp, sizeof(waTdComp), NORMALPRIO, tdComp, NULL);
+	chThdCreateStatic(waTdUI, sizeof(waTdUI), INTERACTIVEPRIO, tdUI, NULL);
+//  chThdCreateStatic(waTdParser, sizeof(waTdParser), NORMALPRIO, tdParser, NULL);
+	chThdCreateStatic(waTdComp, sizeof(waTdComp), NORMALPRIO, tdComp, NULL);
 
-  /*
+	/*
 	 * main thread, main logic here
 	 * all code that has no delay (such as calculation, ...) should be here
 	 */
-  while (true) {
-    #include "LCD.h"
-    // chprintf((BaseSequentialStream*)&SDS,"USARTS from Main\r\n");
-  //   char testbuf[21];
-  //   	chsnprintf(testbuf, 21, "Test        ", g_myID);
-	// LCDSetCursor(1, 0);
-	// LCDPrint(testbuf);
-    chThdSleepSeconds(1);
-  }
+
+	while (true)
+	{
+		chThdSleepSeconds(1);
+	}
 }
