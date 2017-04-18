@@ -161,8 +161,8 @@ THD_WORKING_AREA(waTdUI, UI_WA_SIZE);
 
 THD_FUNCTION(tdUI, arg) {
   while (1) {
-    UILoop();
     g_myCompassAngle = CompassGetAngle();
+    UILoop();
     chThdSleepMicroseconds(100);
   }
 }
