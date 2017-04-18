@@ -52,15 +52,15 @@ THD_FUNCTION(tdParser, arg) {
   chEvtRegisterMaskWithFlags(pXBEEEvt, &elXBeeData, EVENT_MASK(2), CHN_INPUT_AVAILABLE);
 
   while (true) {
-    // eventmask_t ev = chEvtWaitAny(EVENT_MASK(1) | EVENT_MASK(2));
-    // if (ev & EVENT_MASK(1)) {
-    //   chEvtGetAndClearFlags(&elGPSData);
-    //   iterateChannel(pGPSChn, gpsStepParser);
-    // } 
-    // if (ev & EVENT_MASK(2)) {
-    //   chEvtGetAndClearFlags(&elXBeeData);
-    //   iterateChannel(pXBEEChn, xbeeStepParser);
-    // }
-    chThdSleepMilliseconds(100);
+    eventmask_t ev = chEvtWaitAny(EVENT_MASK(1) | EVENT_MASK(2));
+    if (ev & EVENT_MASK(1)) {
+      chEvtGetAndClearFlags(&elGPSData);
+      iterateChannel(pGPSChn, gpsStepParser);
+    } 
+    if (ev & EVENT_MASK(2)) {
+      chEvtGetAndClearFlags(&elXBeeData);
+      iterateChannel(pXBEEChn, xbeeStepParser);
+    }
+    //chThdSleepMilliseconds(100);
   }
 }
