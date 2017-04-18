@@ -4,6 +4,8 @@
 
 #include "parserThread.h"
 
+#include "UIThread.h"
+
 #include <math.h>
 
 extern uint8_t g_myID;
@@ -98,6 +100,8 @@ THD_FUNCTION(tdComp, arg) {
     params.longitudes[g_myID] = getGPSLongitude();
     // g_myLongitude = params.longitudes[g_myID] * 180.f / M_PI;
     params.latitudes[g_myID] = getGPSLatitude();
+    UIUpdateMyPosition(params.longitudes[g_myID] * 180.f / M_PI,
+                       params.latitudes[g_myID] * 180.f / M_PI);
     // g_myLatitude = params.latitudes[g_myID] * 180.f / M_PI;
 
     /* If a new message is received, compute immediately.*/
@@ -115,7 +119,7 @@ THD_FUNCTION(tdComp, arg) {
 
         /* Debug information.*/
         {
-          #include "LCD.h"
+#include "LCD.h"
           float degree = truncf(peer.longitude * 180.f / M_PI);
           float minute = (peer.longitude - (degree * M_PI / 180.f)) * 10800.f / M_PI;
           info_computation("Peer ID: %d\r\n", peer.peerID);
