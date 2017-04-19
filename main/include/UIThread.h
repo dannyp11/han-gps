@@ -10,14 +10,11 @@
 
 #include <stdint.h>
 #include "ch.h"
-#include "Compass.h"
-#include "computationThread.h"
 
 /*
  * This will take care of photocell, LCD, LED
  * buttons, and menu navigation
  */
-
 extern uint8_t g_myID;
 extern float g_myCompassAngle;
 
@@ -28,28 +25,16 @@ extern float g_myCompassAngle;
 void UIInit(void);
 
 /*
- * Show alert info to neighbor
- * called when gps figures out that it's too far from closest friend
+ * Setters & getters, other threads can only call these
  */
-void UIAlertToFriends(void);
+void UIUpdateMyPosition(float lat, float lon); // gps should call this
+void UIUpdateNearestFriendInfo(uint8_t id, float lat, float lon, float friendCompassAngle); // parser should call this
+void UIAlertFromFriend(uint8_t id, float lat, float lon, float friendCompassAngle); // parser should call this
+void UIAlertToFriends(void); // called when gps figures out that it's too far from closest friend
 
-/*
- * Show alert info from neighbor
+/**
+ * Thread stuff
  */
-void UIAlertFromFriend(CompassDirection direction, uint8_t friendId, uint16_t distance);
-
-/*
- * This loops forever, should put in thread
- */
-void UILoop(void);
-
-/*
- * Setters & getters
- */
-void UIUpdateMyPosition(float lat, float lon);
-void UIUpdateFriendInfo(uint8_t id, float lat, float lon, CompassDirection cardinalDirection);
-float UIGetMyCompassAngle(void);
-
 #define UI_WA_SIZE 128
 extern THD_WORKING_AREA(waTdUI, UI_WA_SIZE);
 extern THD_FUNCTION(tdUI, arg);

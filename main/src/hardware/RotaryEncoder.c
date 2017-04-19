@@ -9,6 +9,8 @@
 #include <avr/interrupt.h>
 #include "RotaryEncoder.h"
 
+#define ENCODER_SENSITIVITY		4
+
 static volatile char old_raw_input;
 static RotaryEncoderChangeCallback mFunction = 0;
 static char mSensitivityCount = 0;
@@ -72,10 +74,21 @@ ISR(PCINT1_vect)
 	if (mFunction)
 	{
 		char decoded_val = decoded_value(raw_input, old_raw_input);
+		mSensitivityCount += decoded_val;
 		if (decoded_val)
 		{
 			mFunction(decoded_val);
 		}
+//		if (mSensitivityCount == ENCODER_SENSITIVITY)
+//		{
+//			mFunction(1);
+//			mSensitivityCount = 0;
+//		}
+//		else if (mSensitivityCount == -ENCODER_SENSITIVITY)
+//		{
+//			mFunction(-1);
+//			mSensitivityCount = 0;
+//		}
 	}
 
 	old_raw_input = raw_input;
