@@ -112,6 +112,7 @@ void UIInit(void)
 
 	// init all modules
 	LCDInit();
+	CompassInit();
 	PhotocellInit();
 	LEDinit();
 	ButtonsInit();
