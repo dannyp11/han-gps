@@ -8,4 +8,4 @@ function cleanFolder()
 }
 
 cleanFolder test/
-cleanFolder src/
+cleanFolder main/
