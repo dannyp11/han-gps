@@ -90,11 +90,11 @@ typedef struct {
   /**
    * @brief Top value of OCR2A for soft serial.
    */
-  uint8_t                   sc_ocrxa;
+  uint8_t                   sc_ocr2a;
   /**
-   * @brief Bits of TCx Control Register which selects divider for soft serial.
+   * @brief Bits of TC2 Control Register which selects divider for soft serial.
    */
-  uint8_t                   sc_tccrxb_div;
+  uint8_t                   sc_tccr2b_div;
 } SerialConfig;
 
 
