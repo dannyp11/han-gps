@@ -9,8 +9,8 @@
 #include <math.h>
 
 extern uint8_t g_myID;
-// extern float g_myLongitude;
-// extern float g_myLatitude;
+//extern float g_myLongitude;
+//extern float g_myLatitude;
 
 typedef struct {
   float longitudes[MAX_PEERS];
@@ -21,6 +21,14 @@ typedef struct {
 
 static snapshot_param_t params;
 extern alert_message_t g_alerts[MAX_PEERS];
+
+float getMyLongitude() {
+	return params.longitudes[g_myID];
+}
+
+float getMyLatitude() {
+	return params.latitudes[g_myID];
+}
 
 float distance(float lo1, float la1, float lo2, float la2) {
   float a = pow(sin((la1 - la2) / 2.f), 2.f) + cos(la1) * cos(la2) * pow(sin((lo1 - la2) / 2.f), 2.f);
