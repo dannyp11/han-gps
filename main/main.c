@@ -31,6 +31,7 @@
  */
 uint8_t g_myID;         // only main can write
 float g_myCompassAngle; // only UI can write
+alert_message_t g_alerts[MAX_PEERS];
 
 /*
  * Main code here

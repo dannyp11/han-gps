@@ -20,7 +20,7 @@ typedef struct {
 } snapshot_param_t;
 
 static snapshot_param_t params;
-alert_message_t alerts[MAX_PEERS];
+extern alert_message_t g_alerts[MAX_PEERS];
 
 float distance(float lo1, float la1, float lo2, float la2) {
   float a = pow(sin((la1 - la2) / 2.f), 2.f) + cos(la1) * cos(la2) * pow(sin((lo1 - la2) / 2.f), 2.f);
@@ -59,8 +59,8 @@ void compute(void) {
       if (i == g_myID) {
         float br = bearing(params.longitudes[i], params.latitudes[i],
                            params.longitudes[j], params.latitudes[j]);
-        alerts[g_myID].bearing = br * 360 / M_PI;
-        alerts[g_myID].distance = min_dist;
+        g_alerts[g_myID].bearing = br * 360 / M_PI;
+        g_alerts[g_myID].distance = min_dist;
       }
       /* If another device is too far away, point from this device to that one.*/
       else {
@@ -68,14 +68,14 @@ void compute(void) {
                            params.longitudes[i], params.latitudes[i]);
         float d = distance(params.longitudes[g_myID], params.latitudes[g_myID],
                            params.longitudes[i], params.latitudes[i]);
-        alerts[i].bearing = br * 360 / M_PI;
-        alerts[i].distance = d;
+        g_alerts[i].bearing = br * 360 / M_PI;
+        g_alerts[i].distance = d;
       }
     }
     /* If someone is within range.*/
     else {
-      alerts[i].bearing = ALERT_NONE;
-      alerts[i].distance = ALERT_NONE;
+      g_alerts[i].bearing = ALERT_NONE;
+      g_alerts[i].distance = ALERT_NONE;
     }
   }
 }
@@ -88,8 +88,8 @@ THD_FUNCTION(tdComp, arg) {
   {
     int8_t i;
     for (i = 0; i < MAX_PEERS; ++i) {
-      alerts[i].bearing = ALERT_NONE;
-      alerts[i].distance = ALERT_NONE;
+      g_alerts[i].bearing = ALERT_NONE;
+      g_alerts[i].distance = ALERT_NONE;
     }
   }
 
