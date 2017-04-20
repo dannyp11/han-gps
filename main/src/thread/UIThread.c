@@ -21,8 +21,8 @@
 
 #include <avr/eeprom.h>
 #include <avr/interrupt.h>
-#include <stdio.h>
 #include <math.h>
+#include <stdio.h>
 
 /*
  * internal flags
@@ -379,6 +379,7 @@ THD_FUNCTION(tdUI, arg) {
       mBrightnessLevel = 2;
     LCDSetBrightness(mBrightnessLevel);
     prev_mCurMenu = mCurMenu;
+    // UISendMessage(111.2345f, 123.4567f, 1);
     chThdSleepMilliseconds(300);
   }
 }

@@ -66,9 +66,9 @@ int main(void) {
   /*
 	 * Run all threads
 	 */
-  //   chThdCreateStatic(waTdUI, sizeof(waTdUI), INTERACTIVEPRIO, tdUI, NULL);
-  //   chThdCreateStatic(waTdParser, sizeof(waTdParser), NORMALPRIO, tdParser, NULL);
-  //   chThdCreateStatic(waTdComp, sizeof(waTdComp), NORMALPRIO, tdComp, NULL);
+    chThdCreateStatic(waTdUI, sizeof(waTdUI), INTERACTIVEPRIO, tdUI, NULL);
+    chThdCreateStatic(waTdParser, sizeof(waTdParser), NORMALPRIO, tdParser, NULL);
+    chThdCreateStatic(waTdComp, sizeof(waTdComp), NORMALPRIO, tdComp, NULL);
 
   /*
 	 * main thread, main logic here
@@ -76,7 +76,8 @@ int main(void) {
 	 */
 
   while (true) {
-    UISendMessage(111.2345f, 123.4567f, 1);
+	// info("Main Alive\r\n");
+    // UISendMessage(111.2345f, 123.4567f, 1);
     chThdSleepSeconds(1);
   }
 }
