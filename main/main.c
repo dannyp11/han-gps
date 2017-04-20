@@ -29,9 +29,8 @@
  * g_my : this device
  * g_friend : the other device
  */
-
-uint8_t g_myID;
-float g_myCompassAngle;
+uint8_t g_myID; // only main can write
+float g_myCompassAngle; // only UI can write
 
 /*
  * Main code here
@@ -51,7 +50,6 @@ int main(void)
 	/*
 	 * Inits all global variables here
 	 */
-
 	g_myID = 0;
 	g_myCompassAngle = 180.0f;
 
