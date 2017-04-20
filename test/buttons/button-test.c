@@ -41,6 +41,32 @@ void callbackOk()
 	LCDPrint("Ok pressed");
 }
 
+void callbackUp()
+{
+	if (!isCleaned)
+	{
+		LCDSendCommand(CLEARSCREEN);
+		isCleaned = 1;
+	}
+
+	LCDSendCommand(CURSORHOME);
+	LCDSendCommand(CLEARSCREEN);
+	LCDPrint("Up pressed");
+}
+
+void callbackDown()
+{
+	if (!isCleaned)
+	{
+		LCDSendCommand(CLEARSCREEN);
+		isCleaned = 1;
+	}
+
+	LCDSendCommand(CURSORHOME);
+	LCDSendCommand(CLEARSCREEN);
+	LCDPrint("Down pressed");
+}
+
 int main(void)
 {
 	LCDInit();
@@ -48,6 +74,8 @@ int main(void)
 
 	ButtonOKSetCallback(callbackOk);
 	ButtonCancelSetCallback(callbackCancel);
+	ButtonUpSetCallback(callbackUp);
+	ButtonDownSetCallback(callbackDown);
 
 	LCDPrint("Button Demo");
 	LCDSetCursor(2, 0);
