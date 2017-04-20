@@ -381,10 +381,10 @@ void UISendMessage(float lat, float lon, int8_t msg)
 	latDeg = (int16_t) truncf(lat);
 
 	{
-		float tmp = (lon - longDeg) * 60;
+		float tmp = (lon * 180 / M_PI - longDeg) * 60;
 		longMin = (int16_t) truncf(tmp);
 		longSec = (int16_t) ((tmp - longMin) * 10000.f);
-		tmp = (lat - latDeg) * 60;
+		tmp = (lat * 180 / M_PI - latDeg) * 60;
 		latMin = (int16_t) truncf(tmp);
 		latSec = (int16_t) ((tmp - latMin) * 10000.f);
 	}
@@ -438,10 +438,10 @@ THD_FUNCTION(tdUI, arg)
 			break;
 		}
 
-		if (mBrightnessLevel < 2)
-			mBrightnessLevel = 2;
-		LCDSetBrightness(mBrightnessLevel);
-		prev_mCurMenu = mCurMenu;
-		chThdSleepMilliseconds(300);
-	}
+    if (mBrightnessLevel < 2)
+      mBrightnessLevel = 2;
+    LCDSetBrightness(mBrightnessLevel);
+    prev_mCurMenu = mCurMenu;
+    chThdSleepMilliseconds(300);
+  }
 }

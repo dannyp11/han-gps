@@ -31,7 +31,7 @@
  */
 uint8_t g_myID;         // only main can write
 float g_myCompassAngle; // only UI can write
-alert_message_t g_alerts[MAX_PEERS];
+alert_message_t g_alerts[MAX_PEERS]; // only computation can write
 
 /*
  * Main code here
@@ -68,7 +68,7 @@ int main(void)
 	 * Run all threads
 	 */
 	chThdCreateStatic(waTdUI, sizeof(waTdUI), INTERACTIVEPRIO, tdUI, NULL);
-	//   chThdCreateStatic(waTdParser, sizeof(waTdParser), NORMALPRIO, tdParser, NULL);
+//	   chThdCreateStatic(waTdParser, sizeof(waTdParser), NORMALPRIO, tdParser, NULL);
 //	chThdCreateStatic(waTdComp, sizeof(waTdComp), NORMALPRIO, tdComp, NULL);
 
 	/*
