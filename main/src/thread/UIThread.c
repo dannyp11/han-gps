@@ -14,6 +14,8 @@
 #include "RotaryEncoder.h"
 #include "buzzer.h"
 #include "computationThread.h"
+#include "Compass.h"
+#include "Button.h"
 
 #include "chprintf.h"
 
