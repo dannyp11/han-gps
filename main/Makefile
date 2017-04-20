@@ -183,6 +183,7 @@ CFLAGS += $(CSTANDARD)
 CFLAGS += -fdata-sections
 CFLAGS += -ffunction-sections
 CFLAGS += -Wl,-u,vfprintf -lprintf_flt # for printf floats
+CFLAGS += -B1 
 
 #---------------- Compiler Options C++ ----------------
 #  -g*:          generate debugging information

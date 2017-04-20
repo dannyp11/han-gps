@@ -6,6 +6,7 @@
  */
 
 #include "UIThread.h"
+#include "UIMessages.h"
 #include "LCD.h"
 #include "LED.h"
 #include "Button.h"
@@ -19,6 +20,7 @@
 
 #include <stdio.h>
 #include <avr/interrupt.h>
+#include <avr/eeprom.h>
 
 /*
  * internal flags
@@ -27,6 +29,7 @@
 #define IS_OK_PRESSED			1
 #define IS_CHANGED				2
 #define IS_CHANGING_CONTRAST	3
+#define IS_PANICKING			4
 
 /**
  * Menu ID
@@ -42,23 +45,20 @@ typedef enum _UI_Menu
 } UI_Menu;
 
 static char UIMsg[21];
+static char UIMsgHolder[21];
 static char _compassDirection[10];
 static volatile uint8_t mBrightnessLevel;
 static volatile uint8_t mContrastLevel;
 static uint16_t uiFlags;
-static UI_Menu mCurMenu;
+static int8_t mCurMenu;
 static uint8_t mIsLooping;
 
 /*
  * Private variables
  */
-static uint8_t g_friendID;
-static CompassDirection g_friendCardinalDirection;
-static uint8_t g_myMessageCode, g_friendMessageCode;
-static float g_myLat, g_myLon;
-static float g_friendLat, g_friendLon;
-static float g_myLat, g_myLon;
-static float g_friendAngle;
+static DeviceInfo g_myDeviceInfo;
+static DeviceInfo g_nearestFriendInfo, g_panicFriendInfo;
+static float g_nearestFriendDistance, g_panicFriendDistance;
 
 /**
  * Flags manipulation
@@ -83,14 +83,30 @@ static void photoCellCallback(uint8_t level)
 	mBrightnessLevel = level;
 }
 
+static void buttonUpCallback(void)
+{
+
+}
+
+static void buttonDownCallback(void)
+{
+
+}
+
 static void buttonCancelCallback(void)
 {
 	mCurMenu--;
+	if (mCurMenu < 0)
+		mCurMenu = 0;
+	chThdSleepMilliseconds(500);
 }
 
 static void buttonOkCallback(void)
 {
 	mCurMenu++;
+	if (mCurMenu >= MENU_COUNT)
+		mCurMenu = MENU_COUNT - 1;
+	chThdSleepMilliseconds(500);
 }
 
 static void rotaryEncoderCallback(char value)
@@ -145,18 +161,24 @@ void UIInit(void)
 	UISetFlag(IS_OK_PRESSED, 0);
 	UISetFlag(IS_CHANGED, 1);
 	UISetFlag(IS_CHANGING_CONTRAST, 0);
+	UISetFlag(IS_PANICKING, 0);
 	mCurMenu = MY_INFO;
 
 	// init all private vars
-	g_myMessageCode = 0;
-	g_friendMessageCode = 0;
-	g_friendID = 1;
-	g_friendCardinalDirection = EAST;
-	g_myLat = 0;
-	g_myLon = 0;
-	g_friendLat = 0;
-	g_friendLon = 0;
-	g_friendAngle = 90;
+	g_nearestFriendDistance = 10.1f;
+	g_panicFriendDistance = 101.1f;
+	g_nearestFriendInfo.id = 1;
+	g_nearestFriendInfo.lat = 2;
+	g_nearestFriendInfo.lon = 3;
+	g_nearestFriendInfo.compassAngle = 270.0;
+	g_panicFriendInfo.id = 2;
+	g_panicFriendInfo.lat = 4;
+	g_panicFriendInfo.lon = 6;
+	g_panicFriendInfo.compassAngle = 60.0;
+	g_myDeviceInfo.id = g_myID;
+	g_myDeviceInfo.lat = 3;
+	g_myDeviceInfo.lon = 5;
+	g_myCompassAngle = 0.0f;
 
 	// init all modules
 	LCDInit();
@@ -179,21 +201,25 @@ void UIInit(void)
 
 void UI_SHowMyInfo(void)
 {
-	chsnprintf(UIMsg, 21, "My ID %d        ", g_myID);
+	PgmStorageGet(UIMsg, UIMyInfo1);
+	chsnprintf(UIMsg, 21, UIMsg, g_myID);
 	LCDSetCursor(1, 0);
 	LCDPrint(UIMsg);
 
-	chsnprintf(UIMsg, 21, "Lat %.2f Lon %.2f     ", g_myLat, g_myLon);
+	PgmStorageGet(UIMsg, UIMyInfo2);
+	chsnprintf(UIMsg, 21, UIMsg, g_myDeviceInfo.lat, g_myDeviceInfo.lon);
 	LCDSetCursor(2, 0);
 	LCDPrint(UIMsg);
 
 	CompassGetDirectionText(_compassDirection,
 			CompassConvertToDirection(360 - g_myCompassAngle));
-	chsnprintf(UIMsg, 21, "Direction %s               ", _compassDirection);
+	PgmStorageGet(UIMsgHolder, UIMyInfo3);
+	chsnprintf(UIMsg, 21, UIMsgHolder, _compassDirection);
 	LCDSetCursor(3, 0);
 	LCDPrint(UIMsg);
 
-	chsnprintf(UIMsg, 21, "Angle %.2f                 ", g_myCompassAngle);
+	PgmStorageGet(UIMsgHolder, UIMyInfo4);
+	chsnprintf(UIMsg, 21, UIMsgHolder, g_myCompassAngle);
 	LCDSetCursor(4, 0);
 	LCDPrint(UIMsg);
 
@@ -202,22 +228,31 @@ void UI_SHowMyInfo(void)
 
 void UI_ShowFriendInfo(void)
 {
-	float cardinalAngle = g_myCompassAngle - g_friendAngle;
+	float cardinalAngle = g_myCompassAngle - g_nearestFriendInfo.compassAngle;
 	if (cardinalAngle < 0)
 		cardinalAngle = 360 - cardinalAngle;
 
-	chsnprintf(UIMsg, 21, "Friend ID %d        ", g_friendID);
+	PgmStorageGet(UIMsg, UIFriendInfo1);
+	chsnprintf(UIMsg, 21, UIMsg, g_nearestFriendInfo.id);
 	LCDSetCursor(1, 0);
 	LCDPrint(UIMsg);
 
-	chsnprintf(UIMsg, 21, "Lat %.2f Lon %.2f     ", g_friendLat, g_friendLon);
+	PgmStorageGet(UIMsg, UIFriendInfo2);
+	chsnprintf(UIMsg, 21, UIMsg, g_nearestFriendInfo.lat,
+			g_nearestFriendInfo.lon);
 	LCDSetCursor(2, 0);
 	LCDPrint(UIMsg);
 
 	CompassGetDirectionText(_compassDirection,
 			CompassConvertToDirection(360 - cardinalAngle));
-	chsnprintf(UIMsg, 21, "Direction %s         ", _compassDirection);
+	PgmStorageGet(UIMsgHolder, UIFriendInfo3);
+	chsnprintf(UIMsg, 21, UIMsgHolder, _compassDirection);
 	LCDSetCursor(3, 0);
+	LCDPrint(UIMsg);
+
+	PgmStorageGet(UIMsgHolder, UIFriendInfo4);
+	chsnprintf(UIMsg, 21, UIMsgHolder, g_nearestFriendDistance);
+	LCDSetCursor(4, 0);
 	LCDPrint(UIMsg);
 
 	UIShowLed(CompassConvertToDirection(cardinalAngle));
@@ -232,18 +267,44 @@ void UI_ShowFriendAlert(void)
 
 void UI_ShowPanicMode(void)
 {
-	chsnprintf(UIMsg, 21, "Panic!           ", g_myID);
+	chsnprintf(UIMsg, 21, "Panic mode           ", g_myID);
 	LCDSetCursor(1, 0);
 	LCDPrint(UIMsg);
+
+	if (UIGetFlag(IS_PANICKING))
+	{
+		chsnprintf(UIMsg, 21, "OMG I'm lost!!!       ", g_myID);
+		LCDSetCursor(2, 0);
+		LCDPrint(UIMsg);
+
+		buzzOn();
+		chThdSleepMilliseconds(500);
+		buzzOff();
+		chThdSleepMilliseconds(500);
+
+		chsnprintf(UIMsg, 21, "Press cancel to unpanic       ", g_myID);
+		LCDSetCursor(3, 0);
+		LCDPrint(UIMsg);
+
+		// call xbee emergency api
+	}
+	else
+	{
+		chsnprintf(UIMsg, 21, "Press Ok to activate       ", g_myID);
+		LCDSetCursor(2, 0);
+		LCDPrint(UIMsg);
+
+		// call xbee unemergency api
+	}
 }
 
 void UI_ShowContrastSettings(void)
 {
-	chsnprintf(UIMsg, 21, "Contrast setting          ");
+	chsnprintf(UIMsg, 21, "Contrast setting value %d      ", mContrastLevel);
 	LCDSetCursor(1, 0);
 	LCDPrint(UIMsg);
 
-	chsnprintf(UIMsg, 21, "Rotate to change          ");
+	chsnprintf(UIMsg, 21, "Ok/Cancel to change          ");
 	LCDSetCursor(2, 0);
 	LCDPrint(UIMsg);
 
@@ -255,24 +316,22 @@ void UIAlertToFriends()
 
 }
 
-void UIAlertFromFriend(uint8_t id, float lat, float lon,
-		float friendCompassAngle)
+void UIAlertFromFriend(DeviceInfo friendInfo, float distance)
 {
-
+	g_panicFriendInfo = friendInfo;
+	g_panicFriendDistance = distance;
 }
 
 void UIUpdateMyPosition(float lat, float lon)
 {
-	g_myLat = lat;
-	g_myLon = lon;
+	g_myDeviceInfo.lat = lat;
+	g_myDeviceInfo.lon = lon;
 }
 
-void UIUpdateFriendInfo(uint8_t id, float lat, float lon,
-		float friendCompassAngle)
+void UIUpdateNearestFriendInfo(DeviceInfo friendInfo, float distance)
 {
-	g_friendID = id;
-	g_friendLat = lat;
-	g_friendLon = lon;
+	g_nearestFriendInfo = friendInfo;
+	g_nearestFriendDistance = distance;
 }
 
 THD_WORKING_AREA(waTdUI, UI_WA_SIZE);
