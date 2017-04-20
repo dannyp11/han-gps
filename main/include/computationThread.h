@@ -3,11 +3,8 @@
 #include "ch.h"
 #include "hal.h"
 
-#if DEBUG_COMPUTATION
 #define COMP_WA_SIZE 128
-#else 
-#define COMP_WA_SIZE 128
-#endif
+
 
 #define ALERT_NONE -1
 
