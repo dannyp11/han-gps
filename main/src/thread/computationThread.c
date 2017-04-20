@@ -15,6 +15,7 @@ extern uint8_t g_myID;
 typedef struct {
   float longitudes[MAX_PEERS];
   float latitudes[MAX_PEERS];
+  int8_t msgs[MAX_PEERS];
   float alert_distance;
 } snapshot_param_t;
 
@@ -52,8 +53,8 @@ void compute(void) {
         }
       }
     }
-    /* If someone is too far away, alert.*/
-    if (min_dist > params.alert_distance) {
+    /* If someone is too far away or if they set emergency flag, alert.*/
+    if (min_dist > params.alert_distance || params.msgs[i] == MSG_EMERGENCY) {
       /* If this device is too far away, point to the closest peer.*/
       if (i == g_myID) {
         float br = bearing(params.longitudes[i], params.latitudes[i],
@@ -116,6 +117,7 @@ THD_FUNCTION(tdComp, arg) {
         /* Actually update the info.*/
         params.longitudes[id] = peer.longitude;
         params.latitudes[id] = peer.latitude;
+        params.msgs[id] = peer.msgID;
 
         /* Debug information.*/
         {

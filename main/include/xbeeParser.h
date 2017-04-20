@@ -6,6 +6,7 @@
 #include "ch.h"
 
 #define INVALID_XBEE_DATA -1
+#define MSG_EMERGENCY 1
 
 #define PEERID_NONE -1
 typedef struct {
