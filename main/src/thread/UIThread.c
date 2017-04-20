@@ -98,7 +98,6 @@ static void buttonCancelCallback(void)
 	mCurMenu--;
 	if (mCurMenu < 0)
 		mCurMenu = 0;
-	chThdSleepMilliseconds(500);
 }
 
 static void buttonOkCallback(void)
@@ -106,7 +105,6 @@ static void buttonOkCallback(void)
 	mCurMenu++;
 	if (mCurMenu >= MENU_COUNT)
 		mCurMenu = MENU_COUNT - 1;
-	chThdSleepMilliseconds(500);
 }
 
 static void rotaryEncoderCallback(char value)
@@ -230,7 +228,7 @@ void UI_ShowFriendInfo(void)
 {
 	float cardinalAngle = g_myCompassAngle - g_nearestFriendInfo.compassAngle;
 	if (cardinalAngle < 0)
-		cardinalAngle = 360 - cardinalAngle;
+		cardinalAngle = 360 + cardinalAngle;
 
 	PgmStorageGet(UIMsg, UIFriendInfo1);
 	chsnprintf(UIMsg, 21, UIMsg, g_nearestFriendInfo.id);
@@ -244,7 +242,7 @@ void UI_ShowFriendInfo(void)
 	LCDPrint(UIMsg);
 
 	CompassGetDirectionText(_compassDirection,
-			CompassConvertToDirection(360 - cardinalAngle));
+			CompassConvertToDirection(cardinalAngle));
 	PgmStorageGet(UIMsgHolder, UIFriendInfo3);
 	chsnprintf(UIMsg, 21, UIMsgHolder, _compassDirection);
 	LCDSetCursor(3, 0);
@@ -260,20 +258,23 @@ void UI_ShowFriendInfo(void)
 
 void UI_ShowFriendAlert(void)
 {
-	chsnprintf(UIMsg, 21, "Friend Alert           ", g_myID);
+	PgmStorageGet(UIMsgHolder, UIFriendAlert1);
+	chsnprintf(UIMsg, 21, UIMsgHolder);
 	LCDSetCursor(1, 0);
 	LCDPrint(UIMsg);
 }
 
 void UI_ShowPanicMode(void)
 {
-	chsnprintf(UIMsg, 21, "Panic mode           ", g_myID);
+	PgmStorageGet(UIMsgHolder, UIPanicMode1);
+	chsnprintf(UIMsg, 21, UIMsgHolder);
 	LCDSetCursor(1, 0);
 	LCDPrint(UIMsg);
 
 	if (UIGetFlag(IS_PANICKING))
 	{
-		chsnprintf(UIMsg, 21, "OMG I'm lost!!!       ", g_myID);
+		PgmStorageGet(UIMsgHolder, UIPanicMode2);
+		chsnprintf(UIMsg, 21, UIMsgHolder);
 		LCDSetCursor(2, 0);
 		LCDPrint(UIMsg);
 
@@ -282,7 +283,8 @@ void UI_ShowPanicMode(void)
 		buzzOff();
 		chThdSleepMilliseconds(500);
 
-		chsnprintf(UIMsg, 21, "Press cancel to unpanic       ", g_myID);
+		PgmStorageGet(UIMsgHolder, UIPanicMode3);
+		chsnprintf(UIMsg, 21, UIMsgHolder);
 		LCDSetCursor(3, 0);
 		LCDPrint(UIMsg);
 
@@ -290,7 +292,8 @@ void UI_ShowPanicMode(void)
 	}
 	else
 	{
-		chsnprintf(UIMsg, 21, "Press Ok to activate       ", g_myID);
+		PgmStorageGet(UIMsgHolder, UIPanicMode4);
+		chsnprintf(UIMsg, 21, UIMsgHolder);
 		LCDSetCursor(2, 0);
 		LCDPrint(UIMsg);
 
@@ -300,11 +303,13 @@ void UI_ShowPanicMode(void)
 
 void UI_ShowContrastSettings(void)
 {
-	chsnprintf(UIMsg, 21, "Contrast setting value %d      ", mContrastLevel);
+	PgmStorageGet(UIMsgHolder, UIContrastSetting1);
+	chsnprintf(UIMsg, 21, UIMsgHolder, mContrastLevel);
 	LCDSetCursor(1, 0);
 	LCDPrint(UIMsg);
 
-	chsnprintf(UIMsg, 21, "Ok/Cancel to change          ");
+	PgmStorageGet(UIMsg, UIContrastSetting2);
+	chsnprintf(UIMsg, 21, UIMsg);
 	LCDSetCursor(2, 0);
 	LCDPrint(UIMsg);
 
