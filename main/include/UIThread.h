@@ -42,6 +42,9 @@ void UIUpdateNearestFriendInfo(DeviceInfo friendInfo, float distance); // parser
 void UIAlertFromFriend(DeviceInfo friendInfo, float distance); // parser should call this
 void UIAlertToFriends(void); // called when gps figures out that it's too far from closest friend
 
+// TODO: Just for testing
+void UISendMessage(float lat, float lon, int8_t msg);
+
 /**
  * Thread stuff
  */
