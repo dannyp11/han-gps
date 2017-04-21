@@ -472,7 +472,7 @@ OSAL_IRQ_HANDLER(AVR_SD2_TX_VECT) {
  */
 OSAL_IRQ_HANDLER(AVR_SDS_RX_VECT) {
   OSAL_IRQ_PROLOGUE();
-  chSysDisable();
+  osalSysLockFromISR();
   switch (sds_rx_state) {
   case SDS_RX_IDLE:
     sds_rx_state = SDS_RX_WAIT;
@@ -480,7 +480,7 @@ OSAL_IRQ_HANDLER(AVR_SDS_RX_VECT) {
   default:
     break;
   }
-  chSysEnable();
+  osalSysUnlockFromISR();
   OSAL_IRQ_EPILOGUE();
 }
 
@@ -533,49 +533,49 @@ OSAL_IRQ_HANDLER(USARTS_TIM_vect) {
       break;
     }
   }
-  /* TX state machine.*/
-  {
-    static sds_tx_state_t tx_state = SDS_TX_IDLE;
-    static int8_t tx_byte;
-    static int8_t tx_i;
-    switch (tx_state) {
-    case SDS_TX_IDLE:
-      tx_i = -1;
-      osalSysLockFromISR();
-      tx_byte = sdRequestDataI(&SDS);
-      osalSysUnlockFromISR();
-      if (tx_byte >= Q_OK) {
-        tx_state = SDS_TX_TRANSMIT;
-      }
-      break;
-    case SDS_TX_TRANSMIT: {
-      uint8_t bit;
-      /* START.*/
-      if (tx_i == -1) {
-        bit = 0;
-      }
-      /* STOP.*/
-      else if (tx_i == sds_bits_per_char) {
-        bit = 1;
-      }
-      /* Data.*/
-      else {
-        bit = (tx_byte & (1 << tx_i)) != 0;
-      }
-      palWritePad(AVR_SDS_TX_PORT, AVR_SDS_TX_PIN, bit);
-      tx_state = SDS_TX_WAIT;
-      break;
-    }
-    case SDS_TX_WAIT:
-      if (tx_i == sds_bits_per_char) {
-        tx_state = SDS_TX_IDLE;
-      } else {
-        tx_state = SDS_TX_TRANSMIT;
-      }
-      ++tx_i;
-      break;
-    }
-  }
+  // /* TX state machine.*/
+  // {
+  //   static sds_tx_state_t tx_state = SDS_TX_IDLE;
+  //   static int8_t tx_byte;
+  //   static int8_t tx_i;
+  //   switch (tx_state) {
+  //   case SDS_TX_IDLE:
+  //     tx_i = -1;
+  //     osalSysLockFromISR();
+  //     tx_byte = sdRequestDataI(&SDS);
+  //     osalSysUnlockFromISR();
+  //     if (tx_byte >= Q_OK) {
+  //       tx_state = SDS_TX_TRANSMIT;
+  //     }
+  //     break;
+  //   case SDS_TX_TRANSMIT: {
+  //     uint8_t bit;
+  //     /* START.*/
+  //     if (tx_i == -1) {
+  //       bit = 0;
+  //     }
+  //     /* STOP.*/
+  //     else if (tx_i == sds_bits_per_char) {
+  //       bit = 1;
+  //     }
+  //     /* Data.*/
+  //     else {
+  //       bit = (tx_byte & (1 << tx_i)) != 0;
+  //     }
+  //     palWritePad(AVR_SDS_TX_PORT, AVR_SDS_TX_PIN, bit);
+  //     tx_state = SDS_TX_WAIT;
+  //     break;
+  //   }
+  //   case SDS_TX_WAIT:
+  //     if (tx_i == sds_bits_per_char) {
+  //       tx_state = SDS_TX_IDLE;
+  //     } else {
+  //       tx_state = SDS_TX_TRANSMIT;
+  //     }
+  //     ++tx_i;
+  //     break;
+  //   }
+  // }
   OSAL_IRQ_EPILOGUE();
 }
 

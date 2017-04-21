@@ -10,12 +10,15 @@ chprintf((BaseSequentialStream *)&SD1, __VA_ARGS__)
 #define info(...) \
 debug("(II) " __VA_ARGS__)
 #define debugS(...) \
-chprintf((BaseSequentialStream *)&SDS, __VA_ARGS__)
+chprintf((BaseSequentialStream *)&SDS, "[SDS] " __VA_ARGS__)
+#define infoS(...) \
+debugS("(II) " __VA_ARGS__)
 
 #else
 #define debug(...)
 #define info(...)
 #define debugS(...)
+#define infoS(...)
 #endif
 
 #if DEBUG_XBEE
