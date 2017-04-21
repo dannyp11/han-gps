@@ -6,30 +6,32 @@
  */
 
 #include "UIThread.h"
-#include "UIMessages.h"
+
+#include "Button.h"
+#include "Compass.h"
 #include "LCD.h"
 #include "LED.h"
-#include "Button.h"
 #include "Photocell.h"
 #include "RotaryEncoder.h"
-#include "Compass.h"
+#include "UIMessages.h"
 #include "buzzer.h"
 #include "computationThread.h"
 
 #include "chprintf.h"
 
-#include <stdio.h>
-#include <avr/interrupt.h>
 #include <avr/eeprom.h>
+#include <avr/interrupt.h>
+#include <stdio.h>
+#include <math.h>
 
 /*
  * internal flags
  */
-#define IS_CANCEL_PRESSED		0
-#define IS_OK_PRESSED			1
-#define IS_CHANGED				2
-#define IS_CHANGING_CONTRAST	3
-#define IS_PANICKING			4
+#define IS_CANCEL_PRESSED 0
+#define IS_OK_PRESSED 1
+#define IS_CHANGED 2
+#define IS_CHANGING_CONTRAST 3
+#define IS_PANICKING 4
 
 /**
  * Menu ID
@@ -85,26 +87,42 @@ static void photoCellCallback(uint8_t level)
 
 static void buttonUpCallback(void)
 {
-
+	mCurMenu++;
+	if (mCurMenu >= MENU_COUNT)
+		mCurMenu = MENU_COUNT - 1;
 }
 
 static void buttonDownCallback(void)
-{
-
-}
-
-static void buttonCancelCallback(void)
 {
 	mCurMenu--;
 	if (mCurMenu < 0)
 		mCurMenu = 0;
 }
 
+static void buttonCancelCallback(void)
+{
+	if (mCurMenu == PANIC_MODE)
+	{
+		UISetFlag(IS_PANICKING, 0);
+	}
+	else if (mCurMenu == CONTRAST_SETTING)
+	{
+		mContrastLevel--;
+		if (mContrastLevel== 0) mContrastLevel = 0;
+	}
+}
+
 static void buttonOkCallback(void)
 {
-	mCurMenu++;
-	if (mCurMenu >= MENU_COUNT)
-		mCurMenu = MENU_COUNT - 1;
+	if (mCurMenu == PANIC_MODE)
+	{
+		UISetFlag(IS_PANICKING, 1);
+	}
+	else if (mCurMenu == CONTRAST_SETTING)
+	{
+		mContrastLevel++;
+		if (mContrastLevel > 50) mContrastLevel = 50;
+	}
 }
 
 static void rotaryEncoderCallback(char value)
@@ -113,6 +131,21 @@ static void rotaryEncoderCallback(char value)
 		++mContrastLevel;
 	else
 		--mContrastLevel;
+}
+
+void UISetEmergencyBuzzer(uint8_t mode)
+{
+	if (mode)
+	{
+		buzzOn();
+		chThdSleepMilliseconds(700);
+		buzzOff();
+		chThdSleepMilliseconds(300);
+	}
+	else
+	{
+		buzzOff();
+	}
 }
 
 void UIShowLed(CompassDirection direction)
@@ -187,13 +220,15 @@ void UIInit(void)
 	RotaryEncoderInit();
 	buzzerInit();
 	buzzOn();
-	chThdSleepMilliseconds(200);
+	chThdSleepMilliseconds(50);
 	buzzOff();
 
 	// register all callbacks
-	PhotocellRegisterCallback(photoCellCallback);
-	ButtonCancelSetCallback(buttonCancelCallback);
+	PhotocellRegisterCallback(&photoCellCallback);
+	ButtonCancelSetCallback(&buttonCancelCallback);
 	ButtonOKSetCallback(buttonOkCallback);
+	ButtonDownSetCallback(buttonDownCallback);
+	ButtonUpSetCallback(buttonUpCallback);
 	RotaryEncoderSetCallback(rotaryEncoderCallback);
 }
 
@@ -278,10 +313,7 @@ void UI_ShowPanicMode(void)
 		LCDSetCursor(2, 0);
 		LCDPrint(UIMsg);
 
-		buzzOn();
-		chThdSleepMilliseconds(500);
-		buzzOff();
-		chThdSleepMilliseconds(500);
+		UISetEmergencyBuzzer(1);
 
 		PgmStorageGet(UIMsgHolder, UIPanicMode3);
 		chsnprintf(UIMsg, 21, UIMsgHolder);
@@ -296,6 +328,8 @@ void UI_ShowPanicMode(void)
 		chsnprintf(UIMsg, 21, UIMsgHolder);
 		LCDSetCursor(2, 0);
 		LCDPrint(UIMsg);
+
+		UISetEmergencyBuzzer(0);
 
 		// call xbee unemergency api
 	}
@@ -318,7 +352,6 @@ void UI_ShowContrastSettings(void)
 
 void UIAlertToFriends()
 {
-
 }
 
 void UIAlertFromFriend(DeviceInfo friendInfo, float distance)
@@ -339,11 +372,36 @@ void UIUpdateNearestFriendInfo(DeviceInfo friendInfo, float distance)
 	g_nearestFriendDistance = distance;
 }
 
+void UISendMessage(float lat, float lon, int8_t msg)
+{
+	char sendbuf[29];
+	int16_t longDeg, longMin, longSec, latDeg, latMin, latSec;
+
+	longDeg = (int16_t) truncf(lon);
+	latDeg = (int16_t) truncf(lat);
+
+	{
+		float tmp = (lon * 180 / M_PI - longDeg) * 60;
+		longMin = (int16_t) truncf(tmp);
+		longSec = (int16_t) ((tmp - longMin) * 10000.f);
+		tmp = (lat * 180 / M_PI - latDeg) * 60;
+		latMin = (int16_t) truncf(tmp);
+		latSec = (int16_t) ((tmp - latMin) * 10000.f);
+	}
+
+	chsnprintf(sendbuf, 29, "*%02d,%03d%02d%04d,%03d%02d%04d,%d*\r\n", g_myID,
+			longDeg, longMin, longSec, latDeg, latMin, latSec, msg);
+
+	chprintf((BaseSequentialStream *) &SD1, sendbuf);
+}
+
 THD_WORKING_AREA(waTdUI, UI_WA_SIZE);
 THD_FUNCTION(tdUI, arg)
 {
 	static UI_Menu prev_mCurMenu = MENU_COUNT;
 	static int i = 0;
+
+	UIInit();
 
 	while (1)
 	{
@@ -382,11 +440,10 @@ THD_FUNCTION(tdUI, arg)
 			break;
 		}
 
-		if (mBrightnessLevel < 2)
-			mBrightnessLevel = 2;
-		LCDSetBrightness(mBrightnessLevel);
-		prev_mCurMenu = mCurMenu;
-		chThdSleepMilliseconds(300);
-	}
+    if (mBrightnessLevel < 2)
+      mBrightnessLevel = 2;
+    LCDSetBrightness(mBrightnessLevel);
+    prev_mCurMenu = mCurMenu;
+    chThdSleepMilliseconds(300);
+  }
 }
-

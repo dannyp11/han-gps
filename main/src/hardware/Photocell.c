@@ -18,7 +18,7 @@ void PhotocellInit()
 	ADCSRA |= (1 << ADATE);  // Set ADC to Free-Running Mode
 	ADCSRA |= (1 << ADEN);  // Enable ADC
 	ADCSRA |= (1 << ADIE);  // Enable ADC Interrupt
-	sei();
+	cli();
 	// Enable Global Interrupts
 	ADCSRA |= (1 << ADSC);  // Start A2D Conversions
 	sei();

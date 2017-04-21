@@ -42,10 +42,13 @@ void UIUpdateNearestFriendInfo(DeviceInfo friendInfo, float distance); // parser
 void UIAlertFromFriend(DeviceInfo friendInfo, float distance); // parser should call this
 void UIAlertToFriends(void); // called when gps figures out that it's too far from closest friend
 
+// TODO: Just for testing
+void UISendMessage(float lat, float lon, int8_t msg);
+
 /**
  * Thread stuff
  */
-#define UI_WA_SIZE 128
+#define UI_WA_SIZE 160
 extern THD_WORKING_AREA(waTdUI, UI_WA_SIZE);
 extern THD_FUNCTION(tdUI, arg);
 

@@ -52,8 +52,11 @@ static uint8_t mI2Cio(uint8_t device_addr, uint8_t *wp, uint16_t wn,
 #ifdef NOCHIBI
 	return i2c_io(device_addr, wp, wn, NULL, 0, rp, rn);
 #else
-	return i2cMasterTransmitTimeout(&I2CD1, device_addr, wp, wn, rp, rn,
-			TIME_INFINITE);
+	uint8_t result;
+	i2cAcquireBus(&I2CD1);
+	result = i2cMasterTransmitTimeout(&I2CD1, device_addr, wp, wn, rp, rn, 2);
+	i2cReleaseBus(&I2CD1);
+	return result;
 #endif
 }
 

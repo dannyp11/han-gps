@@ -61,6 +61,5 @@ THD_FUNCTION(tdParser, arg) {
       chEvtGetAndClearFlags(&elXBeeData);
       iterateChannel(pXBEEChn, xbeeStepParser);
     }
-    //chThdSleepMilliseconds(100);
   }
 }
