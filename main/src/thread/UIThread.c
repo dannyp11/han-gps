@@ -224,8 +224,8 @@ void UIInit(void)
 	buzzOff();
 
 	// register all callbacks
-	PhotocellRegisterCallback(photoCellCallback);
-	ButtonCancelSetCallback(buttonCancelCallback);
+	PhotocellRegisterCallback(&photoCellCallback);
+	ButtonCancelSetCallback(&buttonCancelCallback);
 	ButtonOKSetCallback(buttonOkCallback);
 	ButtonDownSetCallback(buttonDownCallback);
 	ButtonUpSetCallback(buttonUpCallback);
@@ -400,6 +400,8 @@ THD_FUNCTION(tdUI, arg)
 {
 	static UI_Menu prev_mCurMenu = MENU_COUNT;
 	static int i = 0;
+
+	UIInit();
 
 	while (1)
 	{

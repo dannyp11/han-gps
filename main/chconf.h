@@ -414,7 +414,7 @@
  *
  * @note    The default is @p FALSE.
  */
-#define CH_DBG_FILL_THREADS                 FALSE
+#define CH_DBG_FILL_THREADS                 TRUE
 
 /**
  * @brief   Debug option, threads profiling.
@@ -503,7 +503,7 @@
  * @brief   System halt hook.
  * @details This hook is invoked in case to a system halting error before
  *          the system is halted.
- */
+ */ 
 #define SYSTEM_HALT_HOOK() {                                                \
   /* System halt code here.*/                                               \
 }
