@@ -44,19 +44,19 @@ THD_FUNCTION(tdParser, arg) {
   event_listener_t elXBeeData;
 
   /* Initializes GPS.*/
-  gps_init();
+  // gps_init();
   /* Initialize XBee.*/
   xbee_init();
 
-  chEvtRegisterMaskWithFlags(pGPSEvt, &elGPSData, EVENT_MASK(1), CHN_INPUT_AVAILABLE);
+  // chEvtRegisterMaskWithFlags(pGPSEvt, &elGPSData, EVENT_MASK(1), CHN_INPUT_AVAILABLE);
   chEvtRegisterMaskWithFlags(pXBEEEvt, &elXBeeData, EVENT_MASK(2), CHN_INPUT_AVAILABLE);
 
   while (true) {
     eventmask_t ev = chEvtWaitAny(EVENT_MASK(1) | EVENT_MASK(2));
-    if (ev & EVENT_MASK(1)) {
-      chEvtGetAndClearFlags(&elGPSData);
-      iterateChannel(pGPSChn, gpsStepParser);
-    }
+    // if (ev & EVENT_MASK(1)) {
+    //   chEvtGetAndClearFlags(&elGPSData);
+    //   iterateChannel(pGPSChn, gpsStepParser);
+    // }
     if (ev & EVENT_MASK(2)) {
       static char buffer[27];
       static int8_t state = 0;

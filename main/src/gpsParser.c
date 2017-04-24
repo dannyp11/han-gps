@@ -95,9 +95,11 @@ void gpsStepParser(msg_t c) {
 }
 
 float getGPSLongitude() {
-  return longitude;
+  // return longitude;
+  return 5.201f;
 }
 
 float getGPSLatitude() {
-  return latitude;
+  // return latitude;
+  return 0.5937f;
 }
