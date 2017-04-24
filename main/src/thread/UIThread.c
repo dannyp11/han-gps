@@ -34,6 +34,7 @@
 #define IS_PANICKING 4
 #define IS_FRIEND_PANICKING	5
 #define IS_SELFDETECT_PANICKING	6
+#define IS_FRIEND_ALREADY_ALERTING	7
 
 /**
  * Menu ID
@@ -203,6 +204,7 @@ void UIInit(void)
 	UISetFlag(IS_PANICKING, 0);
 	UISetFlag(IS_FRIEND_PANICKING, 0);
 	UISetFlag(IS_SELFDETECT_PANICKING, 0);
+	UISetFlag(IS_FRIEND_ALREADY_ALERTING, 0);
 	mCurMenu = MY_INFO;
 
 	// init all private vars
@@ -420,10 +422,14 @@ void UIAlertToFriends()
 
 void UIAlertFromFriend(DeviceInfo friendInfo, float distance)
 {
-	mCurMenu = FRIEND_ALERT;
-	UISetFlag(IS_FRIEND_PANICKING, 1);
-	g_panicFriendInfo = friendInfo;
-	g_panicFriendDistance = distance;
+	if (!UIGetFlag(IS_FRIEND_ALREADY_ALERTING))
+	{
+		mCurMenu = FRIEND_ALERT;
+		UISetFlag(IS_FRIEND_PANICKING, 1);
+		g_panicFriendInfo = friendInfo;
+		g_panicFriendDistance = distance;
+		UISetFlag(IS_FRIEND_ALREADY_ALERTING, 1);
+	}
 }
 
 void UIUpdateMyPosition(float lat, float lon)
@@ -434,8 +440,11 @@ void UIUpdateMyPosition(float lat, float lon)
 
 void UIUpdateNearestFriendInfo(DeviceInfo friendInfo, float distance)
 {
-	g_nearestFriendInfo = friendInfo;
-	g_nearestFriendDistance = distance;
+	if (g_nearestFriendInfo.id != friendInfo.id)
+	{
+		g_nearestFriendInfo = friendInfo;
+		g_nearestFriendDistance = distance;
+	}
 }
 
 void UISendMessage(float lat, float lon, int8_t msg)
@@ -467,8 +476,6 @@ THD_FUNCTION(tdUI, arg)
 	static UI_Menu prev_mCurMenu = MENU_COUNT;
 	static int i = 0;
 
-	UIInit();
-
 	while (1)
 	{
 		// update values
@@ -477,9 +484,6 @@ THD_FUNCTION(tdUI, arg)
 			mCurMenu = 0;
 		else if (mCurMenu > MENU_COUNT)
 			mCurMenu = MENU_COUNT - 1;
-
-		g_myDeviceInfo.lat = getMyLatitude();
-		g_myDeviceInfo.lon = getMyLongitude();
 
 		// clearscr if changed menu
 		if (prev_mCurMenu != mCurMenu)

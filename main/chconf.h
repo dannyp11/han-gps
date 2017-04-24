@@ -433,6 +433,7 @@
 #define DEBUG_CHANNEL     TRUE
 #define DEBUG_XBEE        FALSE
 #define DEBUG_GPS         FALSE
+#define GPS_HACK TRUE
 
 #define CHPRINTF_USE_FLOAT TRUE
 
