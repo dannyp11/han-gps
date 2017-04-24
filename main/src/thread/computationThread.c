@@ -144,7 +144,7 @@ THD_FUNCTION(tdComp, arg) {
     UIUpdateMyPosition(params.longitudes[g_myID],
                        params.latitudes[g_myID]);
     // g_myLatitude = params.latitudes[g_myID] * 180.f / M_PI;
-    result = chMBFetch(&xbeeMailbox, &p, MS2ST(100));
+    result = chMBFetch(&xbeeMailbox, &p, S2ST(1));
     /* If a new message is received within 100ms, compute immediately.*/
     if (result == MSG_OK) {
       /* Update state.*/
