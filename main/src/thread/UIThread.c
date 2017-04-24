@@ -34,6 +34,7 @@
 #define IS_PANICKING 4
 #define IS_FRIEND_PANICKING	5
 #define IS_SELFDETECT_PANICKING	6
+#define IS_FRIEND_ALREADY_ALERTING	7
 
 /**
  * Menu ID
@@ -203,6 +204,7 @@ void UIInit(void)
 	UISetFlag(IS_PANICKING, 0);
 	UISetFlag(IS_FRIEND_PANICKING, 0);
 	UISetFlag(IS_SELFDETECT_PANICKING, 0);
+	UISetFlag(IS_FRIEND_ALREADY_ALERTING, 0);
 	mCurMenu = MY_INFO;
 
 	// init all private vars
@@ -420,9 +422,14 @@ void UIAlertToFriends()
 
 void UIAlertFromFriend(DeviceInfo friendInfo, float distance)
 {
-	mCurMenu = FRIEND_ALERT;
-	g_panicFriendInfo = friendInfo;
-	g_panicFriendDistance = distance;
+	if (!UIGetFlag(IS_FRIEND_ALREADY_ALERTING))
+	{
+		mCurMenu = FRIEND_ALERT;
+		UISetFlag(IS_FRIEND_PANICKING, 1);
+		g_panicFriendInfo = friendInfo;
+		g_panicFriendDistance = distance;
+		UISetFlag(IS_FRIEND_ALREADY_ALERTING, 1);
+	}
 }
 
 void UIUpdateMyPosition(float lat, float lon)
@@ -454,7 +461,7 @@ void UISendMessage(float lat, float lon, int8_t msg)
 		latSec = (int16_t) ((tmp - latMin) * 10000.f);
 	}
 
-	chsnprintf(sendbuf, 29, "*%02d,%03d%02d%04d,%03d%02d%04d,%d*\r\n", g_myID,
+	chsnprintf(sendbuf, 29, "#%02d,%03d%02d%04d,%03d%02d%04d,%d$", g_myID,
 			longDeg, longMin, longSec, latDeg, latMin, latSec, msg);
 
 	chprintf((BaseSequentialStream *) &SD1, sendbuf);
@@ -466,8 +473,6 @@ THD_FUNCTION(tdUI, arg)
 	static UI_Menu prev_mCurMenu = MENU_COUNT;
 	static int i = 0;
 
-	UIInit();
-
 	while (1)
 	{
 		// update values
@@ -476,9 +481,6 @@ THD_FUNCTION(tdUI, arg)
 			mCurMenu = 0;
 		else if (mCurMenu > MENU_COUNT)
 			mCurMenu = MENU_COUNT - 1;
-
-		g_myDeviceInfo.lat = getMyLatitude();
-		g_myDeviceInfo.lon = getMyLongitude();
 
 		// clearscr if changed menu
 		if (prev_mCurMenu != mCurMenu)
