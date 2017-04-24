@@ -14,17 +14,29 @@ int main(void) {
 
   SerialDebugInit();
 
-  //TOGGLE_PIN(DDRC, 0, 1); //LED output
-  //TOGGLE_PIN(PORTC, 0, 0); //LED default LOW
+  TOGGLE_PIN(DDRC, 0, 1); //LED output
+  TOGGLE_PIN(DDRC, 1, 0); //push-button input
+  TOGGLE_PIN(PORTC, 0, 0); //LED default LOW
 
-  char str[] = "_lat=1234556";
-
+  char *coord[3];
+  coord[0] = "*01,051301211,000073945,0*";
+  coord[1] = "*01,123456789,987654321,0*";
+  coord[2] = "*01,987654321,123456789,1*";
+  int indx = 0;
+  int prev = indx;
 
   while(1) {
-    //TOGGLE_PIN(PORTC, 0, 1);
-    SerialDebugPrint(str);
+    if (PINC & (1 << PC1)) {
+      if (indx == prev) {
+        indx = (++indx)%3;
+      }
+    } else {
+      prev = indx;
+    }
+    TOGGLE_PIN(PORTC, 0, 1);
+    SerialDebugPrint(coord[indx]);
     _delay_ms(100);
-    //TOGGLE_PIN(PORTC, 0, 0);
+    TOGGLE_PIN(PORTC, 0, 0);
     _delay_ms(100);
   }
 

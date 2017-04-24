@@ -2,11 +2,11 @@
 #include <util/delay.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "../../lcd-i2c/LCD.h"
 #include "../../serial-port/SerialDebug.h"
 #include "../../led/LED.h"
-
 
 #define BUFF_LEN LCD_LINE_LEN + 1
 
@@ -28,23 +28,18 @@ int main(void) {
 	char buffer[BUFF_LEN];
 	size_t bufSize = 0;
 
-	int i = 0;
 	LEDall();
 	while (1) {
 		char byte;
 		byte = serial_in();
-		if (i >= 12) {
+		if (byte == '*') {
 			LCDPrint(buffer);
 			_delay_ms(2000);
 			LCDSendCommand(CLEARSCREEN);
 			memset( buffer , 0 , sizeof(char)*BUFF_LEN ) ;
 			bufSize = 0;
-			i = 0;
-		} else if (byte == '_') {
-			i = 0;
-		} else {
+		} else if (isdigit(byte)) {
 			buffer[bufSize++] = byte;
-    		i++;
 		}
 	}
 	
