@@ -55,8 +55,8 @@ int main(void)
 	g_myCompassAngle = 180.0f;
 
 	sdStart(&SD1, NULL);
-//	sdStart(&SDS, &softserial_config);
-	// info("SD1 Started\r\n"); info("SDS Started\r\n");
+	sdStart(&SDS, &softserial_config);
+	info("SD1 Started\r\n"); info("SDS Started\r\n");
 
 	/*
 	 * Init all modules here
@@ -68,8 +68,8 @@ int main(void)
 	 * Run all threads
 	 */
 	chThdCreateStatic(waTdUI, sizeof(waTdUI), INTERACTIVEPRIO, tdUI, NULL);
-//	   chThdCreateStatic(waTdParser, sizeof(waTdParser), NORMALPRIO, tdParser, NULL);
-//	chThdCreateStatic(waTdComp, sizeof(waTdComp), NORMALPRIO, tdComp, NULL);
+	chThdCreateStatic(waTdParser, sizeof(waTdParser), NORMALPRIO, tdParser, NULL);
+	chThdCreateStatic(waTdComp, sizeof(waTdComp), NORMALPRIO, tdComp, NULL);
 
 	/*
 	 * main thread, main logic here
@@ -78,7 +78,7 @@ int main(void)
 
 	while (true)
 	{
-		UISendMessage(111.2345f, 123.4567f, 1);
+//		UISendMessage(111.2345f, 123.4567f, 1);
 		chThdSleepSeconds(1);
 	}
 }
