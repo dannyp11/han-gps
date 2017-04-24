@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ch.h"
+
 #define pGPS_SD (SerialDriver *) &SDS
 #define pGPSChs (BaseSequentialStream *)pGPS_SD
 #define pGPSChn (BaseChannel *)pGPS_SD
