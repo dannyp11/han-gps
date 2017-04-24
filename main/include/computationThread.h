@@ -18,8 +18,5 @@ typedef struct {
 float getMyLongitude(void);
 float getMyLatitude(void);
 
-extern const float* allLatitudes;
-extern const float* allLongitudes;
-
 extern THD_WORKING_AREA(waTdComp, COMP_WA_SIZE);
 extern THD_FUNCTION(tdComp, arg);
