@@ -76,17 +76,15 @@ PARSE_FUNC(XbeeFinalize) {
 parser_t xbeeParser(parserstate_t parserState) {
   switch (parserState) {
   case 0:
-    return new_parser(match_Asteroid, NULL, NULL);
-  case 1:
     return new_parser(match_MsgID, parse_DigitWithComma, (writeback_t)&peerIDX);
-  case 2:
+  case 1:
     return new_parser(match_DegMin, parse_DegMin, (writeback_t)&longitudeX);
-  case 3:
+  case 2:
     return new_parser(match_DegMin, parse_DegMin, (writeback_t)&latitudeX);
-  case 4:
+  case 3:
     return new_parser(match_Digit, parse_Digit, (writeback_t)&msgTypeX);
-  case 5:
-    return new_parser(match_Asteroid, parse_XbeeFinalize, NULL);
+  case 4:
+    return new_parser(match_Dollar, parse_XbeeFinalize, NULL);
   default:
     return new_parser(NULL, NULL, NULL);
   }
