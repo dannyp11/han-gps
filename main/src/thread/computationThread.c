@@ -86,7 +86,7 @@ void compute(void) {
       UIUpdateNearestFriendInfo(friendInfo, min_dist);
     }
     /* If someone is too far away or if they set emergency flag, alert.*/
-    if (min_dist > params.alert_distance || params.msgs[i] == MSG_EMERGENCY) {
+    if (min_dist != INFINITY && min_dist > params.alert_distance || params.msgs[i] == MSG_EMERGENCY) {
       /* If this device is too far away, point to the closest peer.*/
       if (i == g_myID) {
         float br = bearing(loni, lati,
