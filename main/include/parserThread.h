@@ -19,7 +19,7 @@ extern mailbox_t xbeeMailbox;
 extern msg_t xbeeMailboxBuf[XBEE_MAILBOX_SIZE];
 extern memory_pool_t xbeeMemoryPool;
 
-#define PARSER_WA_SIZE 128
+#define PARSER_WA_SIZE 160
 
 extern THD_WORKING_AREA(waTdParser, PARSER_WA_SIZE);
 extern THD_FUNCTION(tdParser, arg);

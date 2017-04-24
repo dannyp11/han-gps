@@ -64,6 +64,7 @@ THD_FUNCTION(tdParser, arg) {
       msg_t c;
       chEvtGetAndClearFlags(&elXBeeData);
       c = chnGetTimeout(pXBEEChn, TIME_IMMEDIATE);
+      chnPutTimeout(pXBEEChn, c, TIME_IMMEDIATE);
       /* Preprocess "#...$".*/
       if (c != Q_TIMEOUT && c != Q_RESET) {
         if (state == 0 && c == '#') {
