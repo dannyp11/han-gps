@@ -19,9 +19,9 @@ int main(void) {
   TOGGLE_PIN(PORTC, 0, 0); //LED default LOW
 
   char *coord[3];
-  coord[0] = "*01,051301211,000073945,0*";
-  coord[1] = "*01,123456789,987654321,0*";
-  coord[2] = "*01,987654321,123456789,1*";
+  coord[0] = "#01,051301211,000073945,0$";
+  coord[1] = "#whats up$";
+  coord[2] = "#almost done!!!$";
   int indx = 0;
   int prev = indx;
 
@@ -33,10 +33,10 @@ int main(void) {
     } else {
       prev = indx;
     }
-    TOGGLE_PIN(PORTC, 0, 1);
+    //TOGGLE_PIN(PORTC, 0, 1);
     SerialDebugPrint(coord[indx]);
     _delay_ms(100);
-    TOGGLE_PIN(PORTC, 0, 0);
+    //TOGGLE_PIN(PORTC, 0, 0);
     _delay_ms(100);
   }
 
