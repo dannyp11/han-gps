@@ -10,6 +10,8 @@
 
 #include "PgmStorage.h"
 
+const char PROGMEM UIBlank[]	= "                     ";
+
 /**
  * show my info menu
  */
@@ -37,7 +39,7 @@ const char PROGMEM UIPanicMode4[] = "Press ok to panic         ";
 /**
  * show friend alert
  */
-const char PROGMEM UIFriendAlert1[] = "Friend Alert         ";
+const char PROGMEM UIFriendAlert1[] = "Friend id %d Alert      ";
 
 /**
  * contrast settings

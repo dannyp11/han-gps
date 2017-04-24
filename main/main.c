@@ -53,9 +53,15 @@ int main(void) {
   g_myID = 0;
   g_myCompassAngle = 180.0f;
 
+<<<<<<< HEAD
   sdStart(&SD1, NULL);
   sdStart(&SDS, &softserial_config);
   info("SDS Started A\r\n");
+=======
+	sdStart(&SD1, NULL);
+	sdStart(&SDS, &softserial_config);
+	info("SD1 Started\r\n"); info("SDS Started\r\n");
+>>>>>>> dat_trunk
 
   /*
 	 * Init all modules here
@@ -66,19 +72,33 @@ int main(void) {
   /*
 	 * Run all threads
 	 */
+<<<<<<< HEAD
   chThdCreateStatic(waTdUI, sizeof(waTdUI), INTERACTIVEPRIO, tdUI, NULL);
   chThdCreateStatic(waTdParser, sizeof(waTdParser), NORMALPRIO, tdParser, NULL);
   chThdCreateStatic(waTdComp, sizeof(waTdComp), NORMALPRIO, tdComp, NULL);
+=======
+	chThdCreateStatic(waTdUI, sizeof(waTdUI), INTERACTIVEPRIO, tdUI, NULL);
+	chThdCreateStatic(waTdParser, sizeof(waTdParser), NORMALPRIO, tdParser, NULL);
+	chThdCreateStatic(waTdComp, sizeof(waTdComp), NORMALPRIO, tdComp, NULL);
+>>>>>>> dat_trunk
 
   /*
 	 * main thread, main logic here
 	 * all code that has no delay (such as calculation, ...) should be here
 	 */
 
+<<<<<<< HEAD
   while (true) {
     static int i = 0;
     info("Alive %d\r\n", i);
     ++i;
     chThdSleepSeconds(1);
   }
+=======
+	while (true)
+	{
+//		UISendMessage(111.2345f, 123.4567f, 1);
+		chThdSleepSeconds(1);
+	}
+>>>>>>> dat_trunk
 }
