@@ -70,7 +70,7 @@ THD_FUNCTION(tdParser, arg) {
 
 //      LCDPrint((char*) &c);
 
-      chnPutTimeout(pXBEEChn, c, TIME_IMMEDIATE);
+      // chnPutTimeout(pXBEEChn, c, TIME_IMMEDIATE);
       /* Preprocess "#...$".*/
       if (c != Q_TIMEOUT && c != Q_RESET) {
         if (state == 0 && c == '#') {

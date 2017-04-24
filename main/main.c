@@ -76,8 +76,8 @@ int main(void) {
 	 */
   while (true) {
     static int i = 0;
-    info("Alive %d\r\n", i);
-    ++i;
+    // info("Alive %d\r\n", i);
+    // ++i;
     chThdSleepSeconds(1);
   }
 }
