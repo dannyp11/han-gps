@@ -22,4 +22,9 @@ void SerialDebugInit();
  */
 void SerialDebugPrint(char* message);
 
+/*
+ * Fetches byte from receive buffer
+ */
+char serial_in();
+
 #endif /* SERIALDEBUG_H_ */

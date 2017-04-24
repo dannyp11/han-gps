@@ -72,52 +72,16 @@ SerialDriver SD2;
  */
 #if AVR_SERIAL_USE_USARTS || defined(__DOXYGEN__)
 SerialDriver SDS;
-#if !AVR_GPT_USE_TIM2 && !((OSAL_ST_MODE == OSAL_ST_MODE_PERIODIC) && AVR_GPT_USE_TIM1) && !((OSAL_ST_MODE == OSAL_ST_MODE_FREERUNNING) && AVR_GPT_USE_TIM1)
-#error "Software serial requires AVR_GPT_USE_TIM1, AVR_GPT_USE_TIM2, or AVR_GPT_USE_TIM3, given they don't conflict with system timer."
+#if !AVR_GPT_USE_TIM2
+#error "Software serial requires AVR_GPT_USE_TIM2"
 #endif
-
 /* Uses INT0*/
 #if AVR_SDS_USE_INT0
 #define AVR_SDS_RX_PORT IOPORT4
 #define AVR_SDS_RX_PIN 2
 #define AVR_SDS_RX_VECT INT0_vect
+#define AVR_SDS_RX_TCCR2B_CLK_MASK 0b00000111
 #endif
-
-#define AVR_SDS_RX_TCCRxB_CLK_MASK 0b00000111
-#if AVR_SDS_USE_TIMER == 0
-#define TCNTx TCNT0
-#define TCCRxA TCCR0A
-#define TCCRxB TCCR0B
-#define OCRxA OCR0A
-#define OCRxB OCR0B
-#define TIMSKx TIMSK0
-#define OCIExA OCIE0A
-#define OCIExB OCIE0B
-#define USARTS_TIM_vect TIMER0_COMPA_vect
-#elif AVR_SDS_USE_TIMER == 1
-#define TCNTx TCNT1
-#define TCCRxA TCCR1A
-#define TCCRxB TCCR1B
-#define OCRxA OCR1A
-#define OCRxB OCR1B
-#define TIMSKx TIMSK1
-#define OCIExA OCIE1A
-#define OCIExB OCIE1B
-#define USARTS_TIM_vect TIMER1_COMPA_vect
-#elif AVR_SDS_USE_TIMER == 2
-#define TCNTx TCNT2
-#define TCCRxA TCCR2A
-#define TCCRxB TCCR2B
-#define OCRxA OCR2A
-#define OCRxB OCR2B
-#define TIMSKx TIMSK2
-#define OCIExA OCIE2A
-#define OCIExB OCIE2B
-#define USARTS_TIM_vect TIMER2_COMPA_vect
-#else
-#error "You must specify AVR_SDS_USE_TIMER as 0, 1, or 2."
-#endif
-
 /* By default, uses PB1 as TX.*/
 #if !defined(AVR_SDS_TX_PORT)
 #define AVR_SDS_TX_PORT IOPORT4
@@ -153,12 +117,12 @@ static const SerialConfig default_config = {
     UBRR(SERIAL_DEFAULT_BITRATE),
     USART_CHAR_SIZE_8,
     96,
-    (1 << 1)};
+    (1 << CS21)};
 
 /**
  * @brief SDS Timer clock control value
  */
-static uint8_t sds_rx_TCCRxB_div;
+static uint8_t sds_rx_tccr2b_div;
 
 /**
  * @brief SDS UART bits per character
@@ -304,16 +268,27 @@ static void usart1_deinit(void) {
 
 #if AVR_SERIAL_USE_USARTS || defined(__DOXYGEN__)
 
+// /**
+//  * @brief Generates a single half period. Used in receiving
+//  */
+// void usartS_start_timer_half(void) {
+//   /* Resets counter to half length.*/
+//   TCNT2 = OCR2A / 2;
+//   /* Start timer.*/
+//   TCCR2B &= ~AVR_SDS_RX_TCCR2B_CLK_MASK; /* Clear CLK section.*/
+//   TCCR2B |= sds_rx_tccr2b_div;           /* Set CLK setting.*/
+// }
+
 void usartS_start_timer(void) {
   /* Reset counter.*/
-  TCNTx = 0;
+  TCNT2 = 0;
   /* Start timer.*/
-  TCCRxB &= ~AVR_SDS_RX_TCCRxB_CLK_MASK; /* Clear CLK section.*/
-  TCCRxB |= sds_rx_TCCRxB_div;           /* Set CLK setting.*/
+  TCCR2B &= ~AVR_SDS_RX_TCCR2B_CLK_MASK; /* Clear CLK section.*/
+  TCCR2B |= sds_rx_tccr2b_div;           /* Set CLK setting.*/
 }
 
 void usartS_stop_timer(void) {
-  TCCRxB &= ~AVR_SDS_RX_TCCRxB_CLK_MASK;
+  TCCR2B &= ~AVR_SDS_RX_TCCR2B_CLK_MASK;
 }
 
 void usartS_reset_timer(void) {
@@ -336,18 +311,11 @@ static void usartS_init(const SerialConfig *config) {
   EICRA &= ~(1 << ISC00);
   EIMSK |= 1 << 0;
 #endif
-/* Timer CTC mode.*/
-#if AVR_SDS_USE_TIMER == 0
-#elif AVR_SDS_USE_TIMER == 1
-  TCCRxB |= 1 << WGM12;
-  TCCRxB &= ~(1 << WGM13);
-  TCCRxA &= ~((1 << WGM11) | (1 << WGM10));
-#elif AVR_SDS_USE_TIMER == 2
-  TCCRxA |= 1 << WGM21;
-  TCCRxA &= ~((1 << WGM22) | (1 << WGM20));
-#endif
+  /* Timer 2 CTC mode.*/
+  TCCR2A |= 1 << WGM21;
+  TCCR2A &= ~((1 << WGM22) | (1 << WGM20));
   /* Save the timer clock input.*/
-  sds_rx_TCCRxB_div = config->sc_tccrxb_div;
+  sds_rx_tccr2b_div = config->sc_tccr2b_div;
   /* Default to be 8 bit.*/
   switch (config->sc_bits_per_char) {
   default:
@@ -355,9 +323,9 @@ static void usartS_init(const SerialConfig *config) {
   }
 
   /* Timer 2 Top.*/
-  OCRxA = config->sc_ocrxa;
+  OCR2A = config->sc_ocr2a;
   /* Timer 2 output compare A interrupt.*/
-  TIMSKx |= 1 << OCIExA;
+  TIMSK2 |= 1 << OCIE2A;
   usartS_start_timer();
 }
 
@@ -366,7 +334,7 @@ static void usartS_init(const SerialConfig *config) {
 */
 static void usartS_deinit(void) {
   usartS_stop_timer();
-  TIMSKx &= ~(1 << OCIExA);
+  TIMSK2 &= ~(1 << OCIE2A);
   EIMSK &= ~(1 << 0);
 }
 
@@ -492,7 +460,7 @@ OSAL_IRQ_HANDLER(AVR_SDS_RX_VECT) {
  *
  * @isr
  */
-OSAL_IRQ_HANDLER(USARTS_TIM_vect) {
+OSAL_IRQ_HANDLER(TIMER2_COMPA_vect) {
   /* Data byte.*/
 
   OSAL_IRQ_PROLOGUE();

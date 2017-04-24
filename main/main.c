@@ -67,8 +67,8 @@ int main(void) {
 	 * Run all threads
 	 */
   chThdCreateStatic(waTdUI, sizeof(waTdUI), INTERACTIVEPRIO, tdUI, NULL);
-//   chThdCreateStatic(waTdParser, sizeof(waTdParser), NORMALPRIO, tdParser, NULL);
-//   chThdCreateStatic(waTdComp, sizeof(waTdComp), NORMALPRIO, tdComp, NULL);
+  chThdCreateStatic(waTdParser, sizeof(waTdParser), NORMALPRIO, tdParser, NULL);
+  chThdCreateStatic(waTdComp, sizeof(waTdComp), NORMALPRIO, tdComp, NULL);
 
   /*
 	 * main thread, main logic here
