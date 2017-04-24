@@ -33,6 +33,7 @@
 #define IS_CHANGING_CONTRAST 3
 #define IS_PANICKING 4
 #define IS_FRIEND_PANICKING	5
+#define IS_SELFDETECT_PANICKING	6
 
 /**
  * Menu ID
@@ -201,6 +202,7 @@ void UIInit(void)
 	UISetFlag(IS_CHANGING_CONTRAST, 0);
 	UISetFlag(IS_PANICKING, 0);
 	UISetFlag(IS_FRIEND_PANICKING, 0);
+	UISetFlag(IS_SELFDETECT_PANICKING, 0);
 	mCurMenu = MY_INFO;
 
 	// init all private vars
@@ -277,13 +279,13 @@ void UI_ShowFriendInfo(void)
 	if (cardinalAngle < 0)
 		cardinalAngle = 360 + cardinalAngle;
 
-	PgmStorageGet(UIMsg, UIFriendInfo1);
-	chsnprintf(UIMsg, 21, UIMsg, g_nearestFriendInfo.id);
+	PgmStorageGet(UIMsgHolder, UIFriendInfo1);
+	chsnprintf(UIMsg, 21, UIMsgHolder, g_nearestFriendInfo.id);
 	LCDSetCursor(1, 0);
 	LCDPrint(UIMsg);
 
-	PgmStorageGet(UIMsg, UIFriendInfo2);
-	chsnprintf(UIMsg, 21, UIMsg, g_nearestFriendInfo.lat,
+	PgmStorageGet(UIMsgHolder, UIFriendInfo2);
+	chsnprintf(UIMsg, 21, UIMsgHolder, g_nearestFriendInfo.lat,
 			g_nearestFriendInfo.lon);
 	LCDSetCursor(2, 0);
 	LCDPrint(UIMsg);
@@ -335,12 +337,12 @@ void UI_ShowFriendAlert(void)
 	LCDPrint(UIMsg);
 
 	LCDSetCursor(4, 0);
-	LCDPrint("Press cancel to ignore");
+	LCDPrint("Press cancel to ignore         ");
 
 	buzzOn();
-	chThdSleepMilliseconds(500);
+	chThdSleepMilliseconds(200);
 	buzzOff();
-	chThdSleepMilliseconds(500);
+	chThdSleepMilliseconds(800);
 }
 
 void UI_ShowPanicMode(void)
@@ -408,8 +410,12 @@ void UI_ShowContrastSettings(void)
 
 void UIAlertToFriends()
 {
-	mCurMenu = PANIC_MODE;
-	UISetFlag(IS_PANICKING, 1);
+	if (!UIGetFlag(IS_SELFDETECT_PANICKING))
+	{
+		UISetFlag(IS_SELFDETECT_PANICKING, 1);
+		mCurMenu = PANIC_MODE;
+		UISetFlag(IS_PANICKING, 1);
+	}
 }
 
 void UIAlertFromFriend(DeviceInfo friendInfo, float distance)
