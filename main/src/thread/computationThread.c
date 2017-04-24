@@ -158,6 +158,7 @@ THD_FUNCTION(tdComp, arg) {
         params.longitudes[id] = peer.longitude;
         params.latitudes[id] = peer.latitude;
         params.msgs[id] = peer.msgID;
+        parmas.alert_distance = 50.f;
 
         /* Debug information.*/
         //         {
