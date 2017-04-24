@@ -21,8 +21,8 @@
 
 #include <avr/eeprom.h>
 #include <avr/interrupt.h>
-#include <stdio.h>
 #include <math.h>
+#include <stdio.h>
 
 /*
  * internal flags
@@ -32,9 +32,9 @@
 #define IS_CHANGED 2
 #define IS_CHANGING_CONTRAST 3
 #define IS_PANICKING 4
-#define IS_FRIEND_PANICKING	5
-#define IS_SELFDETECT_PANICKING	6
-#define IS_FRIEND_ALREADY_ALERTING	7
+#define IS_FRIEND_PANICKING 5
+#define IS_SELFDETECT_PANICKING 6
+#define IS_FRIEND_ALREADY_ALERTING 7
 
 /**
  * Menu ID
@@ -210,11 +210,11 @@ void UIInit(void)
 	// init all private vars
 	g_nearestFriendDistance = 10.1f;
 	g_panicFriendDistance = 101.1f;
-	g_nearestFriendInfo.id = 1;
+	g_nearestFriendInfo.id = 10;
 	g_nearestFriendInfo.lat = 2;
 	g_nearestFriendInfo.lon = 3;
 	g_nearestFriendInfo.compassAngle = 270.0;
-	g_panicFriendInfo.id = 2;
+	g_panicFriendInfo.id = 9;
 	g_panicFriendInfo.lat = 4;
 	g_panicFriendInfo.lon = 6;
 	g_panicFriendInfo.compassAngle = 60.0;
@@ -244,8 +244,8 @@ void UIInit(void)
 	RotaryEncoderSetCallback(rotaryEncoderCallback);
 
 	// testing area
-//	mCurMenu = FRIEND_ALERT;
-//	UISetFlag(IS_FRIEND_PANICKING, 1);
+	//	mCurMenu = FRIEND_ALERT;
+	//	UISetFlag(IS_FRIEND_PANICKING, 1);
 }
 
 void UI_SHowMyInfo(void)
@@ -312,15 +312,17 @@ void UI_ShowFriendAlert(void)
 	if (UIGetFlag(IS_FRIEND_PANICKING) == 0)
 	{
 		LCDSetCursor(1, 0);
-		LCDPrint("No friend alerting             ");
+		PgmStorageGet(UIMsgHolder, UIFriendAlert2);
+		chsnprintf(UIMsg, 21, UIMsgHolder);
+		LCDPrint(UIMsg);
 
 		PgmStorageGet(UIMsg, UIBlank);
 		LCDSetCursor(2, 0);
-		LCDPrint(UIMsg);
+		LCDPrint("");
 		LCDSetCursor(3, 0);
-		LCDPrint(UIMsg);
+		LCDPrint("");
 		LCDSetCursor(4, 0);
-		LCDPrint(UIMsg);
+		LCDPrint("");
 		return;
 	}
 
@@ -379,9 +381,9 @@ void UI_ShowPanicMode(void)
 
 		PgmStorageGet(UIMsg, UIBlank);
 		LCDSetCursor(3, 0);
-		LCDPrint(UIMsg);
+		LCDPrint("");
 		LCDSetCursor(4, 0);
-		LCDPrint(UIMsg);
+		LCDPrint("");
 
 		UISetEmergencyBuzzer(0);
 
@@ -403,9 +405,9 @@ void UI_ShowContrastSettings(void)
 
 	PgmStorageGet(UIMsg, UIBlank);
 	LCDSetCursor(3, 0);
-	LCDPrint(UIMsg);
+	LCDPrint("");
 	LCDSetCursor(4, 0);
-	LCDPrint(UIMsg);
+	LCDPrint("");
 
 	LCDSetContrast(mContrastLevel);
 }

@@ -18,26 +18,93 @@ int main(void) {
   TOGGLE_PIN(DDRC, 1, 0); //push-button input
   TOGGLE_PIN(PORTC, 0, 0); //LED default LOW
 
-  char *coord[3];
-  coord[0] = "#01,051301211,000073945,0$";
-  coord[1] = "#01,123456789,042082123,0$";
-  coord[2] = "#01,102341732,122452342,0$";
-  int indx = 0;
+  char *coord[2];
+  //coord[0] = "#01,298000000,034012007,0$";
+  coord[0] = "#01,298000000,034000000,0$";
+  coord[1] = "#01,298000000,034020000,0$";
+  //coord[1] = "#2$";
+  //coord[2] = "#3$";
+  int indx = 1;
   int prev = indx;
 
+
+
+ 
+  while (!(PINC & (1 << PC1))) {
+
+  }
+
+   _delay_ms(20);
+
+  while ((PINC & (1 << PC1))) {
+
+  }
+
   while(1) {
-    if (PINC & (1 << PC1)) {
-      if (indx == prev) {
-        indx = (++indx)%3;
-      }
-    } else {
-      prev = indx;
+	while (!(PINC & (1 << PC1))) {
+
+	}
+
+	_delay_ms(1000);
+
+	while ((PINC & (1 << PC1))) {
+
+	}
+
+
+    TOGGLE_PIN(PORTC, 0, 1);
+      
+      int i;     
+
+ for (i=0; i<27; ++i) {
+        sci_out(coord[0][i]);
+        _delay_ms(250);
+
+
     }
-    //TOGGLE_PIN(PORTC, 0, 1);
-    SerialDebugPrint(coord[indx]);
-    _delay_ms(100);
+	for (i=0; i<27; ++i) {
+        sci_out(coord[0][i]);
+        _delay_ms(250);
+
+
+    }
+	for (i=0; i<27; ++i) {
+        sci_out(coord[0][i]);
+        _delay_ms(250);
+
+    }
+
+	while (!(PINC & (1 << PC1))) {
+
+	}
+
+	_delay_ms(1000);
+
+	while ((PINC & (1 << PC1))) {
+
+	}
+	TOGGLE_PIN(PORTC, 0, 0);
+
+ for (i=0; i<27; ++i) {
+        sci_out(coord[1][i]);
+        _delay_ms(250);
+
+
+    }
+	for (i=0; i<27; ++i) {
+        sci_out(coord[1][i]);
+        _delay_ms(250);
+
+
+    }
+	for (i=0; i<27; ++i) {
+        sci_out(coord[1][i]);
+        _delay_ms(250);
+
+
+    }
+
     //TOGGLE_PIN(PORTC, 0, 0);
-    _delay_ms(100);
   }
 
   return 0;

@@ -54,7 +54,7 @@ int main(void) {
   g_myCompassAngle = 180.0f;
 
   sdStart(&SD1, NULL);
-  sdStart(&SDS, &softserial_config);
+//  sdStart(&SDS, &softserial_config);
   info("SDS Started A\r\n");
 
   /*
@@ -76,8 +76,8 @@ int main(void) {
 	 */
   while (true) {
     static int i = 0;
-    info("Alive %d\r\n", i);
-    ++i;
+    // info("Alive %d\r\n", i);
+    // ++i;
     chThdSleepSeconds(1);
   }
 }

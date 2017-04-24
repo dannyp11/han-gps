@@ -40,6 +40,7 @@ const char PROGMEM UIPanicMode4[] = "Press ok to panic         ";
  * show friend alert
  */
 const char PROGMEM UIFriendAlert1[] = "Friend id %d Alert      ";
+const char PROGMEM UIFriendAlert2[] = "No friend alerting             ";
 
 /**
  * contrast settings

@@ -90,7 +90,7 @@ parser_t xbeeParser(parserstate_t parserState) {
   }
 }
 
-void xbeeParserCleanup(void) {
+void xbeeParserCleanup() {
   longitudeX = INVALID_XBEE_DATA;
   latitudeX = INVALID_XBEE_DATA;
   peerIDX = INVALID_XBEE_DATA;
