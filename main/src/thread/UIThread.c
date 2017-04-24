@@ -421,6 +421,7 @@ void UIAlertToFriends()
 void UIAlertFromFriend(DeviceInfo friendInfo, float distance)
 {
 	mCurMenu = FRIEND_ALERT;
+	UISetFlag(IS_FRIEND_PANICKING, 1);
 	g_panicFriendInfo = friendInfo;
 	g_panicFriendDistance = distance;
 }
