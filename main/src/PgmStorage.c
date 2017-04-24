@@ -9,5 +9,6 @@
 void PgmStorageGet(char * dst, const char * src)
 {
 	memcpy_P(dst, src, PGM_SIZE);
+	dst[PGM_SIZE] = '\0';
 }
 
