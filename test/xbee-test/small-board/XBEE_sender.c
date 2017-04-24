@@ -19,11 +19,15 @@ int main(void) {
   TOGGLE_PIN(PORTC, 0, 0); //LED default LOW
 
   char *coord[3];
-  coord[0] = "#01,051301211,000073945,0$";
-  coord[1] = "#01,123456789,042082123,0$";
-  coord[2] = "#01,102341732,122452342,0$";
+  coord[0] = "#01,298000000,034020000,0$";
+  coord[1] = "#01,298000000,034020000,0$";
+  coord[2] = "#01,298000000,034020000,0$";
+  //coord[1] = "#2$";
+  //coord[2] = "#3$";
   int indx = 0;
   int prev = indx;
+
+  _delay_ms(1000);  
 
   while(1) {
     if (PINC & (1 << PC1)) {
@@ -34,10 +38,12 @@ int main(void) {
       prev = indx;
     }
     //TOGGLE_PIN(PORTC, 0, 1);
-    SerialDebugPrint(coord[indx]);
-    _delay_ms(100);
+    int i;
+    for (i=0; i<27; ++i) {
+      sci_out(coord[indx][i]);
+      _delay_ms(250);
+    }
     //TOGGLE_PIN(PORTC, 0, 0);
-    _delay_ms(100);
   }
 
   return 0;

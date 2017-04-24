@@ -59,6 +59,7 @@ PARSE_FUNC(DegMin) {
   debug_parser("d=%.f, m=%.4f\r\n", degree, minute);
   *p = degree * M_PI / 180.f;
   *p += minute * M_PI / 10800.f;
+  *p /= 10000.f;
   return PARSE_SUCCESS;
 }
 
@@ -96,7 +97,7 @@ void gpsStepParser(msg_t c) {
 
 float getGPSLongitude() {
   #if GPS_HACK
-  return 5.201f;
+  return 5.201;
   #else
   return longitude;
   #endif
@@ -104,7 +105,7 @@ float getGPSLongitude() {
 
 float getGPSLatitude() {
   #if GPS_HACK
-  return 0.5937f;
+  return 0.5937;
   #else
   return latitude;
   #endif

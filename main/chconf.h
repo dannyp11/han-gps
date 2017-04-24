@@ -427,10 +427,10 @@
  */
 #define CH_DBG_THREADS_PROFILING            FALSE
 
-#define DEBUG_INFO        FALSE
-#define DEBUG_COMPUTATION FALSE
+#define DEBUG_INFO        TRUE
+#define DEBUG_COMPUTATION TRUE
 #define DEBUG_PARSER      FALSE
-#define DEBUG_CHANNEL     TRUE
+#define DEBUG_CHANNEL     FALSE
 #define DEBUG_XBEE        FALSE
 #define DEBUG_GPS         FALSE
 #define GPS_HACK TRUE
