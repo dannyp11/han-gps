@@ -467,8 +467,6 @@ THD_FUNCTION(tdUI, arg)
 	static UI_Menu prev_mCurMenu = MENU_COUNT;
 	static int i = 0;
 
-	UIInit();
-
 	while (1)
 	{
 		// update values
@@ -477,9 +475,6 @@ THD_FUNCTION(tdUI, arg)
 			mCurMenu = 0;
 		else if (mCurMenu > MENU_COUNT)
 			mCurMenu = MENU_COUNT - 1;
-
-		g_myDeviceInfo.lat = getMyLatitude();
-		g_myDeviceInfo.lon = getMyLongitude();
 
 		// clearscr if changed menu
 		if (prev_mCurMenu != mCurMenu)
