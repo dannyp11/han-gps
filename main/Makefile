@@ -43,8 +43,8 @@
 MCU = atmega328p
 
 # Chosen board. Either BOARD_USE_UNO or BOARD_USE_CUSTOM
-# BOARD_CHOSEN = BOARD_USE_CUSTOM
-BOARD_CHOSEN = BOARD_USE_UNO
+BOARD_CHOSEN = BOARD_USE_CUSTOM
+# BOARD_CHOSEN = BOARD_USE_UNO
 
 # Processor frequency.
 ifeq ($(BOARD_CHOSEN), BOARD_USE_CUSTOM)
@@ -182,7 +182,7 @@ CFLAGS += $(CSTANDARD)
 #CFLAGS += -mrelax
 CFLAGS += -fdata-sections
 CFLAGS += -ffunction-sections
-CFLAGS += -Wl,-u,vfprintf -lprintf_flt # for printf floats
+CFLAGS += -Wl,-u,vfprintf -lprintf_flt # for printf floats 
 
 #---------------- Compiler Options C++ ----------------
 #  -g*:          generate debugging information

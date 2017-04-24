@@ -17,3 +17,7 @@
 		- Reduced memory usage to ~1.5kB
 		- Interfaced with UI thread
 		- Changed Soft Serial to use TIM1. Not tested.
+	- 4/18/17 : Rongcui
+		- Fixed UI/Parser conflict
+		- Changed some snprintf() to chsnprintf()
+		- Added I2C AcquireBus/ReleaseBus

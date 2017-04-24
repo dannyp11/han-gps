@@ -7,7 +7,6 @@
 // HW includes (avr, lcd, gps, etc.) here
 // Note: don't include lcd, led, buttons, encoder,
 // 		photocell since they are in UIThread
-#include "Compass.h"
 #include "computationThread.h"
 #include "parserThread.h"
 #include <avr/io.h>
@@ -30,12 +29,9 @@
  * g_my : this device
  * g_friend : the other device
  */
-uint8_t g_myID, g_friendID;
-uint8_t g_myLatitude, g_myLongtitude; // change to your type
-uint8_t g_friendLatitude, g_friendLongtitude;
-CompassDirection g_myCompassDirection, g_friendCompassDirection;
-CompassDirection g_friendCardinalDirection;
-uint8_t g_myMessageCode, g_friendMessageCode; // send/rcv message code
+uint8_t g_myID;                      // only main can write
+float g_myCompassAngle;              // only UI can write
+// alert_message_t g_alerts[MAX_PEERS]; // only computation can write
 
 /*
  * Main code here
@@ -55,34 +51,21 @@ int main(void) {
 	 * Inits all global variables here
 	 */
   g_myID = 0;
-  g_myLatitude = 1;
-  g_myLongtitude = 2;
-  g_myCompassDirection = NORTH;
-  g_myMessageCode = 0;
-  g_friendMessageCode = 0;
-  g_friendCompassDirection = SOUTH;
-  g_friendLatitude = 3;
-  g_friendLongtitude = 4;
-  g_friendID = 1;
+  g_myCompassAngle = 180.0f;
 
   sdStart(&SD1, NULL);
   sdStart(&SDS, &softserial_config);
-  info("SD1 Started\r\n");
-  info("SDS Started\r\n");
+  info("SDS Started A\r\n");
 
   /*
 	 * Init all modules here
 	 * initialization shouldn't go into thread since it's only called once
 	 */
-  // gps
-  // xbee
-  // buzzer
+  UIInit();
 
   /*
 	 * Run all threads
 	 */
-  // gps thread
-  // xbee thread
   chThdCreateStatic(waTdUI, sizeof(waTdUI), INTERACTIVEPRIO, tdUI, NULL);
   chThdCreateStatic(waTdParser, sizeof(waTdParser), NORMALPRIO, tdParser, NULL);
   chThdCreateStatic(waTdComp, sizeof(waTdComp), NORMALPRIO, tdComp, NULL);
@@ -92,6 +75,9 @@ int main(void) {
 	 * all code that has no delay (such as calculation, ...) should be here
 	 */
   while (true) {
+    static int i = 0;
+    info("Alive %d\r\n", i);
+    ++i;
     chThdSleepSeconds(1);
   }
 }

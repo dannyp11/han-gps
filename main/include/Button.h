@@ -10,6 +10,8 @@
 
 #define BUTTON_OK		PB2
 #define BUTTON_CANCEL	PB1
+#define BUTTON_UP		PD7
+#define BUTTON_DOWN		PB0
 
 // Callback function prototype
 typedef void (*ButtonPressCallback)(void);
@@ -26,5 +28,7 @@ void ButtonsInit(void);
  */
 uint8_t ButtonOKSetCallback(ButtonPressCallback function);
 uint8_t ButtonCancelSetCallback(ButtonPressCallback function);
+uint8_t ButtonUpSetCallback(ButtonPressCallback function);
+uint8_t ButtonDownSetCallback(ButtonPressCallback function);
 
 #endif /* BUTTON_H_ */

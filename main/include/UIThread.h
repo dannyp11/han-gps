@@ -10,22 +10,23 @@
 
 #include <stdint.h>
 #include "ch.h"
-#include "Compass.h"
-#include "computationThread.h"
 
 /*
  * This will take care of photocell, LCD, LED
  * buttons, and menu navigation
  */
+extern uint8_t g_myID;
+extern float g_myCompassAngle;
 
-/*
- * Main global variables
+/**
+ * for easier life
  */
-extern uint8_t g_myID, g_friendID;
-extern uint8_t g_myLatitude, g_myLongtitude;
-extern CompassDirection g_myCompassDirection, g_friendCompassDirection;
-extern CompassDirection g_friendCardinalDirection;
-extern uint8_t g_myMessageCode, g_friendMessageCode;
+typedef struct _deviceInfo
+{
+	uint8_t id;
+	float lat, lon;
+	float compassAngle;
+} DeviceInfo;
 
 /*
  * Call this before using
@@ -34,21 +35,20 @@ extern uint8_t g_myMessageCode, g_friendMessageCode;
 void UIInit(void);
 
 /*
- * Show alert info to neighbor
+ * Setters & getters, other threads can only call these
  */
-void UIAlertToFriend(uint8_t friendID);
+void UIUpdateMyPosition(float lat, float lon); // gps should call this
+void UIUpdateNearestFriendInfo(DeviceInfo friendInfo, float distance); // parser should call this
+void UIAlertFromFriend(DeviceInfo friendInfo, float distance); // parser should call this
+void UIAlertToFriends(void); // called when gps figures out that it's too far from closest friend
 
-/*
- * Show alert info from neighbor
+// TODO: Just for testing
+void UISendMessage(float lat, float lon, int8_t msg);
+
+/**
+ * Thread stuff
  */
-void UIAlertFromFriend(alert_message_t *alerts, int8_t max_peers);
-
-/*
- * This loops forever, should put in thread
- */
-void UILoop(void);
-
-#define UI_WA_SIZE 128
+#define UI_WA_SIZE 160
 extern THD_WORKING_AREA(waTdUI, UI_WA_SIZE);
 extern THD_FUNCTION(tdUI, arg);
 

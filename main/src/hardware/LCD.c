@@ -46,13 +46,17 @@ uint8_t i2c_io(uint8_t, uint8_t *, uint16_t, uint8_t *, uint16_t, uint8_t *,
 #define mSleepus(us) chThdSleepMicroseconds(us);
 #endif
 
-static uint8_t mI2Cio(uint8_t device_addr, uint8_t *wp,
-		uint16_t wn, uint8_t *rp, uint16_t rn)
+static uint8_t mI2Cio(uint8_t device_addr, uint8_t *wp, uint16_t wn,
+		uint8_t *rp, uint16_t rn)
 {
 #ifdef NOCHIBI
 	return i2c_io(device_addr, wp, wn, NULL, 0, rp, rn);
 #else
-	return i2cMasterTransmitTimeout(&I2CD1, device_addr, wp, wn, rp, rn, TIME_INFINITE);
+	uint8_t result;
+	i2cAcquireBus(&I2CD1);
+	result = i2cMasterTransmitTimeout(&I2CD1, device_addr, wp, wn, rp, rn, 2);
+	i2cReleaseBus(&I2CD1);
+	return result;
 #endif
 }
 
@@ -208,6 +212,22 @@ uint8_t LCDPrint(const char *msg)
 			return status;
 		}
 	}
+
+	// for filling the blank
+	if (len < LCD_LINE_LEN)
+	{
+		char blank = ' ';
+		for (i = 0; i < (uint8_t) (LCD_LINE_LEN -len); ++i)
+		{
+			status = mI2Cio(LCD_ADDR, (uint8_t *) &blank, 1, NULL, 0);
+			mSleepus(150);
+			if (status)
+			{
+				return status;
+			}
+		}
+	}
+
 	return status;
 }
 

@@ -1,7 +1,7 @@
 DEVICE     = atmega328p
 CLOCK      = 7372800
 PROGRAMMER = -c usbtiny -P usb
-OBJECTS    = ../lcd-i2c/LCD.o rotary-test.o RotaryEncoder.o
+OBJECTS    = ../lcd-i2c/LCD.o rotary-test.o ../../main/src/hardware/RotaryEncoder.o
 FUSES      = -U hfuse:w:0xd9:m -U lfuse:w:0xe0:m
 
 # Fuse Low Byte = 0xe0   Fuse High Byte = 0xd9   Fuse Extended Byte = 0xff
@@ -23,7 +23,7 @@ FUSES      = -U hfuse:w:0xd9:m -U lfuse:w:0xe0:m
 # Tune the lines below only if you know what you are doing:
 
 AVRDUDE = avrdude $(PROGRAMMER) -p $(DEVICE)
-COMPILE = avr-gcc -Wall -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE)
+COMPILE = avr-gcc -Wall -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE) -DNOCHIBI=1 -I../../main/include
 
 # symbolic targets:
 all:	main.hex
