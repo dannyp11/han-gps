@@ -6,6 +6,7 @@
 #include "softserialcfg.h"
 #include "xbeeParser.h"
 
+#include "LCD.h"
 #include <ctype.h>
 
 MAILBOX_DECL(xbeeMailbox, xbeeMailboxBuf, XBEE_MAILBOX_SIZE);
@@ -47,6 +48,8 @@ THD_FUNCTION(tdParser, arg) {
   // gps_init();
   /* Initialize XBee.*/
   xbee_init();
+//  LCDInit();
+
 
   // chEvtRegisterMaskWithFlags(pGPSEvt, &elGPSData, EVENT_MASK(1), CHN_INPUT_AVAILABLE);
   chEvtRegisterMaskWithFlags(pXBEEEvt, &elXBeeData, EVENT_MASK(2), CHN_INPUT_AVAILABLE);
@@ -64,6 +67,9 @@ THD_FUNCTION(tdParser, arg) {
       msg_t c;
       chEvtGetAndClearFlags(&elXBeeData);
       c = chnGetTimeout(pXBEEChn, TIME_IMMEDIATE);
+
+//      LCDPrint((char*) &c);
+
       chnPutTimeout(pXBEEChn, c, TIME_IMMEDIATE);
       /* Preprocess "#...$".*/
       if (c != Q_TIMEOUT && c != Q_RESET) {

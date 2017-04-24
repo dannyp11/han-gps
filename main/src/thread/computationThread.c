@@ -77,6 +77,7 @@ void compute(void) {
     }
     if (i == g_myID) {
       DeviceInfo friendInfo;
+      info_computation("Me:%d,F:%d\r\n",g_myID,min_peer);
       friendInfo.id = min_peer;
       friendInfo.lat = params.latitudes[min_peer];
       friendInfo.lon = params.longitudes[min_peer];
@@ -84,9 +85,11 @@ void compute(void) {
                                         params.longitudes[min_peer],
                                         params.latitudes[min_peer]);
       UIUpdateNearestFriendInfo(friendInfo, min_dist);
+      info_computation("f lat %f lon %f \r\n", friendInfo.lat, friendInfo.lon);
     }
     /* If someone is too far away or if they set emergency flag, alert.*/
-    if (min_dist != INFINITY && min_dist > params.alert_distance || params.msgs[i] == MSG_EMERGENCY) {
+    if (min_dist != INFINITY) {
+    if (min_dist > params.alert_distance || params.msgs[i] == MSG_EMERGENCY) {
       /* If this device is too far away, point to the closest peer.*/
       if (i == g_myID) {
         float br = bearing(loni, lati,
@@ -97,24 +100,26 @@ void compute(void) {
       }
       /* If another device is too far away, point from this device to that one.*/
       else {
-        float br = bearing(params.longitudes[g_myID], params.latitudes[g_myID],
-                           loni, lati);
-        float d = distance(params.longitudes[g_myID], params.latitudes[g_myID],
-                           loni, lati);
-        DeviceInfo friendInfo;
-        // g_alerts[i].bearing = br;
-        // g_alerts[i].distance = d;
-        friendInfo.lat = params.latitudes[min_peer];
-        friendInfo.lon = params.longitudes[min_peer];
-        friendInfo.id = min_peer;
-        friendInfo.compassAngle = br;
-        UIAlertFromFriend(friendInfo, d);
+//        float br = bearing(params.longitudes[g_myID], params.latitudes[g_myID],
+//                           loni, lati);
+//        float d = distance(params.longitudes[g_myID], params.latitudes[g_myID],
+//                           loni, lati);
+//        DeviceInfo friendInfo;
+//        // g_alerts[i].bearing = br;
+//        // g_alerts[i].distance = d;
+//        friendInfo.lat = params.latitudes[min_peer];
+//        friendInfo.lon = params.longitudes[min_peer];
+//        friendInfo.id = min_peer;
+//        friendInfo.compassAngle = br;
+//        UIAlertFromFriend(friendInfo, d);
+//        info_computation("lost friend id %d lat %f, lon %f\r\n", min_peer, params.latitudes[min_peer], params.longitudes[min_peer]);
       }
     }
     /* If someone is within range.*/
     else {
       // g_alerts[i].bearing = ALERT_NONE;
       // g_alerts[i].distance = ALERT_NONE;
+    }
     }
   }
 }
@@ -123,14 +128,20 @@ THD_WORKING_AREA(waTdComp, COMP_WA_SIZE);
 THD_FUNCTION(tdComp, arg) {
   (void)arg;
 
-  // /* Initializes.*/
-  // {
-  //   int8_t i;
-  //   // for (i = 0; i < MAX_PEERS; ++i) {
-  //   //   g_alerts[i].bearing = ALERT_NONE;
-  //   //   g_alerts[i].distance = ALERT_NONE;
-  //   // }
-  // }
+   /* Initializes.*/
+   {
+     int8_t i;
+     // for (i = 0; i < MAX_PEERS; ++i) {
+     //   g_alerts[i].bearing = ALERT_NONE;
+     //   g_alerts[i].distance = ALERT_NONE;
+     // }
+     for (i=0;i<MAX_PEERS; ++i) {
+    	 params.latitudes[i] = -1.f;
+    	 params.longitudes[i] = -1.f;
+     }
+     params.alert_distance = 50.f;
+
+   }
 
   info_computation("Spawned\r\n");
   while (true) {
@@ -141,8 +152,7 @@ THD_FUNCTION(tdComp, arg) {
     params.longitudes[g_myID] = getGPSLongitude();
     // g_myLongitude = params.longitudes[g_myID] * 180.f / M_PI;
     params.latitudes[g_myID] = getGPSLatitude();
-    UIUpdateMyPosition(params.longitudes[g_myID],
-                       params.latitudes[g_myID]);
+    UIUpdateMyPosition(params.latitudes[g_myID], params.longitudes[g_myID]);
     // g_myLatitude = params.latitudes[g_myID] * 180.f / M_PI;
     result = chMBFetch(&xbeeMailbox, &p, S2ST(1));
     /* If a new message is received within 100ms, compute immediately.*/
@@ -152,13 +162,13 @@ THD_FUNCTION(tdComp, arg) {
         /* Copy the message.*/
         peer_message_t peer = *((peer_message_t *)p);
         int8_t id = peer.peerID;
+        info_computation("msg\r\n");
         /* Free the message.*/
         chPoolFree(&xbeeMemoryPool, (peer_message_t *)p);
         /* Actually update the info.*/
         params.longitudes[id] = peer.longitude;
         params.latitudes[id] = peer.latitude;
         params.msgs[id] = peer.msgID;
-        params.alert_distance = 50.f;
 
         /* Debug information.*/
         //         {
