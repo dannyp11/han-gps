@@ -32,6 +32,7 @@
 #define IS_CHANGED 2
 #define IS_CHANGING_CONTRAST 3
 #define IS_PANICKING 4
+#define IS_FRIEND_PANICKING	5
 
 /**
  * Menu ID
@@ -105,10 +106,15 @@ static void buttonCancelCallback(void)
 	{
 		UISetFlag(IS_PANICKING, 0);
 	}
+	else if (mCurMenu == FRIEND_ALERT)
+	{
+		UISetFlag(IS_FRIEND_PANICKING, 0);
+	}
 	else if (mCurMenu == CONTRAST_SETTING)
 	{
 		mContrastLevel--;
-		if (mContrastLevel== 0) mContrastLevel = 0;
+		if (mContrastLevel == 0)
+			mContrastLevel = 0;
 	}
 }
 
@@ -121,7 +127,8 @@ static void buttonOkCallback(void)
 	else if (mCurMenu == CONTRAST_SETTING)
 	{
 		mContrastLevel++;
-		if (mContrastLevel > 50) mContrastLevel = 50;
+		if (mContrastLevel > 50)
+			mContrastLevel = 50;
 	}
 }
 
@@ -193,6 +200,7 @@ void UIInit(void)
 	UISetFlag(IS_CHANGED, 1);
 	UISetFlag(IS_CHANGING_CONTRAST, 0);
 	UISetFlag(IS_PANICKING, 0);
+	UISetFlag(IS_FRIEND_PANICKING, 0);
 	mCurMenu = MY_INFO;
 
 	// init all private vars
@@ -230,6 +238,10 @@ void UIInit(void)
 	ButtonDownSetCallback(buttonDownCallback);
 	ButtonUpSetCallback(buttonUpCallback);
 	RotaryEncoderSetCallback(rotaryEncoderCallback);
+
+	// testing area
+//	mCurMenu = FRIEND_ALERT;
+//	UISetFlag(IS_FRIEND_PANICKING, 1);
 }
 
 void UI_SHowMyInfo(void)
@@ -239,8 +251,8 @@ void UI_SHowMyInfo(void)
 	LCDSetCursor(1, 0);
 	LCDPrint(UIMsg);
 
-	PgmStorageGet(UIMsg, UIMyInfo2);
-	chsnprintf(UIMsg, 21, UIMsg, g_myDeviceInfo.lat, g_myDeviceInfo.lon);
+	PgmStorageGet(UIMsgHolder, UIMyInfo2);
+	chsnprintf(UIMsg, 21, UIMsgHolder, g_myDeviceInfo.lat, g_myDeviceInfo.lon);
 	LCDSetCursor(2, 0);
 	LCDPrint(UIMsg);
 
@@ -293,10 +305,42 @@ void UI_ShowFriendInfo(void)
 
 void UI_ShowFriendAlert(void)
 {
+	if (UIGetFlag(IS_FRIEND_PANICKING) == 0)
+	{
+		LCDSetCursor(1, 0);
+		LCDPrint("No friend alerting             ");
+
+		PgmStorageGet(UIMsg, UIBlank);
+		LCDSetCursor(2, 0);
+		LCDPrint(UIMsg);
+		LCDSetCursor(3, 0);
+		LCDPrint(UIMsg);
+		LCDSetCursor(4, 0);
+		LCDPrint(UIMsg);
+		return;
+	}
+
 	PgmStorageGet(UIMsgHolder, UIFriendAlert1);
-	chsnprintf(UIMsg, 21, UIMsgHolder);
+	chsnprintf(UIMsg, 21, UIMsgHolder, g_panicFriendInfo.id);
 	LCDSetCursor(1, 0);
 	LCDPrint(UIMsg);
+
+	chsnprintf(UIMsg, 21, "Lat %.2f Lon %.2f       ", g_panicFriendInfo.lat,
+			g_panicFriendInfo.lon);
+	LCDSetCursor(2, 0);
+	LCDPrint(UIMsg);
+
+	chsnprintf(UIMsg, 21, "Distance %.1f meters     ", g_panicFriendDistance);
+	LCDSetCursor(3, 0);
+	LCDPrint(UIMsg);
+
+	LCDSetCursor(4, 0);
+	LCDPrint("Press cancel to ignore");
+
+	buzzOn();
+	chThdSleepMilliseconds(500);
+	buzzOff();
+	chThdSleepMilliseconds(500);
 }
 
 void UI_ShowPanicMode(void)
@@ -329,6 +373,12 @@ void UI_ShowPanicMode(void)
 		LCDSetCursor(2, 0);
 		LCDPrint(UIMsg);
 
+		PgmStorageGet(UIMsg, UIBlank);
+		LCDSetCursor(3, 0);
+		LCDPrint(UIMsg);
+		LCDSetCursor(4, 0);
+		LCDPrint(UIMsg);
+
 		UISetEmergencyBuzzer(0);
 
 		// call xbee unemergency api
@@ -347,15 +397,24 @@ void UI_ShowContrastSettings(void)
 	LCDSetCursor(2, 0);
 	LCDPrint(UIMsg);
 
+	PgmStorageGet(UIMsg, UIBlank);
+	LCDSetCursor(3, 0);
+	LCDPrint(UIMsg);
+	LCDSetCursor(4, 0);
+	LCDPrint(UIMsg);
+
 	LCDSetContrast(mContrastLevel);
 }
 
 void UIAlertToFriends()
 {
+	mCurMenu = PANIC_MODE;
+	UISetFlag(IS_PANICKING, 1);
 }
 
 void UIAlertFromFriend(DeviceInfo friendInfo, float distance)
 {
+	mCurMenu = FRIEND_ALERT;
 	g_panicFriendInfo = friendInfo;
 	g_panicFriendDistance = distance;
 }
@@ -412,6 +471,9 @@ THD_FUNCTION(tdUI, arg)
 		else if (mCurMenu > MENU_COUNT)
 			mCurMenu = MENU_COUNT - 1;
 
+		g_myDeviceInfo.lat = getMyLatitude();
+		g_myDeviceInfo.lon = getMyLongitude();
+
 		// clearscr if changed menu
 		if (prev_mCurMenu != mCurMenu)
 		{
@@ -440,10 +502,10 @@ THD_FUNCTION(tdUI, arg)
 			break;
 		}
 
-    if (mBrightnessLevel < 2)
-      mBrightnessLevel = 2;
-    LCDSetBrightness(mBrightnessLevel);
-    prev_mCurMenu = mCurMenu;
-    chThdSleepMilliseconds(300);
-  }
+		if (mBrightnessLevel < 2)
+			mBrightnessLevel = 2;
+		LCDSetBrightness(mBrightnessLevel);
+		prev_mCurMenu = mCurMenu;
+		chThdSleepMilliseconds(300);
+	}
 }

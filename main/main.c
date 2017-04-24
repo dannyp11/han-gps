@@ -74,7 +74,6 @@ int main(void) {
 	 * main thread, main logic here
 	 * all code that has no delay (such as calculation, ...) should be here
 	 */
-
   while (true) {
     static int i = 0;
     info("Alive %d\r\n", i);
