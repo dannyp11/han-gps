@@ -3,7 +3,7 @@
 #include "ch.h"
 #include "hal.h"
 
-#define COMP_WA_SIZE 128
+#define COMP_WA_SIZE 160
 
 
 #define ALERT_NONE -1

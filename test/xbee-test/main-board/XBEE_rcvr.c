@@ -8,7 +8,7 @@
 #include "../../serial-port/SerialDebug.h"
 #include "../../led/LED.h"
 
-#define BUFF_LEN LCD_LINE_LEN + 1
+#define BUFF_LEN 30
 
 #define TOGGLE_PIN(port, pin, isOn) \
 { if (isOn == 0) port &= ~(1 << pin); \
