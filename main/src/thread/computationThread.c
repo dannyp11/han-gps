@@ -20,6 +20,8 @@ typedef struct {
 } snapshot_param_t;
 
 static snapshot_param_t params;
+const float* allLongitudes = params.longitude;
+const float* allLatitudes = params.latitudes;
 extern alert_message_t g_alerts[MAX_PEERS];
 
 float getMyLongitude() {
