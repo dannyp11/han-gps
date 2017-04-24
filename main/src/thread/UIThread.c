@@ -454,7 +454,7 @@ void UISendMessage(float lat, float lon, int8_t msg)
 		latSec = (int16_t) ((tmp - latMin) * 10000.f);
 	}
 
-	chsnprintf(sendbuf, 29, "*%02d,%03d%02d%04d,%03d%02d%04d,%d*\r\n", g_myID,
+	chsnprintf(sendbuf, 29, "#%02d,%03d%02d%04d,%03d%02d%04d,%d$", g_myID,
 			longDeg, longMin, longSec, latDeg, latMin, latSec, msg);
 
 	chprintf((BaseSequentialStream *) &SD1, sendbuf);
