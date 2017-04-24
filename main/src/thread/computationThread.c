@@ -54,32 +54,43 @@ void compute(void) {
     /* Find the closest peer.*/
     int8_t min_peer = PEERID_NONE;
     float min_dist = INFINITY;
+    float loni, lati;
+    loni = params.longitudes[i];
+    lati = params.latitudes[i];
+
     info_computation("i=%d\r\n", i);
     for (j = 0; j < MAX_PEERS; ++j) {
-      if (i != j) {
-        float d = distance(params.longitudes[i], params.latitudes[i],
-                           params.longitudes[j], params.latitudes[j]);
-        if (d < min_dist) {
-          min_dist = d;
-          min_peer = j;
+      float lonj, latj;
+      latj = params.latitudes[j];
+      lonj = params.longitudes[j];
+
+      if (loni != INVALID_GPS_DATA && lati != INVALID_GPS_DATA && lonj != INVALID_GPS_DATA && latj != INVALID_GPS_DATA) {
+        if (i != j) {
+          float d = distance(loni, lati,
+                             lonj, latj);
+          if (d < min_dist) {
+            min_dist = d;
+            min_peer = j;
+          }
         }
       }
     }
     if (i == g_myID) {
       DeviceInfo friendInfo;
       friendInfo.id = min_peer;
-      friendInfo.lat = params.latitudes[j];
-      friendInfo.lon = params.longitudes[j];
-      friendInfo.compassAngle = bearing(params.longitudes[i], params.latitudes[i],
-                                        params.longitudes[j], params.latitudes[j]);
+      friendInfo.lat = params.latitudes[min_peer];
+      friendInfo.lon = params.longitudes[min_peer];
+      friendInfo.compassAngle = bearing(loni, lati,
+                                        params.longitudes[min_peer],
+                                        params.latitudes[min_peer]);
       UIUpdateNearestFriendInfo(friendInfo, min_dist);
     }
     /* If someone is too far away or if they set emergency flag, alert.*/
     if (min_dist > params.alert_distance || params.msgs[i] == MSG_EMERGENCY) {
       /* If this device is too far away, point to the closest peer.*/
       if (i == g_myID) {
-        float br = bearing(params.longitudes[i], params.latitudes[i],
-                           params.longitudes[j], params.latitudes[j]);
+        float br = bearing(loni, lati,
+                           params.longitudes[min_peer], params.latitudes[min_peer]);
         // g_alerts[g_myID].bearing = br;
         // g_alerts[g_myID].distance = min_dist;
         UIAlertToFriends();
@@ -87,15 +98,15 @@ void compute(void) {
       /* If another device is too far away, point from this device to that one.*/
       else {
         float br = bearing(params.longitudes[g_myID], params.latitudes[g_myID],
-                           params.longitudes[i], params.latitudes[i]);
+                           loni, lati);
         float d = distance(params.longitudes[g_myID], params.latitudes[g_myID],
-                           params.longitudes[i], params.latitudes[i]);
+                           loni, lati);
         DeviceInfo friendInfo;
         // g_alerts[i].bearing = br;
         // g_alerts[i].distance = d;
-        friendInfo.lat=params.latitudes[j];
-        friendInfo.lon=params.longitudes[j];
-        friendInfo.id=j;
+        friendInfo.lat = params.latitudes[min_peer];
+        friendInfo.lon = params.longitudes[min_peer];
+        friendInfo.id = min_peer;
         friendInfo.compassAngle = br;
         UIAlertFromFriend(friendInfo, d);
       }
@@ -112,14 +123,14 @@ THD_WORKING_AREA(waTdComp, COMP_WA_SIZE);
 THD_FUNCTION(tdComp, arg) {
   (void)arg;
 
-  /* Initializes.*/
-  {
-    int8_t i;
-    // for (i = 0; i < MAX_PEERS; ++i) {
-    //   g_alerts[i].bearing = ALERT_NONE;
-    //   g_alerts[i].distance = ALERT_NONE;
-    // }
-  }
+  // /* Initializes.*/
+  // {
+  //   int8_t i;
+  //   // for (i = 0; i < MAX_PEERS; ++i) {
+  //   //   g_alerts[i].bearing = ALERT_NONE;
+  //   //   g_alerts[i].distance = ALERT_NONE;
+  //   // }
+  // }
 
   info_computation("Spawned\r\n");
   while (true) {

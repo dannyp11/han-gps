@@ -28,17 +28,25 @@ int main(void) {
 	char buffer[BUFF_LEN];
 	size_t bufSize = 0;
 
+	enum Mode {WAITING, RECEIVING};
+	enum Mode rcvMode = WAITING;
 	LEDall();
 	while (1) {
 		char byte;
 		byte = serial_in();
-		if (byte == '*') {
+
+		if ( (rcvMode==WAITING) && (byte == '#') ) {
+			rcvMode = RECEIVING;
+		} else if ( (rcvMode==RECEIVING) && (byte == '$') ) {
+			rcvMode = WAITING;
+			//
 			LCDPrint(buffer);
 			_delay_ms(2000);
 			LCDSendCommand(CLEARSCREEN);
 			memset( buffer , 0 , sizeof(char)*BUFF_LEN ) ;
 			bufSize = 0;
-		} else if (isdigit(byte)) {
+			//
+		} else if ( (rcvMode == RECEIVING) && (isalnum(byte)||ispunct(byte)||isspace(byte)) ) {
 			buffer[bufSize++] = byte;
 		}
 	}
