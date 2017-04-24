@@ -22,7 +22,7 @@ typedef struct {
 static snapshot_param_t params;
 // const float * const allLongitudes = params.longitudes;
 // const float * const allLatitudes = params.latitudes;
-extern alert_message_t g_alerts[MAX_PEERS];
+// extern alert_message_t g_alerts[MAX_PEERS];
 
 float getMyLongitude() {
   return params.longitudes[g_myID];
@@ -80,8 +80,9 @@ void compute(void) {
       if (i == g_myID) {
         float br = bearing(params.longitudes[i], params.latitudes[i],
                            params.longitudes[j], params.latitudes[j]);
-        g_alerts[g_myID].bearing = br;
-        g_alerts[g_myID].distance = min_dist;
+        // g_alerts[g_myID].bearing = br;
+        // g_alerts[g_myID].distance = min_dist;
+        UIAlertToFriends();
       }
       /* If another device is too far away, point from this device to that one.*/
       else {
@@ -89,14 +90,20 @@ void compute(void) {
                            params.longitudes[i], params.latitudes[i]);
         float d = distance(params.longitudes[g_myID], params.latitudes[g_myID],
                            params.longitudes[i], params.latitudes[i]);
-        g_alerts[i].bearing = br;
-        g_alerts[i].distance = d;
+        DeviceInfo friendInfo;
+        // g_alerts[i].bearing = br;
+        // g_alerts[i].distance = d;
+        friendInfo.lat=params.latitudes[j];
+        friendInfo.lon=params.longitudes[j];
+        friendInfo.id=j;
+        friendInfo.compassAngle = br;
+        UIAlertFromFriend(friendInfo, d);
       }
     }
     /* If someone is within range.*/
     else {
-      g_alerts[i].bearing = ALERT_NONE;
-      g_alerts[i].distance = ALERT_NONE;
+      // g_alerts[i].bearing = ALERT_NONE;
+      // g_alerts[i].distance = ALERT_NONE;
     }
   }
 }
@@ -108,10 +115,10 @@ THD_FUNCTION(tdComp, arg) {
   /* Initializes.*/
   {
     int8_t i;
-    for (i = 0; i < MAX_PEERS; ++i) {
-      g_alerts[i].bearing = ALERT_NONE;
-      g_alerts[i].distance = ALERT_NONE;
-    }
+    // for (i = 0; i < MAX_PEERS; ++i) {
+    //   g_alerts[i].bearing = ALERT_NONE;
+    //   g_alerts[i].distance = ALERT_NONE;
+    // }
   }
 
   info_computation("Spawned\r\n");
