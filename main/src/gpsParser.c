@@ -95,11 +95,17 @@ void gpsStepParser(msg_t c) {
 }
 
 float getGPSLongitude() {
-  // return longitude;
+  #if GPS_HACK
   return 5.201f;
+  #else
+  return longitude;
+  #endif
 }
 
 float getGPSLatitude() {
-  // return latitude;
+  #if GPS_HACK
   return 0.5937f;
+  #else
+  return latitude;
+  #endif
 }
