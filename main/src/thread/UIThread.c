@@ -440,8 +440,11 @@ void UIUpdateMyPosition(float lat, float lon)
 
 void UIUpdateNearestFriendInfo(DeviceInfo friendInfo, float distance)
 {
-	g_nearestFriendInfo = friendInfo;
-	g_nearestFriendDistance = distance;
+	if (g_nearestFriendInfo.id != friendInfo.id)
+	{
+		g_nearestFriendInfo = friendInfo;
+		g_nearestFriendDistance = distance;
+	}
 }
 
 void UISendMessage(float lat, float lon, int8_t msg)
