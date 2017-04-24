@@ -58,12 +58,12 @@ THD_FUNCTION(tdParser, arg) {
       iterateChannel(pGPSChn, gpsStepParser);
     }
     if (ev & EVENT_MASK(2)) {
-      static buffer[27];
+      static char buffer[27];
       static int8_t state = 0;
       static int8_t i = 0;
       msg_t c;
       chEvtGetAndClearFlags(&elXBeeData);
-      c = chnGetTimeout(pChn, TIME_IMMEDIATE);
+      c = chnGetTimeout(pXBEEChn, TIME_IMMEDIATE);
       /* Preprocess "#...$".*/
       if (c != Q_TIMEOUT && c != Q_RESET) {
         if (state == 0 && c == '#') {
@@ -71,7 +71,7 @@ THD_FUNCTION(tdParser, arg) {
         } else if (state != 0) {
           if (c != '$') {
             /* Valid.*/
-            if (isalnum(byte) || ispunct(byte) || isspace(byte)) {
+            if (isalnum(c) || ispunct(c) || isspace(c)) {
               buffer[i++] = c;
             } else { /* Invalid characters.*/
               goto cleanup;
@@ -81,9 +81,9 @@ THD_FUNCTION(tdParser, arg) {
             goto start_parse;
           }
         } else { /* Parse end or invalid.*/
-        start_parse:
           int8_t x;
-          for (x=0; x<i; ++x) {
+        start_parse:
+          for (x = 0; x < i; ++x) {
             xbeeStepParser(buffer[x]);
           }
         cleanup:
