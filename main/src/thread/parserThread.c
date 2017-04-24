@@ -95,6 +95,7 @@ THD_FUNCTION(tdParser, arg) {
           }
         cleanup:
           i = 0;
+          xbeeParserCleanup();
           state = 0;
         }
       }

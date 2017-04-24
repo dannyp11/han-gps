@@ -23,6 +23,8 @@ void xbeeStepParser(msg_t token);
  */
 void xbeeSetCallback(mailbox_t *mb, memory_pool_t *mp);
 
+void xbeeParserCleanup(void);
+
 int8_t xbeeGetID(void);
 deg_min_t xbeeGetLongitude(void);
 deg_min_t xbeeGetLatitude(void);
