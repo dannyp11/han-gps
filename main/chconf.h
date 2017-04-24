@@ -430,6 +430,7 @@
 #define DEBUG_INFO        FALSE
 #define DEBUG_COMPUTATION FALSE
 #define DEBUG_PARSER      FALSE
+#define DEBUG_CHANNEL     TRUE
 #define DEBUG_XBEE        FALSE
 #define DEBUG_GPS         FALSE
 

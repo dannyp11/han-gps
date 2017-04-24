@@ -20,14 +20,16 @@ typedef struct {
 } snapshot_param_t;
 
 static snapshot_param_t params;
+// const float * const allLongitudes = params.longitudes;
+// const float * const allLatitudes = params.latitudes;
 extern alert_message_t g_alerts[MAX_PEERS];
 
 float getMyLongitude() {
-	return params.longitudes[g_myID];
+  return params.longitudes[g_myID];
 }
 
 float getMyLatitude() {
-	return params.latitudes[g_myID];
+  return params.latitudes[g_myID];
 }
 
 float distance(float lo1, float la1, float lo2, float la2) {
@@ -52,16 +54,25 @@ void compute(void) {
     /* Find the closest peer.*/
     int8_t min_peer = PEERID_NONE;
     float min_dist = INFINITY;
-    info_computation("i=%d\r\n",i);
+    info_computation("i=%d\r\n", i);
     for (j = 0; j < MAX_PEERS; ++j) {
       if (i != j) {
         float d = distance(params.longitudes[i], params.latitudes[i],
                            params.longitudes[j], params.latitudes[j]);
         if (d < min_dist) {
           min_dist = d;
-          min_peer = PEERID_NONE;
+          min_peer = j;
         }
       }
+    }
+    if (i == g_myID) {
+      DeviceInfo friendInfo;
+      friendInfo.id = min_peer;
+      friendInfo.lat = params.latitudes[j];
+      friendInfo.lon = params.longitudes[j];
+      friendInfo.compassAngle = bearing(params.longitudes[i], params.latitudes[i],
+                                        params.longitudes[j], params.latitudes[j]);
+      UIUpdateNearestFriendInfo(friendInfo, min_dist);
     }
     /* If someone is too far away or if they set emergency flag, alert.*/
     if (min_dist > params.alert_distance || params.msgs[i] == MSG_EMERGENCY) {
@@ -69,7 +80,7 @@ void compute(void) {
       if (i == g_myID) {
         float br = bearing(params.longitudes[i], params.latitudes[i],
                            params.longitudes[j], params.latitudes[j]);
-        g_alerts[g_myID].bearing = br * 360 / M_PI;
+        g_alerts[g_myID].bearing = br;
         g_alerts[g_myID].distance = min_dist;
       }
       /* If another device is too far away, point from this device to that one.*/
@@ -78,7 +89,7 @@ void compute(void) {
                            params.longitudes[i], params.latitudes[i]);
         float d = distance(params.longitudes[g_myID], params.latitudes[g_myID],
                            params.longitudes[i], params.latitudes[i]);
-        g_alerts[i].bearing = br * 360 / M_PI;
+        g_alerts[i].bearing = br;
         g_alerts[i].distance = d;
       }
     }
@@ -112,8 +123,8 @@ THD_FUNCTION(tdComp, arg) {
     params.longitudes[g_myID] = getGPSLongitude();
     // g_myLongitude = params.longitudes[g_myID] * 180.f / M_PI;
     params.latitudes[g_myID] = getGPSLatitude();
-    UIUpdateMyPosition(params.longitudes[g_myID] * 180.f / M_PI,
-                       params.latitudes[g_myID] * 180.f / M_PI);
+    UIUpdateMyPosition(params.longitudes[g_myID],
+                       params.latitudes[g_myID]);
     // g_myLatitude = params.latitudes[g_myID] * 180.f / M_PI;
     result = chMBFetch(&xbeeMailbox, &p, MS2ST(100));
     /* If a new message is received within 100ms, compute immediately.*/
@@ -131,21 +142,21 @@ THD_FUNCTION(tdComp, arg) {
         params.msgs[id] = peer.msgID;
 
         /* Debug information.*/
-//         {
-// #include "LCD.h"
-//           float degree = truncf(peer.longitude * 180.f / M_PI);
-//           float minute = (peer.longitude - (degree * M_PI / 180.f)) * 10800.f / M_PI;
-//           info_computation("Peer ID: %d\r\n", peer.peerID);
-//           info_computation("Longitude Radian: %.6f\r\n", peer.longitude);
-//           info_computation("Longitude Deg: %.f\r\n", degree);
-//           info_computation("Longitude Min: %.3f\r\n", minute);
-//           degree = truncf(peer.latitude * 180.f / M_PI);
-//           minute = (peer.latitude - (degree * M_PI / 180.f)) * 10800.f / M_PI;
-//           info_computation("Latitude Radian: %.6f\r\n", peer.latitude);
-//           info_computation("Latitude Deg: %.f\r\n", degree);
-//           info_computation("Latitude Min: %.3f\r\n", minute);
-//           info_computation("Msg ID: %d\r\n", peer.msgID);
-//         }
+        //         {
+        // #include "LCD.h"
+        //           float degree = truncf(peer.longitude * 180.f / M_PI);
+        //           float minute = (peer.longitude - (degree * M_PI / 180.f)) * 10800.f / M_PI;
+        //           info_computation("Peer ID: %d\r\n", peer.peerID);
+        //           info_computation("Longitude Radian: %.6f\r\n", peer.longitude);
+        //           info_computation("Longitude Deg: %.f\r\n", degree);
+        //           info_computation("Longitude Min: %.3f\r\n", minute);
+        //           degree = truncf(peer.latitude * 180.f / M_PI);
+        //           minute = (peer.latitude - (degree * M_PI / 180.f)) * 10800.f / M_PI;
+        //           info_computation("Latitude Radian: %.6f\r\n", peer.latitude);
+        //           info_computation("Latitude Deg: %.f\r\n", degree);
+        //           info_computation("Latitude Min: %.3f\r\n", minute);
+        //           info_computation("Msg ID: %d\r\n", peer.msgID);
+        //         }
       }
 
       compute();
