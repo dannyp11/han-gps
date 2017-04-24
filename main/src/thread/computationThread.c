@@ -33,9 +33,9 @@ float getMyLatitude() {
 }
 
 float distance(float lo1, float la1, float lo2, float la2) {
-  float a = pow(sin((la1 - la2) / 2.f), 2.f) + cos(la1) * cos(la2) * pow(sin((lo1 - la2) / 2.f), 2.f);
-  float c = 2 * atan2(sqrt(a), sqrt(1 - a));
-  float d = 6378137 * c;
+  float a = pow(sin((la1 - la2) / 2.f), 2.f) + cos(la1) * cos(la2) * pow(sin((lo1 - lo2) / 2.f), 2.f);
+  float c = 2.f * atan2(sqrt(a), sqrt(1 - a));
+  float d = 6371837.f * c;
   return d;
 }
 
@@ -64,7 +64,7 @@ void compute(void) {
       latj = params.latitudes[j];
       lonj = params.longitudes[j];
 
-      if (loni != INVALID_GPS_DATA && lati != INVALID_GPS_DATA && lonj != INVALID_GPS_DATA && latj != INVALID_GPS_DATA) {
+      if (loni > 0 && lati > 0 && lonj > 0 && latj > 0) {
         if (i != j) {
           float d = distance(loni, lati,
                              lonj, latj);
@@ -161,13 +161,13 @@ THD_FUNCTION(tdComp, arg) {
         /* Copy the message.*/
         peer_message_t peer = *((peer_message_t *)p);
         int8_t id = peer.peerID;
-        info_computation("msg\r\n");
+        // info_computation("msg\r\n");
         /* Free the message.*/
         chPoolFree(&xbeeMemoryPool, (peer_message_t *)p);
         /* Actually update the info.*/
         params.longitudes[id] = peer.longitude;
 
-        info_computation("lon %.f\r\n", peer.longitude);
+        // info_computation("lon %.f\r\n", peer.longitude);
         params.latitudes[id] = peer.latitude;
         params.msgs[id] = peer.msgID;
 
