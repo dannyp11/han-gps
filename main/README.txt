@@ -1,10 +1,10 @@
 # run: 
-	make ; make flash
+	make ; make program
 	
 # code structure:
 	include/*.h : 		all project include files, doesn't separate sw, hw, etc.
 	src/hardware/*.c:	driver for components like lcd, led, gps, compass, etc.
-	src/thread/*.c:		lcd, compass, gps, xbee, (maybe UI) threads
+	src/thread/*.c:		UI, parser, computing threads
 	src/*.c:			configurations
 	
 # log:
@@ -21,3 +21,8 @@
 		- Fixed UI/Parser conflict
 		- Changed some snprintf() to chsnprintf()
 		- Added I2C AcquireBus/ReleaseBus
+		
+	- 4/24/17: All
+		- Completed first release version
+		- Basic functionality works flawlessly
+		- Optimal tx speed for xbees is configured
