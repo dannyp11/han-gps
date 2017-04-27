@@ -24,9 +24,9 @@ Current prototype uses ATMega328p uController, Software Serial GPS, I2C 4x20 LCD
 - AVR gcc
 
 # Authors
-Dat Pham - datpham@usc.edu
-Kevin Bastoul - 
-Rongcui Dong - rongcuid@outlook.com
+- Dat Pham - datpham@usc.edu
+- Kevin Bastoul - 
+- Rongcui Dong - rongcuid@outlook.com
 
 # How to build
 Use a Unix-like system, have gnumake, avr-gcc and avrdude installed. Windows might need some love,
