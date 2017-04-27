@@ -17,7 +17,7 @@ Current prototype uses ATMega328p uController, Software Serial GPS, I2C 4x20 LCD
 - RS232 debugger
 
 # Software
-- ChibiOS as RTOS
+- ChibiOS as RTOS (Note: Provided a custom software serial implementaion that is good for B9600 full duplex and 4800 Rx/Tx only)
 - UI thread
 - Xbee Parser thread
 - Intensive calulation thread
@@ -26,7 +26,7 @@ Current prototype uses ATMega328p uController, Software Serial GPS, I2C 4x20 LCD
 # Authors
 Dat Pham - datpham@usc.edu
 Kevin Bastoul - 
-Rongcui Dong - 
+Rongcui Dong - rongcuid@outlook.com
 
 # How to build
 Use a Unix-like system, have gnumake, avr-gcc and avrdude installed. Windows might need some love,
