@@ -24,7 +24,7 @@ branches:
   # whitelist
   only:
     - master
-    - devel
+    - develop
 
 compiler: 
 - clang++
